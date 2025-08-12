@@ -1,36 +1,171 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Moods - מעקב מצב רוח חכם 🧠💙
 
-## Getting Started
+אפליקציית מעקב מצב רוח מתקדמת שעוזרת לכם לעקוב אחרי הרווחה הנפשית שלכם ולקבל תובנות מותאמות אישית.
 
-First, run the development server:
+## ✨ תכונות עיקריות
 
+### 📊 מעקב מצב רוח יומי
+- **תיעוד פשוט ומהיר** - slider אינטואיטיבי מ-1 עד 10
+- **הערות אישיות** - הוספת הקשר והערות לכל רשומה
+- **מעקב תאריכים** - תיעוד מצב רוח לתאריכים שונים
+
+### 📈 ויזואליזציה וגרפים
+- **גרפים אינטראקטיביים** - מגמות מצב הרוח לאורך זמן
+- **ממוצעים שבועיים וחודשיים** - ניתוח מעמיק של דפוסים
+- **סטטיסטיקות מהירות** - סיכום מידע חשוב במבט אחד
+
+### 🤖 תובנות חכמות
+- **המלצות מותאמות אישית** - בהתבסס על הנתונים שלכם
+- **זיהוי דפוסים** - גילוי מגמות במצב הרוח
+- **התראות וטיפים** - הצעות לשיפור הרווחה הנפשית
+
+### 🎨 עיצוב מתקדם
+- **מצב בהיר וכהה** - החלפה קלה בין מצבי תצוגה
+- **ממשק בעברית** - תמיכה מלאה בכיוון מימין לשמאל
+- **עיצוב רספונסיבי** - מותאם לכל המכשירים
+
+## 🚀 התחלה מהירה
+
+### דרישות מערכת
+- Node.js 18+ 
+- npm או yarn
+- מסד נתונים SQLite (כלול)
+
+### התקנה
+
+1. **שכפול הפרויקט**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/liormedan/moods.git
+cd moods
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **התקנת תלויות**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **הגדרת מסד הנתונים**
+```bash
+npx prisma generate
+npx prisma db push
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **הגדרת משתני סביבה**
+```bash
+cp .env.example .env
+```
+ערכו את הקובץ `.env` עם הערכים המתאימים.
 
-## Learn More
+5. **הרצת האפליקציה**
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+האפליקציה תהיה זמינה בכתובת: `http://localhost:3000`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📱 שימוש באפליקציה
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### תיעוד מצב רוח
+1. היכנסו לדאשבורד
+2. בחרו את מצב הרוח שלכם בעזרת הסליידר (1-10)
+3. הוסיפו הערות אישיות (אופציונלי)
+4. לחצו על "שמור מצב רוח"
 
-## Deploy on Vercel
+### צפייה בגרפים
+- **גרף מצב רוח** - מציג את המגמות לאורך זמן
+- **ממוצעים** - ניתוח שבועי וחודשי
+- **סינון תאריכים** - בחירת טווח זמן מותאם
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### תובנות והמלצות
+- האפליקציה מנתחת את הנתונים שלכם
+- מציגה המלצות מותאמות אישית
+- מזהה דפוסים ומגמות
+- מציעה טיפים לשיפור הרווחה
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠️ טכנולוגיות
+
+### Frontend
+- **Next.js 15** - React framework מתקדם
+- **TypeScript** - פיתוח בטוח יותר
+- **Tailwind CSS** - עיצוב מהיר ויעיל
+- **Recharts** - גרפים אינטראקטיביים
+- **Lucide React** - אייקונים מודרניים
+
+### Backend
+- **Next.js API Routes** - API מובנה
+- **Prisma** - ORM מתקדם
+- **SQLite** - מסד נתונים מקומי
+- **NextAuth.js** - אימות משתמשים
+
+### כלי פיתוח
+- **ESLint** - בדיקת קוד
+- **Prettier** - עיצוב קוד
+- **Jest** - בדיקות יחידה
+- **TypeScript** - בדיקת טיפוסים
+
+## 📊 מבנה הפרויקט
+
+```
+mental-health-tracker/
+├── src/
+│   ├── app/                 # Next.js App Router
+│   │   ├── api/            # API Routes
+│   │   ├── dashboard/      # דפי דאשבורד
+│   │   └── auth/           # דפי אימות
+│   ├── components/         # רכיבי React
+│   │   ├── mood/          # רכיבי מצב רוח
+│   │   ├── ui/            # רכיבי UI בסיסיים
+│   │   └── layout/        # רכיבי פריסה
+│   ├── lib/               # פונקציות עזר
+│   ├── types/             # הגדרות TypeScript
+│   └── contexts/          # React Contexts
+├── prisma/                # סכמת מסד נתונים
+├── docs/                  # תיעוד
+└── public/               # קבצים סטטיים
+```
+
+## 🎯 תכונות מתקדמות
+
+### מערכת תובנות
+- **ניתוח דפוסים** - זיהוי מגמות במצב הרוח
+- **המלצות מותאמות** - טיפים בהתבסס על הנתונים
+- **התראות חכמות** - הודעות על שינויים משמעותיים
+
+### ניתוח נתונים
+- **סטטיסטיקות מפורטות** - ממוצעים, רצפים, התפלגות
+- **השוואות זמן** - מגמות שבועיות וחודשיות
+- **ייצוא נתונים** - שמירת המידע לשימוש חיצוני
+
+### אבטחה ופרטיות
+- **הצפנת נתונים** - מידע מוגן ומאובטח
+- **אחסון מקומי** - הנתונים נשמרים במכשיר שלכם
+- **ללא מעקב** - פרטיות מלאה של המשתמש
+
+## 🤝 תרומה לפרויקט
+
+אנחנו מזמינים אתכם לתרום לפרויקט!
+
+1. **Fork** את הפרויקט
+2. צרו **branch** חדש (`git checkout -b feature/amazing-feature`)
+3. **Commit** את השינויים (`git commit -m 'Add amazing feature'`)
+4. **Push** ל-branch (`git push origin feature/amazing-feature`)
+5. פתחו **Pull Request**
+
+## 📝 רישיון
+
+הפרויקט מופץ תחת רישיון MIT. ראו את הקובץ `LICENSE` לפרטים נוספים.
+
+## 📞 יצירת קשר
+
+- **GitHub**: [liormedan](https://github.com/liormedan)
+- **פרויקט**: [Moods](https://github.com/liormedan/moods)
+
+## 🙏 תודות
+
+תודה מיוחדת לכל התורמים והמשתמשים שעוזרים לשפר את האפליקציה!
+
+---
+
+**Moods** - כי הרווחה הנפשית שלכם חשובה לנו 💙
+
+*נבנה באהבה עם Next.js, TypeScript ו-Tailwind CSS*
