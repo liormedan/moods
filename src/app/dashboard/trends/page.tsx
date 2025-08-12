@@ -33,6 +33,7 @@ import {
   Users
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { trackPageView, trackTrendsAnalysis, trackFeatureUsage, trackDataAction } from '@/lib/analytics';
 
 interface TrendData {
   period: string;
@@ -75,6 +76,8 @@ export default function TrendsPage() {
   const [longTermGoals, setLongTermGoals] = useState<LongTermGoal[]>([]);
 
   useEffect(() => {
+    // Track page view
+    trackPageView('trends_page');
     loadTrendsData();
   }, [selectedPeriod]);
 
@@ -272,11 +275,17 @@ export default function TrendsPage() {
             <p className="text-gray-600 dark:text-gray-400">ניתוח מגמות והתקדמות לאורך זמן</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button 
+              variant="outline"
+              onClick={() => trackDataAction('export', 'trends_data')}
+            >
               <Download className="w-4 h-4 mr-2" />
               ייצא נתונים
             </Button>
-            <Button variant="outline">
+            <Button 
+              variant="outline"
+              onClick={() => trackDataAction('share', 'trends_report')}
+            >
               <Share2 className="w-4 h-4 mr-2" />
               שתף דוח
             </Button>
@@ -298,7 +307,10 @@ export default function TrendsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   תקופת ניתוח
                 </label>
-                <Select value={selectedPeriod} onValueChange={(value: any) => setSelectedPeriod(value)}>
+                <Select value={selectedPeriod} onValueChange={(value: any) => {
+                  setSelectedPeriod(value);
+                  trackTrendsAnalysis(value, selectedMetric);
+                }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -314,7 +326,10 @@ export default function TrendsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   מדד לניתוח
                 </label>
-                <Select value={selectedMetric} onValueChange={(value: any) => setSelectedMetric(value)}>
+                <Select value={selectedMetric} onValueChange={(value: any) => {
+                  setSelectedMetric(value);
+                  trackTrendsAnalysis(selectedPeriod, value);
+                }}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

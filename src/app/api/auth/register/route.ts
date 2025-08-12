@@ -1,64 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/db';
+import { registerUser } from '@/lib/firebase-auth';
 import { z } from 'zod';
 
+// Validation schema for registration
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().email('כתובת אימייל לא חוקית'),
+  password: z.string().min(6, 'הסיסמה חייבת להכיל לפחות 6 תווים'),
+  fullName: z.string().min(2, 'השם חייב להכיל לפחות 2 תווים')
 });
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password } = registerSchema.parse(body);
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
+    
+    // Validate request body
+    const validationResult = registerSchema.safeParse(body);
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'User with this email already exists' },
+        { error: 'נתונים לא חוקיים', details: validationResult.error.issues },
         { status: 400 }
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const { email, password, fullName } = validationResult.data;
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-      },
-    });
+    // Register user with Firebase
+    const userCredential = await registerUser(email, password, fullName);
 
-    return NextResponse.json(
-      { message: 'User created successfully', user },
-      { status: 201 }
-    );
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', details: error.issues },
-        { status: 400 }
-      );
-    }
+    return NextResponse.json({
+      message: 'המשתמש נרשם בהצלחה',
+      user: {
+        id: userCredential.user.uid,
+        email: userCredential.user.email,
+        fullName
+      }
+    }, { status: 201 });
 
+  } catch (error: any) {
     console.error('Registration error:', error);
+    
+    // Handle Firebase Auth errors
+    if (error.code === 'auth/email-already-in-use') {
+      return NextResponse.json(
+        { error: 'כתובת האימייל כבר בשימוש' },
+        { status: 409 }
+      );
+    }
+    
+    if (error.code === 'auth/weak-password') {
+      return NextResponse.json(
+        { error: 'הסיסמה חייבת להכיל לפחות 6 תווים' },
+        { status: 400 }
+      );
+    }
+    
+    if (error.code === 'auth/invalid-email') {
+      return NextResponse.json(
+        { error: 'כתובת אימייל לא חוקית' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'שגיאה בהרשמת המשתמש' },
       { status: 500 }
     );
   }
