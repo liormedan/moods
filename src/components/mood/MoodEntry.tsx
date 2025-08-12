@@ -151,7 +151,7 @@ export default function MoodEntry({
             />
             <div className="flex items-center justify-center space-x-2">
               <span className="text-xl">{getMoodEmoji(moodValue)}</span>
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-foreground">
                 {getMoodDescription(moodValue)}
               </span>
             </div>
@@ -172,21 +172,21 @@ export default function MoodEntry({
 
           {/* Status Messages */}
           {error && (
-            <div className="p-2 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-red-700 text-xs">{error}</p>
+            <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <p className="text-red-700 dark:text-red-400 text-xs">{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="p-2 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-green-700 text-xs">{success}</p>
+            <div className="p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+              <p className="text-green-700 dark:text-green-400 text-xs">{success}</p>
             </div>
           )}
 
           {/* Existing Entry Info */}
           {existingEntry && !isEditing && (
-            <div className="p-2 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-blue-700 text-xs">
+            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
+              <p className="text-blue-700 dark:text-blue-400 text-xs">
                 כבר קיים תיעוד מצב רוח לתאריך זה.
                 <button
                   type="button"
@@ -196,7 +196,7 @@ export default function MoodEntry({
                     setError(null);
                     setSuccess(null);
                   }}
-                  className="underline ml-1 hover:text-blue-900"
+                  className="underline ml-1 hover:text-blue-900 dark:hover:text-blue-300"
                 >
                   לחץ כאן לעריכה
                 </button>

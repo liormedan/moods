@@ -26,7 +26,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             {label}
           </label>
         )}
@@ -37,19 +37,19 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
             max={max}
             step={step}
             className={cn(
-              'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider',
+              'w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider',
               className
             )}
             ref={ref}
             {...props}
           />
           {showValue && (
-            <span className="text-lg font-semibold text-gray-900 min-w-[2rem] text-center">
+            <span className="text-lg font-semibold text-foreground min-w-[2rem] text-center">
               {props.value || min}
             </span>
           )}
         </div>
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
+        <div className="flex justify-between text-xs text-muted-foreground mt-1">
           <span>{min}</span>
           <span>{max}</span>
         </div>

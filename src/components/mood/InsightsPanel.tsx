@@ -177,11 +177,11 @@ export default function InsightsPanel({ className, onInsightUpdated }: InsightsP
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <CardTitle className="flex items-center gap-2 text-lg mb-2">
-              <Lightbulb className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg mb-2 text-foreground">
+              <Lightbulb className="h-5 w-5 text-yellow-600" />
               תובנות והמלצות
             </CardTitle>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               קבלו תובנות חכמות והמלצות מותאמות אישית
             </p>
           </div>
@@ -231,13 +231,13 @@ export default function InsightsPanel({ className, onInsightUpdated }: InsightsP
 
       <CardContent className="pt-0">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-700 dark:text-red-400 text-sm">
             {error}
           </div>
         )}
 
         {filteredInsights.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-muted-foreground">
             <div className="text-sm">
               {showUnreadOnly ? 'אין תובנות חדשות' : 'אין תובנות זמינות'}
             </div>
@@ -260,8 +260,8 @@ export default function InsightsPanel({ className, onInsightUpdated }: InsightsP
                   key={insight.id}
                   className={`p-3 rounded-lg border transition-all ${
                     insight.isRead
-                      ? 'bg-gray-50 border-gray-200'
-                      : 'bg-white border-gray-300 shadow-sm'
+                      ? 'bg-muted/50 border-border'
+                      : 'bg-card border-border shadow-sm'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -272,7 +272,7 @@ export default function InsightsPanel({ className, onInsightUpdated }: InsightsP
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex-1">
-                          <h4 className="font-medium text-sm leading-tight mb-1">
+                          <h4 className="font-medium text-sm leading-tight mb-1 text-foreground">
                             {insight.title}
                           </h4>
                           <div className="flex flex-wrap items-center gap-1 mb-2">
@@ -292,7 +292,7 @@ export default function InsightsPanel({ className, onInsightUpdated }: InsightsP
                               </Badge>
                             )}
                             {!insight.isRead && (
-                              <Badge variant="default" className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-800">
+                              <Badge variant="default" className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary">
                                 חדש
                               </Badge>
                             )}
@@ -311,11 +311,11 @@ export default function InsightsPanel({ className, onInsightUpdated }: InsightsP
                         )}
                       </div>
 
-                      <p className="text-xs text-gray-600 leading-relaxed mb-2">
+                      <p className="text-xs text-muted-foreground leading-relaxed mb-2">
                         {insight.description}
                       </p>
 
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-muted-foreground">
                         {new Date(insight.createdAt).toLocaleDateString('he-IL')}
                       </div>
                     </div>
