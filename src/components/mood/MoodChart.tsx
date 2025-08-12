@@ -10,7 +10,10 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Area,
+  AreaChart,
 } from 'recharts';
+import { RefreshCw, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 
 interface MoodDataPoint {
   date: string;
@@ -30,32 +33,85 @@ export default function MoodChart({ onDataLoad, onError }: MoodChartProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
+  const [chartType, setChartType] = useState<'line' | 'area'>('line');
 
   const fetchMoodData = async (range: TimeRange) => {
     setLoading(true);
     setError(null);
 
     try {
-      // Mock data for demo
-      const mockData: MoodDataPoint[] = [
-        { date: '2025-08-06', mood: 6, notes: 'יום טוב' },
-        { date: '2025-08-07', mood: 7, notes: 'יום מעולה' },
-        { date: '2025-08-08', mood: 5, notes: 'יום בסדר' },
-        { date: '2025-08-09', mood: 8, notes: 'יום נהדר' },
-        { date: '2025-08-10', mood: 6, notes: 'יום רגיל' },
-        { date: '2025-08-11', mood: 7, notes: 'יום טוב' },
-        { date: '2025-08-12', mood: 6, notes: 'היום' },
-      ];
+      // Try to fetch real data from API
+      const response = await fetch(`/api/mood?range=${range}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Ensure data is an array
+        if (Array.isArray(data)) {
+          setMoodData(data);
+          onDataLoad?.(data);
+        } else {
+          console.warn('API returned non-array data:', data);
+          // Fallback to mock data if API returns invalid data
+          const mockData: MoodDataPoint[] = generateMockData(range);
+          setMoodData(mockData);
+          onDataLoad?.(mockData);
+          setError(
+            'הנתונים המוצגים הם לדוגמה בלבד - השרת החזיר נתונים לא תקינים'
+          );
+        }
+      } else {
+        throw new Error('שגיאה בטעינת נתונים מהשרת');
+      }
+    } catch (err) {
+      console.error('Error fetching mood data:', err);
 
+      // Fallback to mock data if API fails
+      const mockData: MoodDataPoint[] = generateMockData(range);
       setMoodData(mockData);
       onDataLoad?.(mockData);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'שגיאה בטעינת נתונים';
-      setError(errorMessage);
-      onError?.(errorMessage);
+
+      // Show error but don't block the UI
+      setError('הנתונים המוצגים הם לדוגמה בלבד');
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateMockData = (range: TimeRange): MoodDataPoint[] => {
+    const today = new Date();
+    const data: MoodDataPoint[] = [];
+
+    let days: number;
+    switch (range) {
+      case 'week':
+        days = 7;
+        break;
+      case 'month':
+        days = 30;
+        break;
+      case '3months':
+        days = 90;
+        break;
+      default:
+        days = 7;
+    }
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+
+      // Generate realistic mood data with some variation
+      const baseMood = 6.5;
+      const variation = (Math.random() - 0.5) * 3;
+      const mood = Math.max(1, Math.min(10, baseMood + variation));
+
+      data.push({
+        date: date.toISOString().split('T')[0],
+        mood: Math.round(mood * 10) / 10,
+        notes: i === 0 ? 'היום' : undefined,
+      });
+    }
+
+    return data;
   };
 
   useEffect(() => {
@@ -67,6 +123,10 @@ export default function MoodChart({ onDataLoad, onError }: MoodChartProps) {
     setTimeRange(newRange);
   };
 
+  const handleRefresh = () => {
+    fetchMoodData(timeRange);
+  };
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -75,9 +135,13 @@ export default function MoodChart({ onDataLoad, onError }: MoodChartProps) {
           <p className="font-semibold text-gray-800 dark:text-gray-200">
             {new Date(label).toLocaleDateString('he-IL')}
           </p>
-          <p className="text-blue-600 dark:text-blue-400">מצב רוח: {data.mood}/10</p>
+          <p className="text-blue-600 dark:text-blue-400">
+            מצב רוח: {data.mood}/10
+          </p>
           {data.notes && (
-            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">הערות: {data.notes}</p>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+              הערות: {data.notes}
+            </p>
           )}
         </div>
       );
@@ -85,91 +149,261 @@ export default function MoodChart({ onDataLoad, onError }: MoodChartProps) {
     return null;
   };
 
+  const getMoodColor = (mood: number) => {
+    if (mood >= 8) return '#10b981'; // green
+    if (mood >= 6) return '#3b82f6'; // blue
+    if (mood >= 4) return '#f59e0b'; // yellow
+    if (mood >= 2) return '#f97316'; // orange
+    return '#ef4444'; // red
+  };
+
+  const getMoodEmoji = (mood: number) => {
+    if (mood >= 8) return '😊';
+    if (mood >= 6) return '🙂';
+    if (mood >= 4) return '😐';
+    if (mood >= 2) return '😔';
+    return '😢';
+  };
+
+  const calculateTrend = () => {
+    // Ensure moodData is an array and has the expected structure
+    if (!Array.isArray(moodData) || moodData.length < 2) return 'stable';
+
+    // Filter out any invalid entries
+    const validEntries = moodData.filter(
+      (item) =>
+        item && typeof item === 'object' && typeof item.mood === 'number'
+    );
+
+    if (validEntries.length < 2) return 'stable';
+
+    const recent = validEntries.slice(-7);
+    const older = validEntries.slice(-14, -7);
+
+    if (recent.length === 0 || older.length === 0) return 'stable';
+
+    const recentAvg =
+      recent.reduce((sum, item) => sum + item.mood, 0) / recent.length;
+    const olderAvg =
+      older.reduce((sum, item) => sum + item.mood, 0) / older.length;
+
+    const difference = recentAvg - olderAvg;
+
+    if (difference > 0.5) return 'improving';
+    if (difference < -0.5) return 'declining';
+    return 'stable';
+  };
+
+  const trend = calculateTrend();
+  const trendIcon =
+    trend === 'improving'
+      ? TrendingUp
+      : trend === 'declining'
+        ? TrendingDown
+        : Activity;
+  const trendColor =
+    trend === 'improving'
+      ? 'text-green-600'
+      : trend === 'declining'
+        ? 'text-red-600'
+        : 'text-blue-600';
+
   return (
     <div className="space-y-6">
-      {/* Time Range Selector */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">גרף מצב רוח</h3>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-600 dark:text-gray-400">טווח זמן:</span>
-          <select
-            value={timeRange}
-            onChange={(e) => handleTimeRangeChange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      {/* Header with Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div className="flex items-center space-x-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            גרף מצב רוח
+          </h3>
+
+          {/* Chart Type Toggle */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setChartType('line')}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                chartType === 'line'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+              }`}
+            >
+              קו
+            </button>
+            <button
+              onClick={() => setChartType('area')}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                chartType === 'area'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+              }`}
+            >
+              אזור
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          {/* Trend Indicator */}
+          <div className="flex items-center space-x-2 text-sm">
+            <span className="text-gray-600 dark:text-gray-400">מגמה:</span>
+            <div className="flex items-center space-x-1">
+              {React.createElement(trendIcon, {
+                className: `w-4 h-4 ${trendColor}`,
+              })}
+              <span className={trendColor}>
+                {trend === 'improving'
+                  ? 'משתפר'
+                  : trend === 'declining'
+                    ? 'יורד'
+                    : 'יציב'}
+              </span>
+            </div>
+          </div>
+
+          {/* Time Range Selector */}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              טווח זמן:
+            </span>
+            <select
+              value={timeRange}
+              onChange={(e) => handleTimeRangeChange(e.target.value)}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            >
+              <option value="week">שבוע</option>
+              <option value="month">חודש</option>
+              <option value="3months">3 חודשים</option>
+            </select>
+          </div>
+
+          {/* Refresh Button */}
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors disabled:opacity-50"
+            title="רענן נתונים"
           >
-            <option value="week">שבוע</option>
-            <option value="month">חודש</option>
-            <option value="3months">3 חודשים</option>
-          </select>
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
 
-      {loading && (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      )}
-
+      {/* Error Message */}
       {error && (
-        <div className="text-center text-red-600 dark:text-red-400 p-4">
-          <p>שגיאה בטעינת הנתונים: {error}</p>
-          <Button
-            onClick={() => fetchMoodData(timeRange)}
-            variant="outline"
-            className="mt-2"
-          >
-            נסה שוב
-          </Button>
-        </div>
-      )}
-
-      {!loading && !error && moodData.length > 0 && (
-        <div>
-          <h4 className="text-lg font-semibold mb-4 text-center text-gray-900 dark:text-gray-100">
-            מצב רוח לאורך זמן
-          </h4>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={moodData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-600" />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(value) => new Date(value).toLocaleDateString('he-IL', { month: 'short', day: 'numeric' })}
-                tick={{ fontSize: 12, fill: 'currentColor' }}
-                className="text-gray-600 dark:text-gray-400"
-              />
-              <YAxis
-                domain={[1, 10]}
-                tick={{ fontSize: 12, fill: 'currentColor' }}
-                className="text-gray-600 dark:text-gray-400"
-                label={{
-                  value: 'מצב רוח',
-                  angle: -90,
-                  position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: 'currentColor' }
-                }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Line
-                type="monotone"
-                dataKey="mood"
-                stroke="#3b82f6"
-                strokeWidth={3}
-                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {!loading && !error && moodData.length === 0 && (
-        <div className="text-center text-gray-500 dark:text-gray-400 p-8">
-          <p>אין נתוני מצב רוח בטווח הזמן שנבחר</p>
-          <p className="text-sm mt-2">
-            נסה לבחור טווח זמן אחר או להוסיף רשומות מצב רוח
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200">
+            {error}
           </p>
         </div>
       )}
+
+      {/* Chart Container */}
+      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                טוען נתונים...
+              </p>
+            </div>
+          </div>
+        ) : !Array.isArray(moodData) || moodData.length === 0 ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Activity className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-600 dark:text-gray-400">
+                אין נתונים להצגה
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500">
+                התחילו להזין מצב רוח כדי לראות גרפים
+              </p>
+            </div>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={400}>
+            {chartType === 'line' ? (
+              <LineChart
+                data={Array.isArray(moodData) ? moodData : []}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#6b7280"
+                  tickFormatter={(value) =>
+                    new Date(value).toLocaleDateString('he-IL', {
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  }
+                />
+                <YAxis stroke="#6b7280" domain={[0, 10]} tickCount={11} />
+                <Tooltip content={<CustomTooltip />} />
+                <Line
+                  type="monotone"
+                  dataKey="mood"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                />
+              </LineChart>
+            ) : (
+              <AreaChart
+                data={Array.isArray(moodData) ? moodData : []}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#6b7280"
+                  tickFormatter={(value) =>
+                    new Date(value).toLocaleDateString('he-IL', {
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  }
+                />
+                <YAxis stroke="#6b7280" domain={[0, 10]} tickCount={11} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area
+                  type="monotone"
+                  dataKey="mood"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  fill="#3b82f6"
+                  fillOpacity={0.1}
+                />
+              </AreaChart>
+            )}
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* Chart Legend */}
+      <div className="flex items-center justify-center space-x-6 text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+          <span>מצוין (8-10)</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+          <span>טוב (6-7)</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+          <span>בסדר (4-5)</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+          <span>לא טוב (2-3)</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+          <span>רע מאוד (1)</span>
+        </div>
+      </div>
     </div>
   );
 }

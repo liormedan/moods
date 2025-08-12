@@ -1,7 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -29,7 +35,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { 
+import {
   BarChart3,
   TrendingUp,
   TrendingDown,
@@ -39,28 +45,41 @@ import {
   Activity,
   Target,
   Award,
-  Clock
+  Clock,
 } from 'lucide-react';
 
 interface AnalyticsData {
   dailyMoods: Array<{ date: string; mood: number; notes?: string }>;
   weeklyAverages: Array<{ week: string; average: number; count: number }>;
-  monthlyTrends: Array<{ month: string; average: number; high: number; low: number }>;
+  monthlyTrends: Array<{
+    month: string;
+    average: number;
+    high: number;
+    low: number;
+  }>;
   moodDistribution: Array<{ mood: string; count: number; percentage: number }>;
   timePatterns: Array<{ hour: number; averageMood: number; count: number }>;
   streakData: { current: number; longest: number; total: number };
-  insights: Array<{ type: string; message: string; severity: 'info' | 'warning' | 'success' }>;
+  insights: Array<{
+    type: string;
+    message: string;
+    severity: 'info' | 'warning' | 'success';
+  }>;
 }
 
 type TimeRange = 'week' | 'month' | '3months' | '6months' | 'year';
 type ChartType = 'line' | 'area' | 'bar';
 
 export default function AnalyticsPage() {
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
   const [chartType, setChartType] = useState<ChartType>('line');
-  const [selectedMetric, setSelectedMetric] = useState<'mood' | 'frequency' | 'patterns'>('mood');
+  const [selectedMetric, setSelectedMetric] = useState<
+    'mood' | 'frequency' | 'patterns'
+  >('mood');
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -112,12 +131,24 @@ export default function AnalyticsPage() {
         ],
         streakData: { current: 5, longest: 12, total: 25 },
         insights: [
-          { type: 'trend', message: 'מצב הרוח שלך משתפר בהדרגה בחודש האחרון', severity: 'success' },
-          { type: 'pattern', message: 'נראה שמצב הרוח שלך טוב יותר בערבים', severity: 'info' },
-          { type: 'streak', message: 'כל הכבוד! אתה עוקב אחר מצב הרוח 5 ימים ברצף', severity: 'success' },
-        ]
+          {
+            type: 'trend',
+            message: 'מצב הרוח שלך משתפר בהדרגה בחודש האחרון',
+            severity: 'success',
+          },
+          {
+            type: 'pattern',
+            message: 'נראה שמצב הרוח שלך טוב יותר בערבים',
+            severity: 'info',
+          },
+          {
+            type: 'streak',
+            message: 'כל הכבוד! אתה עוקב אחר מצב הרוח 5 ימים ברצף',
+            severity: 'success',
+          },
+        ],
       };
-      
+
       setAnalyticsData(mockData);
     } catch (error) {
       console.error('Error fetching analytics data:', error);
@@ -144,7 +175,9 @@ export default function AnalyticsPage() {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-800 dark:text-gray-200">{label}</p>
+          <p className="font-semibold text-gray-800 dark:text-gray-200">
+            {label}
+          </p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }}>
               {entry.name}: {entry.value}
@@ -170,7 +203,9 @@ export default function AnalyticsPage() {
     return (
       <DashboardLayout>
         <div className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400">שגיאה בטעינת נתוני הניתוח</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            שגיאה בטעינת נתוני הניתוח
+          </p>
           <Button onClick={fetchAnalyticsData} className="mt-4">
             <RefreshCw className="w-4 h-4 mr-2" />
             נסה שוב
@@ -194,7 +229,7 @@ export default function AnalyticsPage() {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <Button 
+            <Button
               onClick={handleExport}
               variant="outline"
               className="border-gray-300 dark:border-gray-600"
@@ -214,8 +249,13 @@ export default function AnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">טווח זמן:</label>
-                <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  טווח זמן:
+                </label>
+                <Select
+                  value={timeRange}
+                  onValueChange={(value: TimeRange) => setTimeRange(value)}
+                >
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
@@ -230,8 +270,13 @@ export default function AnalyticsPage() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">סוג גרף:</label>
-                <Select value={chartType} onValueChange={(value: ChartType) => setChartType(value)}>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  סוג גרף:
+                </label>
+                <Select
+                  value={chartType}
+                  onValueChange={(value: ChartType) => setChartType(value)}
+                >
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
@@ -244,8 +289,15 @@ export default function AnalyticsPage() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">מדד:</label>
-                <Select value={selectedMetric} onValueChange={(value: 'mood' | 'frequency' | 'patterns') => setSelectedMetric(value)}>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  מדד:
+                </label>
+                <Select
+                  value={selectedMetric}
+                  onValueChange={(value: 'mood' | 'frequency' | 'patterns') =>
+                    setSelectedMetric(value)
+                  }
+                >
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
@@ -265,7 +317,9 @@ export default function AnalyticsPage() {
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm text-gray-600 dark:text-gray-400">רצף נוכחי</CardTitle>
+                <CardTitle className="text-sm text-gray-600 dark:text-gray-400">
+                  רצף נוכחי
+                </CardTitle>
                 <Activity className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
             </CardHeader>
@@ -285,15 +339,21 @@ export default function AnalyticsPage() {
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm text-gray-600 dark:text-gray-400">ממוצע החודש</CardTitle>
+                <CardTitle className="text-sm text-gray-600 dark:text-gray-400">
+                  ממוצע החודש
+                </CardTitle>
                 <BarChart3 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">6.9</div>
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                6.9
+              </div>
               <div className="flex items-center mt-2">
                 <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                <span className="text-sm text-green-600 dark:text-green-400">+0.4 מהחודש הקודם</span>
+                <span className="text-sm text-green-600 dark:text-green-400">
+                  +0.4 מהחודש הקודם
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -301,7 +361,9 @@ export default function AnalyticsPage() {
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm text-gray-600 dark:text-gray-400">סה"כ רשומות</CardTitle>
+                <CardTitle className="text-sm text-gray-600 dark:text-gray-400">
+                  סה"כ רשומות
+                </CardTitle>
                 <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
             </CardHeader>
@@ -309,7 +371,9 @@ export default function AnalyticsPage() {
               <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 {analyticsData.streakData.total}
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">רשומות מצב רוח</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                רשומות מצב רוח
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -327,75 +391,104 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
-              {chartType === 'line' && (
-                <LineChart data={analyticsData.dailyMoods}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-600" />
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={(value) => new Date(value).toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })}
-                    tick={{ fontSize: 12, fill: 'currentColor' }}
-                    className="text-gray-600 dark:text-gray-400"
-                  />
-                  <YAxis 
-                    domain={[1, 10]} 
-                    tick={{ fontSize: 12, fill: 'currentColor' }}
-                    className="text-gray-600 dark:text-gray-400"
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="mood" 
-                    stroke="#3b82f6" 
-                    strokeWidth={3}
-                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
-                  />
-                </LineChart>
-              )}
-              
-              {chartType === 'area' && (
-                <AreaChart data={analyticsData.dailyMoods}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-600" />
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={(value) => new Date(value).toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })}
-                    tick={{ fontSize: 12, fill: 'currentColor' }}
-                    className="text-gray-600 dark:text-gray-400"
-                  />
-                  <YAxis 
-                    domain={[1, 10]} 
-                    tick={{ fontSize: 12, fill: 'currentColor' }}
-                    className="text-gray-600 dark:text-gray-400"
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area 
-                    type="monotone" 
-                    dataKey="mood" 
-                    stroke="#3b82f6" 
-                    fill="#3b82f6" 
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              )}
-              
-              {chartType === 'bar' && (
-                <BarChart data={analyticsData.dailyMoods}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-600" />
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={(value) => new Date(value).toLocaleDateString('he-IL', { day: 'numeric', month: 'short' })}
-                    tick={{ fontSize: 12, fill: 'currentColor' }}
-                    className="text-gray-600 dark:text-gray-400"
-                  />
-                  <YAxis 
-                    domain={[1, 10]} 
-                    tick={{ fontSize: 12, fill: 'currentColor' }}
-                    className="text-gray-600 dark:text-gray-400"
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="mood" fill="#3b82f6" />
-                </BarChart>
-              )}
+              <>
+                {chartType === 'line' && (
+                  <LineChart data={analyticsData.dailyMoods}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#e5e7eb"
+                      className="dark:stroke-gray-600"
+                    />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(value) =>
+                        new Date(value).toLocaleDateString('he-IL', {
+                          day: 'numeric',
+                          month: 'short',
+                        })
+                      }
+                      tick={{ fontSize: 12, fill: 'currentColor' }}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <YAxis
+                      domain={[1, 10]}
+                      tick={{ fontSize: 12, fill: 'currentColor' }}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line
+                      type="monotone"
+                      dataKey="mood"
+                      stroke="#3b82f6"
+                      strokeWidth={3}
+                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                    />
+                  </LineChart>
+                )}
+
+                {chartType === 'area' && (
+                  <AreaChart data={analyticsData.dailyMoods}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#e5e7eb"
+                      className="dark:stroke-gray-600"
+                    />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(value) =>
+                        new Date(value).toLocaleDateString('he-IL', {
+                          day: 'numeric',
+                          month: 'short',
+                        })
+                      }
+                      tick={{ fontSize: 12, fill: 'currentColor' }}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <YAxis
+                      domain={[1, 10]}
+                      tick={{ fontSize: 12, fill: 'currentColor' }}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="mood"
+                      stroke="#3b82f6"
+                      fill="#3b82f6"
+                      fillOpacity={0.3}
+                    />
+                  </AreaChart>
+                )}
+
+                {chartType === 'bar' && (
+                  <BarChart data={analyticsData.dailyMoods}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#e5e7eb"
+                      className="dark:stroke-gray-600"
+                    />
+                    <XAxis
+                      dataKey="date"
+                      tickFormatter={(value) =>
+                        new Date(value).toLocaleDateString('he-IL', {
+                          day: 'numeric',
+                          month: 'short',
+                        })
+                      }
+                      tick={{ fontSize: 12, fill: 'currentColor' }}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <YAxis
+                      domain={[1, 10]}
+                      tick={{ fontSize: 12, fill: 'currentColor' }}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="mood" fill="#3b82f6" />
+                  </BarChart>
+                )}
+              </>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -405,19 +498,25 @@ export default function AnalyticsPage() {
           {/* Weekly Averages */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="text-lg text-gray-900 dark:text-gray-100">ממוצעים שבועיים</CardTitle>
+              <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
+                ממוצעים שבועיים
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={analyticsData.weeklyAverages}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-600" />
-                  <XAxis 
-                    dataKey="week" 
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#e5e7eb"
+                    className="dark:stroke-gray-600"
+                  />
+                  <XAxis
+                    dataKey="week"
                     tick={{ fontSize: 12, fill: 'currentColor' }}
                     className="text-gray-600 dark:text-gray-400"
                   />
-                  <YAxis 
-                    domain={[1, 10]} 
+                  <YAxis
+                    domain={[1, 10]}
                     tick={{ fontSize: 12, fill: 'currentColor' }}
                     className="text-gray-600 dark:text-gray-400"
                   />
@@ -431,7 +530,9 @@ export default function AnalyticsPage() {
           {/* Mood Distribution */}
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="text-lg text-gray-900 dark:text-gray-100">התפלגות מצב רוח</CardTitle>
+              <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
+                התפלגות מצב רוח
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
@@ -446,7 +547,10 @@ export default function AnalyticsPage() {
                     label={({ mood, percentage }) => `${mood}: ${percentage}%`}
                   >
                     {analyticsData.moodDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={pieColors[index % pieColors.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -470,20 +574,22 @@ export default function AnalyticsPage() {
                 <div
                   key={index}
                   className={`p-3 rounded-lg border ${
-                    insight.severity === 'success' 
-                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                    insight.severity === 'success'
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
                       : insight.severity === 'warning'
-                      ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-                      : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+                        : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                   }`}
                 >
-                  <p className={`text-sm ${
-                    insight.severity === 'success' 
-                      ? 'text-green-700 dark:text-green-300' 
-                      : insight.severity === 'warning'
-                      ? 'text-yellow-700 dark:text-yellow-300'
-                      : 'text-blue-700 dark:text-blue-300'
-                  }`}>
+                  <p
+                    className={`text-sm ${
+                      insight.severity === 'success'
+                        ? 'text-green-700 dark:text-green-300'
+                        : insight.severity === 'warning'
+                          ? 'text-yellow-700 dark:text-yellow-300'
+                          : 'text-blue-700 dark:text-blue-300'
+                    }`}
+                  >
                     {insight.message}
                   </p>
                 </div>

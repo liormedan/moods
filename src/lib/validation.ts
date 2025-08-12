@@ -47,9 +47,7 @@ export const DateRangeSchema = z
   });
 
 // Period validation
-export const PeriodSchema = z.enum(['week', 'month', 'quarter'], {
-  errorMap: () => ({ message: 'תקופה חייבת להיות week, month או quarter' }),
-});
+export const PeriodSchema = z.enum(['week', 'month', 'quarter']);
 
 /**
  * Validation helper functions
@@ -155,7 +153,7 @@ export function validateWithSchema<T>(
 ): T {
   const result = schema.safeParse(data);
   if (!result.success) {
-    const firstError = result.error.errors[0];
+    const firstError = result.error.issues[0];
     throw new Error(errorMessage || firstError.message);
   }
   return result.data;

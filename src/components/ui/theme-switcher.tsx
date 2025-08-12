@@ -12,7 +12,11 @@ export function ThemeSwitcher() {
   };
 
   const getIcon = () => {
-    return theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />;
+    return theme === 'light' ? (
+      <Moon className="h-4 w-4" />
+    ) : (
+      <Sun className="h-4 w-4" />
+    );
   };
 
   const getLabel = () => {

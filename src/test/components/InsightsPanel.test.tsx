@@ -298,9 +298,3 @@ describe('InsightsPanel', () => {
     });
   });
 });
-
-
-
-
-
-

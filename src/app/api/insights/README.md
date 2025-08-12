@@ -280,4 +280,3 @@ npm test -- --testPathPattern=insights  # Run insights-specific tests
 - **External Integrations**: Weather, calendar, and activity data
 - **Proactive Alerts**: Push notifications for critical insights
 - **Insight Analytics**: Track insight effectiveness and user engagement
-

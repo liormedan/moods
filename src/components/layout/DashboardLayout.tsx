@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import Sidebar from './Sidebar';
 import { Button } from '@/components/ui/button';
 import { Menu, X, LogOut, User } from 'lucide-react';
@@ -53,9 +54,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 >
                   <Menu className="h-6 w-6" />
                 </Button>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mr-4">
+                <Link href="/dashboard" className="text-xl font-semibold text-gray-900 dark:text-gray-100 mr-4 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                   Moods Dashboard
-                </h1>
+                </Link>
               </div>
 
               <div className="flex items-center space-x-4">
@@ -80,9 +81,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Page content */}
         <main className="flex-1 overflow-auto">
-          <div className="p-4 lg:p-6">
-            {children}
-          </div>
+          <div className="p-4 lg:p-6">{children}</div>
         </main>
       </div>
 

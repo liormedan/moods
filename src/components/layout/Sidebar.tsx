@@ -125,7 +125,7 @@ const sidebarSections: SidebarSection[] = [
       },
       {
         title: 'דוחות התקדמות',
-        href: '/dashboard/reports',
+        href: '/dashboard/progress-reports',
         icon: FileText,
         description: 'סיכומים ודוחות מפורטים',
       },
@@ -177,10 +177,15 @@ export default function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className={cn('flex flex-col h-full bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700', className)}>
+    <div
+      className={cn(
+        'flex flex-col h-full bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700',
+        className
+      )}
+    >
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center space-x-2">
+        <Link href="/dashboard" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
             <Brain className="w-5 h-5 text-white" />
           </div>
@@ -188,9 +193,11 @@ export default function Sidebar({ className }: SidebarProps) {
             <h2 className="text-base font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Moods
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">מעקב בריאות נפשית</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              מעקב בריאות נפשית
+            </p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Navigation */}
@@ -247,7 +254,7 @@ export default function Sidebar({ className }: SidebarProps) {
         <div className="flex justify-center">
           <ThemeSwitcher />
         </div>
-        
+
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-3">
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">

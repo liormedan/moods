@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Save theme to localStorage and apply to document
     localStorage.setItem('theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
-    
+
     // Apply dark class for Tailwind dark mode
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');

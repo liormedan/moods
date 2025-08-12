@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
-    
+
     // Mock user ID for demo
     const userId = 'demo-user';
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
-    
+
     // Mock user ID for demo
     const userId = 'demo-user';
 
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Invalid input',
-          details: validationResult.error.errors,
+          details: validationResult.error.issues,
         },
         { status: 400 }
       );
@@ -169,7 +169,7 @@ async function generateInsights(userId: string) {
 // Analyze mood data and generate relevant insights
 async function analyzeMoodDataAndGenerateInsights(
   userId: string,
-  moodEntries: Array<{ moodValue: number; date: Date; notes?: string }>
+  moodEntries: Array<{ moodValue: number; date: Date; notes?: string | null }>
 ) {
   const insights: any[] = [];
 
@@ -325,4 +325,3 @@ async function analyzeMoodDataAndGenerateInsights(
 
   return createdInsights;
 }
-
