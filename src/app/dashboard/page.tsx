@@ -19,6 +19,9 @@ import {
   TrendingUp,
   RefreshCw,
   AlertCircle,
+  Settings,
+  User,
+  ChevronDown,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
@@ -215,16 +218,38 @@ export default function DashboardPage() {
               </p>
             )}
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
-            />
-            <span>רענן</span>
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => {
+                const menu = document.getElementById('profile-menu');
+                if (menu) {
+                  menu.classList.toggle('hidden');
+                }
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              <span>הגדרות</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            
+            <div id="profile-menu" className="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+              <button
+                onClick={() => window.location.href = '/dashboard/profile'}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-md flex items-center space-x-2"
+              >
+                <User className="w-4 h-4" />
+                <span>פרופיל</span>
+              </button>
+              <button
+                onClick={() => window.location.href = '/dashboard/settings'}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-md flex items-center space-x-2"
+              >
+                <Settings className="w-4 h-4" />
+                <span>הגדרות</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Enhanced Stats Grid */}
@@ -420,7 +445,7 @@ export default function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <>
+                <div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       תובנות זמינות
@@ -456,7 +481,7 @@ export default function DashboardPage() {
                       </Badge>
                     </div>
                   )}
-                </>
+                </div>
               </CardContent>
             </Card>
 

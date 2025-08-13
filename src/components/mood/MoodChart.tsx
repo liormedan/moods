@@ -321,7 +321,7 @@ export default function MoodChart({ onDataLoad, onError }: MoodChartProps) {
             </div>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={400}>
+          <ResponsiveContainer key="mood-chart" width="100%" height={400}>
             {chartType === 'line' ? (
               <LineChart
                 data={Array.isArray(moodData) ? moodData : []}

@@ -34,14 +34,20 @@ if (typeof window !== 'undefined') {
 }
 export { analytics };
 
-// Connect to emulators in development
-if (process.env.NODE_ENV === 'development') {
+// Connect to emulators in development when explicitly enabled
+if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_FIREBASE_USE_EMULATOR === 'true') {
   try {
-    connectAuthEmulator(auth, 'http://localhost:9099');
-    connectFirestoreEmulator(db, 'localhost', 8080);
-    connectStorageEmulator(storage, 'localhost', 9199);
+    const authEmulatorUrl = process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL || 'http://localhost:9099';
+    const firestoreEmulatorUrl = process.env.NEXT_PUBLIC_FIREBASE_FIRESTORE_EMULATOR_URL || 'http://localhost:8080';
+    const storageEmulatorUrl = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_URL || 'http://localhost:9199';
+    
+    console.log('Connecting to Firebase emulators...');
+    connectAuthEmulator(auth, authEmulatorUrl.replace('http://', ''));
+    connectFirestoreEmulator(db, firestoreEmulatorUrl.replace('http://', '').split(':')[0], parseInt(firestoreEmulatorUrl.split(':')[1]));
+    connectStorageEmulator(storage, storageEmulatorUrl.replace('http://', '').split(':')[0], parseInt(storageEmulatorUrl.split(':')[1]));
+    console.log('Firebase emulators connected successfully');
   } catch (error) {
-    console.log('Firebase emulators already connected');
+    console.log('Firebase emulators already connected or failed to connect:', error);
   }
 }
 

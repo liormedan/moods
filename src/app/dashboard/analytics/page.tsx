@@ -390,8 +390,8 @@ export default function AnalyticsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={400}>
-              <>
+            <ResponsiveContainer key="analytics-chart" width="100%" height={400}>
+              <div>
                 {chartType === 'line' && (
                   <LineChart data={analyticsData.dailyMoods}>
                     <CartesianGrid
@@ -488,7 +488,7 @@ export default function AnalyticsPage() {
                     <Bar dataKey="mood" fill="#3b82f6" />
                   </BarChart>
                 )}
-              </>
+              </div>
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -503,7 +503,7 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer key="weekly-chart" width="100%" height={250}>
                 <BarChart data={analyticsData.weeklyAverages}>
                   <CartesianGrid
                     strokeDasharray="3 3"
@@ -535,7 +535,7 @@ export default function AnalyticsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer key="pie-chart" width="100%" height={250}>
                 <PieChart>
                   <Pie
                     data={analyticsData.moodDistribution}
