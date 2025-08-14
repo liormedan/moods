@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  addDoc, 
+  deleteDoc, 
+  writeBatch, 
+  Timestamp 
+} from 'firebase/firestore';
 import { z } from 'zod';
 
 // Validation schema for bulk mood entries
@@ -54,20 +64,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for existing entries for these dates
-    const existingEntries = await prisma.moodEntry.findMany({
-      where: {
-        userId: (session as any).user.id,
-        date: {
-          in: dates.map((date) => new Date(date)),
-        },
-      },
-      select: { date: true },
-    });
-
-    if (existingEntries.length > 0) {
-      const existingDates = existingEntries.map(
-        (entry) => entry.date.toISOString().split('T')[0]
-      );
+    const existingQuery = query(
+      collection(db, 'mood_entries'),
+      where('userId', '==', (session as any).user.id),
+      where('date', 'in', dates.map((date) => Timestamp.fromDate(new Date(date))))
+    );
+    
+    const existingSnapshot = await getDocs(existingQuery);
+    if (!existingSnapshot.empty) {
+      const existingDates = existingSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return data.date.toDate().toISOString().split('T')[0];
+      });
       return NextResponse.json(
         {
           error: 'Some dates already have mood entries',
@@ -77,27 +85,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create all mood entries in a transaction
-    const createdEntries = await prisma.$transaction(
-      entries.map((entry) =>
-        prisma.moodEntry.create({
-          data: {
-            userId: (session as any).user.id,
-            moodValue: entry.moodValue,
-            notes: entry.notes,
-            date: new Date(entry.date),
-          },
-          select: {
-            id: true,
-            moodValue: true,
-            notes: true,
-            date: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        })
-      )
-    );
+    // Create all mood entries using batch
+    const batch = writeBatch(db);
+    const createdEntries = [];
+
+    for (const entry of entries) {
+      const moodEntryData = {
+        userId: (session as any).user.id,
+        moodValue: entry.moodValue,
+        notes: entry.notes || '',
+        date: Timestamp.fromDate(new Date(entry.date)),
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      };
+
+      const docRef = doc(collection(db, 'mood_entries'));
+      batch.set(docRef, moodEntryData);
+      
+      createdEntries.push({
+        id: docRef.id,
+        moodValue: entry.moodValue,
+        notes: entry.notes || '',
+        date: entry.date,
+        createdAt: moodEntryData.createdAt.toDate().toISOString(),
+        updatedAt: moodEntryData.updatedAt.toDate().toISOString(),
+      });
+    }
+
+    await batch.commit();
 
     return NextResponse.json(
       {
@@ -136,7 +151,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    let whereClause: any = { userId: (session as any).user.id };
+    let deleteQuery;
 
     if (ids) {
       // Delete by specific IDs
@@ -147,7 +162,20 @@ export async function DELETE(request: NextRequest) {
           { status: 400 }
         );
       }
-      whereClause.id = { in: idArray };
+      
+      // Delete documents by IDs
+      const batch = writeBatch(db);
+      for (const id of idArray) {
+        const docRef = doc(db, 'mood_entries', id);
+        batch.delete(docRef);
+      }
+      
+      await batch.commit();
+      
+      return NextResponse.json({
+        message: `Successfully deleted ${idArray.length} mood entries`,
+        deletedCount: idArray.length,
+      });
     } else if (startDate && endDate) {
       // Delete by date range
       const start = new Date(startDate);
@@ -160,10 +188,12 @@ export async function DELETE(request: NextRequest) {
         );
       }
 
-      whereClause.date = {
-        gte: start,
-        lte: end,
-      };
+      deleteQuery = query(
+        collection(db, 'mood_entries'),
+        where('userId', '==', (session as any).user.id),
+        where('date', '>=', Timestamp.fromDate(start)),
+        where('date', '<=', Timestamp.fromDate(end))
+      );
     } else {
       return NextResponse.json(
         {
@@ -174,23 +204,30 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Get count of entries to be deleted
-    const countToDelete = await prisma.moodEntry.count({ where: whereClause });
+    if (deleteQuery) {
+      // Get entries to delete
+      const deleteSnapshot = await getDocs(deleteQuery);
+      
+      if (deleteSnapshot.empty) {
+        return NextResponse.json(
+          { error: 'No mood entries found to delete' },
+          { status: 404 }
+        );
+      }
 
-    if (countToDelete === 0) {
-      return NextResponse.json(
-        { error: 'No mood entries found to delete' },
-        { status: 404 }
-      );
+      // Delete entries using batch
+      const batch = writeBatch(db);
+      deleteSnapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      
+      await batch.commit();
+
+      return NextResponse.json({
+        message: `Successfully deleted ${deleteSnapshot.docs.length} mood entries`,
+        deletedCount: deleteSnapshot.docs.length,
+      });
     }
-
-    // Delete entries
-    await prisma.moodEntry.deleteMany({ where: whereClause });
-
-    return NextResponse.json({
-      message: `Successfully deleted ${countToDelete} mood entries`,
-      deletedCount: countToDelete,
-    });
   } catch (error) {
     console.error('Error deleting bulk mood entries:', error);
     return NextResponse.json(

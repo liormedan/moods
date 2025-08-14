@@ -1,0 +1,5 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "SKIP_API_ROUTES=true npm run build",
+  "installCommand": "npm install"
+}

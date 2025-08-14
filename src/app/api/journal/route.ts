@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, addDoc, getCountFromServer, orderBy, limit as firestoreLimit, Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
 // Validation schema for journal entry
@@ -31,58 +32,75 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Build where clause
-    const where: any = { userId: userId };
+    // Build Firebase query
+    let journalQuery = query(
+      collection(db, 'journal_entries'),
+      where('userId', '==', userId)
+    );
 
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { content: { contains: search, mode: 'insensitive' } },
-        { tags: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-
-    if (tag && tag !== 'all') {
-      where.tags = { contains: tag };
-    }
-
-    // Build orderBy clause
-    let orderBy: any = { createdAt: 'desc' };
-    if (sortBy === 'title') {
-      orderBy = { title: 'asc' };
-    } else if (sortBy === 'mood') {
-      orderBy = { mood: 'desc' };
-    }
-
-    const journalEntries = await prisma.journalEntry.findMany({
-      where,
-      orderBy,
-      take: Math.min(limit, 100), // Cap at 100 entries
-      skip: offset,
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        mood: true,
-        tags: true,
-        template: true,
-        isFavorite: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    // Parse tags from JSON string
-    const formattedEntries = journalEntries.map((entry) => ({
-      ...entry,
-      tags: entry.tags ? JSON.parse(entry.tags) : [],
-    }));
+    // Note: Firebase doesn't support OR queries with multiple fields easily
+    // For demo purposes, we'll fetch all entries and filter in memory
+    // In production, you'd use Firebase's full-text search or Algolia
 
     // Get total count for pagination
-    const totalCount = await prisma.journalEntry.count({ where });
+    const countQuery = query(
+      collection(db, 'journal_entries'),
+      where('userId', '==', userId)
+    );
+    const countSnapshot = await getCountFromServer(countQuery);
+    const totalCount = countSnapshot.data().count;
+
+    // Get journal entries from Firebase
+    journalQuery = query(
+      journalQuery,
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(Math.min(limit, 100)) // Cap at 100 entries
+    );
+
+    const journalSnapshot = await getDocs(journalQuery);
+    let journalEntries = journalSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title,
+        content: data.content,
+        mood: data.mood,
+        tags: data.tags || [],
+        template: data.template,
+        isFavorite: data.isFavorite || false,
+        createdAt: data.createdAt.toDate().toISOString(),
+        updatedAt: data.updatedAt.toDate().toISOString(),
+      };
+    });
+
+    // Apply search filter in memory (for demo)
+    if (search) {
+      journalEntries = journalEntries.filter(entry => 
+        entry.title.toLowerCase().includes(search.toLowerCase()) ||
+        entry.content.toLowerCase().includes(search.toLowerCase()) ||
+        entry.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
+      );
+    }
+
+    // Apply tag filter in memory (for demo)
+    if (tag && tag !== 'all') {
+      journalEntries = journalEntries.filter(entry => 
+        entry.tags.includes(tag)
+      );
+    }
+
+    // Apply sorting in memory (for demo)
+    if (sortBy === 'title') {
+      journalEntries.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === 'mood') {
+      journalEntries.sort((a, b) => (b.mood || 0) - (a.mood || 0));
+    }
+
+    // Apply pagination in memory (for demo)
+    journalEntries = journalEntries.slice(offset, offset + limit);
 
     return NextResponse.json({
-      data: formattedEntries,
+      data: journalEntries,
       pagination: {
         total: totalCount,
         limit,
@@ -129,39 +147,36 @@ export async function POST(request: NextRequest) {
       validationResult.data;
 
     // Create new journal entry
-    const journalEntry = await prisma.journalEntry.create({
-      data: {
-        userId: userId,
-        title,
-        content,
-        mood,
-        tags: JSON.stringify(tags), // Store tags as JSON string
-        template,
-        isFavorite,
-      },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        mood: true,
-        tags: true,
-        template: true,
-        isFavorite: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const journalData = {
+      userId: userId,
+      title,
+      content,
+      mood,
+      tags: tags, // Store tags as array
+      template,
+      isFavorite,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
 
-    // Parse tags for response
-    const formattedEntry = {
-      ...journalEntry,
-      tags: journalEntry.tags ? JSON.parse(journalEntry.tags) : [],
+    const docRef = await addDoc(collection(db, 'journal_entries'), journalData);
+
+    const journalEntry = {
+      id: docRef.id,
+      title,
+      content,
+      mood,
+      tags: tags,
+      template,
+      isFavorite,
+      createdAt: journalData.createdAt.toDate().toISOString(),
+      updatedAt: journalData.updatedAt.toDate().toISOString(),
     };
 
     return NextResponse.json(
       {
         message: 'Journal entry created successfully',
-        data: formattedEntry,
+        data: journalEntry,
       },
       { status: 201 }
     );

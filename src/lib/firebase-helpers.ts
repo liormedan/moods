@@ -1,142 +1,199 @@
-// Mock Firebase helpers - Firebase is not configured
-// In a real app, you would import from './firebase' and use firebase/firestore
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  writeBatch,
+  runTransaction,
+  onSnapshot,
+  DocumentData,
+  QueryDocumentSnapshot,
+  Unsubscribe,
+  Timestamp,
+} from 'firebase/firestore';
+import { db } from './firebase';
 
-// Mock types
-export type Timestamp = Date;
-export type DocumentData = any;
-export type QueryDocumentSnapshot = any;
-export type Unsubscribe = () => void;
-
-// Helper function to convert Firestore Timestamp to Date
-export const timestampToDate = (timestamp: Timestamp | null): Date | null => {
-  return timestamp ? new Date(timestamp) : null;
-};
-
-// Helper function to convert Date to Firestore Timestamp
-export const dateToTimestamp = (date: Date): Timestamp => {
-  return date;
-};
-
-// Generic CRUD operations
-export class FirebaseService<T> {
-  private collectionName: string;
-
-  constructor(collectionName: string) {
-    this.collectionName = collectionName;
-  }
+// Firebase service class for CRUD operations
+export class FirebaseService<T extends DocumentData> {
+  constructor(private collectionName: string) {}
 
   // Create a new document
-  async create(
-    data: Omit<T, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<string> {
-    // Mock implementation
-    const mockId = Math.random().toString(36).substr(2, 9);
-    console.log(
-      `Mock Firebase: Creating ${this.collectionName} with ID ${mockId}`,
-      data
-    );
-    return mockId;
+  async create(data: Omit<T, 'id'>): Promise<string> {
+    try {
+      const docRef = await addDoc(collection(db, this.collectionName), {
+        ...data,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      });
+      console.log(`✅ Firebase: Created ${this.collectionName} with ID ${docRef.id}`);
+      return docRef.id;
+    } catch (error) {
+      console.error(`❌ Firebase: Error creating ${this.collectionName}:`, error);
+      throw error;
+    }
   }
 
   // Get a document by ID
   async getById(id: string): Promise<T | null> {
-    // Mock implementation
-    console.log(`Mock Firebase: Getting ${this.collectionName} with ID ${id}`);
-    return null;
+    try {
+      const docRef = doc(db, this.collectionName, id);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data() as T;
+        console.log(`✅ Firebase: Retrieved ${this.collectionName} with ID ${id}`);
+        return { ...data, id: docSnap.id } as T;
+      } else {
+        console.log(`ℹ️ Firebase: ${this.collectionName} with ID ${id} not found`);
+        return null;
+      }
+    } catch (error) {
+      console.error(`❌ Firebase: Error getting ${this.collectionName} with ID ${id}:`, error);
+      throw error;
+    }
   }
 
   // Update a document
-  async update(
-    id: string,
-    data: Partial<Omit<T, 'id' | 'createdAt'>>
-  ): Promise<void> {
-    // Mock implementation
-    console.log(
-      `Mock Firebase: Updating ${this.collectionName} with ID ${id}`,
-      data
-    );
+  async update(id: string, data: Partial<T>): Promise<void> {
+    try {
+      const docRef = doc(db, this.collectionName, id);
+      await updateDoc(docRef, {
+        ...data,
+        updatedAt: Timestamp.now(),
+      });
+      console.log(`✅ Firebase: Updated ${this.collectionName} with ID ${id}`);
+    } catch (error) {
+      console.error(`❌ Firebase: Error updating ${this.collectionName} with ID ${id}:`, error);
+      throw error;
+    }
   }
 
   // Delete a document
   async delete(id: string): Promise<void> {
-    // Mock implementation
-    console.log(`Mock Firebase: Deleting ${this.collectionName} with ID ${id}`);
+    try {
+      const docRef = doc(db, this.collectionName, id);
+      await deleteDoc(docRef);
+      console.log(`✅ Firebase: Deleted ${this.collectionName} with ID ${id}`);
+    } catch (error) {
+      console.error(`❌ Firebase: Error deleting ${this.collectionName} with ID ${id}:`, error);
+      throw error;
+    }
   }
 
-  // Get documents with filters
-  async getWhere(field: string, operator: string, value: any): Promise<T[]> {
-    // Mock implementation
-    console.log(
-      `Mock Firebase: Getting ${this.collectionName} where ${field} ${operator} ${value}`
-    );
-    return [];
+  // Query documents with filters
+  async query(filters: Array<{ field: string; operator: any; value: any }> = []): Promise<T[]> {
+    try {
+      let q: any = collection(db, this.collectionName);
+      
+      // Apply filters
+      filters.forEach(({ field, operator, value }) => {
+        q = query(q, where(field, operator, value));
+      });
+      
+      const querySnapshot = await getDocs(q);
+      const results: T[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data() as T;
+        results.push({ ...data, id: doc.id } as T);
+      });
+      
+      console.log(`✅ Firebase: Retrieved ${results.length} ${this.collectionName} documents`);
+      return results;
+    } catch (error) {
+      console.error(`❌ Firebase: Error querying ${this.collectionName}:`, error);
+      throw error;
+    }
   }
 
   // Get documents with pagination
-  async getPaginated(
-    limit: number = 20,
-    startAfter?: QueryDocumentSnapshot
-  ): Promise<T[]> {
-    // Mock implementation
-    console.log(
-      `Mock Firebase: Getting ${this.collectionName} with limit ${limit}`
-    );
-    return [];
+  async getWithPagination(limitCount: number = 10, lastDoc?: QueryDocumentSnapshot): Promise<T[]> {
+    try {
+      let q: any = collection(db, this.collectionName);
+      q = query(q, orderBy('createdAt', 'desc'), limit(limitCount));
+      
+      if (lastDoc) {
+        q = query(q, startAfter(lastDoc));
+      }
+      
+      const querySnapshot = await getDocs(q);
+      const results: T[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data() as T;
+        results.push({ ...data, id: doc.id } as T);
+      });
+      
+      console.log(`✅ Firebase: Retrieved ${results.length} ${this.collectionName} documents with pagination`);
+      return results;
+    } catch (error) {
+      console.error(`❌ Firebase: Error getting ${this.collectionName} with pagination:`, error);
+      throw error;
+    }
   }
 
-  // Listen to real-time updates
-  onSnapshot(
-    callback: (data: T[]) => void,
-    errorCallback?: (error: Error) => void
-  ): Unsubscribe {
-    // Mock implementation
-    console.log(
-      `Mock Firebase: Setting up snapshot listener for ${this.collectionName}`
-    );
-    return () => {
-      console.log(`Mock Firebase: Unsubscribing from ${this.collectionName}`);
-    };
+  // Set up real-time listener
+  onSnapshot(callback: (docs: T[]) => void): Unsubscribe {
+    try {
+      const q: any = collection(db, this.collectionName);
+      return onSnapshot(q, (querySnapshot: any) => {
+        const results: T[] = [];
+        querySnapshot.forEach((doc: any) => {
+          const data = doc.data() as T;
+          results.push({ ...data, id: doc.id } as T);
+        });
+        callback(results);
+      });
+    } catch (error) {
+      console.error(`❌ Firebase: Error setting up snapshot listener for ${this.collectionName}:`, error);
+      throw error;
+    }
+  }
+
+  // Batch operations
+  async batchUpdate(updates: Array<{ id: string; data: Partial<T> }>): Promise<void> {
+    try {
+      const batch = writeBatch(db);
+      
+      updates.forEach(({ id, data }) => {
+        const docRef = doc(db, this.collectionName, id);
+        batch.update(docRef, {
+          ...data,
+          updatedAt: Timestamp.now(),
+        });
+      });
+      
+      await batch.commit();
+      console.log(`✅ Firebase: Batch updated ${updates.length} ${this.collectionName} documents`);
+    } catch (error) {
+      console.error(`❌ Firebase: Error batch updating ${this.collectionName}:`, error);
+      throw error;
+    }
+  }
+
+  // Transaction operations
+  async runTransaction<TResult>(
+    updateFunction: (transaction: any) => Promise<TResult>
+  ): Promise<TResult> {
+    try {
+      return await runTransaction(db, updateFunction);
+    } catch (error) {
+      console.error(`❌ Firebase: Error running transaction for ${this.collectionName}:`, error);
+      throw error;
+    }
   }
 }
 
-// Export mock functions for compatibility
-export const collection = (db: any, collectionName: string) => collectionName;
-export const doc = (db: any, collectionName: string, id: string) =>
-  `${collectionName}/${id}`;
-export const getDoc = async (docRef: any) => ({
-  exists: () => false,
-  data: () => null,
-});
-export const getDocs = async (query: any) => ({ docs: [] });
-export const addDoc = async (collectionRef: any, data: any) => ({
-  id: Math.random().toString(36).substr(2, 9),
-});
-export const updateDoc = async (docRef: any, data: any) => Promise.resolve();
-export const deleteDoc = async (docRef: any) => Promise.resolve();
-export const query = (collectionRef: any, ...constraints: any[]) =>
-  collectionRef;
-export const where = (field: string, operator: string, value: any) => ({
-  field,
-  operator,
-  value,
-});
-export const orderBy = (field: string, direction?: 'asc' | 'desc') => ({
-  field,
-  direction: direction || 'asc',
-});
-export const limit = (max: number) => ({ max });
-export const startAfter = (snapshot: any) => ({ snapshot });
-export const writeBatch = (db: any) => ({
-  set: () => ({}),
-  update: () => ({}),
-  delete: () => ({}),
-  commit: () => Promise.resolve(),
-});
-export const runTransaction = async (db: any, updateFunction: any) =>
-  Promise.resolve();
-export const onSnapshot = (query: any, callback: any, errorCallback?: any) => {
-  console.log('Mock Firebase: Setting up snapshot listener');
-  return () => {
-    console.log('Mock Firebase: Unsubscribing from snapshot');
-  };
-};
+// Export Firebase types
+export type { DocumentData, QueryDocumentSnapshot, Unsubscribe, Timestamp };
+
+// Export Firebase service
+export default FirebaseService;

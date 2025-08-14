@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
 // Validation schema for journal entry update
@@ -36,39 +37,30 @@ export async function GET(
       );
     }
 
-    const journalEntry = await prisma.journalEntry.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        mood: true,
-        tags: true,
-        template: true,
-        isFavorite: true,
-        createdAt: true,
-        updatedAt: true,
-        userId: true,
-      },
-    });
+    const journalDoc = await getDoc(doc(db, 'journal_entries', id));
 
-    if (!journalEntry) {
+    if (!journalDoc.exists()) {
       return NextResponse.json(
         { error: 'Journal entry not found' },
         { status: 404 }
       );
     }
 
+    const journalData = journalDoc.data();
+
     // Check if user owns this journal entry
-    if (journalEntry.userId !== userId) {
+    if (journalData.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Remove userId from response and parse tags
-    const { userId: _, ...entryData } = journalEntry;
+    // Remove userId from response and format tags
+    const { userId: _, ...entryData } = journalData;
     const formattedEntry = {
+      id: journalDoc.id,
       ...entryData,
-      tags: entryData.tags ? JSON.parse(entryData.tags) : [],
+      tags: entryData.tags || [],
+      createdAt: entryData.createdAt.toDate().toISOString(),
+      updatedAt: entryData.updatedAt.toDate().toISOString(),
     };
 
     return NextResponse.json({ data: formattedEntry });
@@ -120,49 +112,43 @@ export async function PUT(
     }
 
     // Check if journal entry exists and user owns it
-    const existingEntry = await prisma.journalEntry.findUnique({
-      where: { id },
-      select: { userId: true },
-    });
+    const existingDoc = await getDoc(doc(db, 'journal_entries', id));
 
-    if (!existingEntry) {
+    if (!existingDoc.exists()) {
       return NextResponse.json(
         { error: 'Journal entry not found' },
         { status: 404 }
       );
     }
 
-    if (existingEntry.userId !== userId) {
+    const existingData = existingDoc.data();
+    if (existingData.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Prepare update data
-    const updateData: any = { ...validationResult.data };
-    if (updateData.tags) {
-      updateData.tags = JSON.stringify(updateData.tags);
-    }
+    const updateData: any = { 
+      ...validationResult.data,
+      updatedAt: Timestamp.now()
+    };
 
     // Update journal entry
-    const updatedEntry = await prisma.journalEntry.update({
-      where: { id },
-      data: updateData,
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        mood: true,
-        tags: true,
-        template: true,
-        isFavorite: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    await updateDoc(doc(db, 'journal_entries', id), updateData);
 
-    // Parse tags for response
+    // Get updated entry
+    const updatedDoc = await getDoc(doc(db, 'journal_entries', id));
+    const updatedData = updatedDoc.data();
+
     const formattedEntry = {
-      ...updatedEntry,
-      tags: updatedEntry.tags ? JSON.parse(updatedEntry.tags) : [],
+      id: updatedDoc.id,
+      title: updatedData.title,
+      content: updatedData.content,
+      mood: updatedData.mood,
+      tags: updatedData.tags || [],
+      template: updatedData.template,
+      isFavorite: updatedData.isFavorite || false,
+      createdAt: updatedData.createdAt.toDate().toISOString(),
+      updatedAt: updatedData.updatedAt.toDate().toISOString(),
     };
 
     return NextResponse.json({
@@ -203,26 +189,22 @@ export async function DELETE(
     }
 
     // Check if journal entry exists and user owns it
-    const existingEntry = await prisma.journalEntry.findUnique({
-      where: { id },
-      select: { userId: true },
-    });
+    const existingDoc = await getDoc(doc(db, 'journal_entries', id));
 
-    if (!existingEntry) {
+    if (!existingDoc.exists()) {
       return NextResponse.json(
         { error: 'Journal entry not found' },
         { status: 404 }
       );
     }
 
-    if (existingEntry.userId !== userId) {
+    const existingData = existingDoc.data();
+    if (existingData.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Delete journal entry
-    await prisma.journalEntry.delete({
-      where: { id },
-    });
+    await deleteDoc(doc(db, 'journal_entries', id));
 
     return NextResponse.json({
       message: 'Journal entry deleted successfully',

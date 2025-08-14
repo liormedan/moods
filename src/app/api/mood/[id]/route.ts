@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  Timestamp 
+} from 'firebase/firestore';
 import { z } from 'zod';
 
 // Validation schema for mood update
@@ -32,33 +39,32 @@ export async function GET(
       );
     }
 
-    const moodEntry = await prisma.moodEntry.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        moodValue: true,
-        notes: true,
-        date: true,
-        createdAt: true,
-        updatedAt: true,
-        userId: true,
-      },
-    });
+    const moodEntryRef = doc(db, 'mood_entries', id);
+    const moodEntrySnap = await getDoc(moodEntryRef);
 
-    if (!moodEntry) {
+    if (!moodEntrySnap.exists()) {
       return NextResponse.json(
         { error: 'Mood entry not found' },
         { status: 404 }
       );
     }
 
+    const moodEntryData = moodEntrySnap.data();
+
     // Check if user owns this mood entry
-    if (moodEntry.userId !== userId) {
+    if (moodEntryData.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Remove userId from response for security
-    const { userId: _, ...entryData } = moodEntry;
+    // Format the data
+    const entryData = {
+      id: moodEntrySnap.id,
+      moodValue: moodEntryData.moodValue,
+      notes: moodEntryData.notes || '',
+      date: moodEntryData.date.toDate().toISOString().split('T')[0],
+      createdAt: moodEntryData.createdAt.toDate().toISOString(),
+      updatedAt: moodEntryData.updatedAt.toDate().toISOString(),
+    };
 
     return NextResponse.json({ data: entryData });
   } catch (error) {
@@ -107,35 +113,41 @@ export async function PUT(
     }
 
     // Check if mood entry exists and user owns it
-    const existingEntry = await prisma.moodEntry.findUnique({
-      where: { id },
-      select: { userId: true },
-    });
+    const existingEntryRef = doc(db, 'mood_entries', id);
+    const existingEntrySnap = await getDoc(existingEntryRef);
 
-    if (!existingEntry) {
+    if (!existingEntrySnap.exists()) {
       return NextResponse.json(
         { error: 'Mood entry not found' },
         { status: 404 }
       );
     }
 
-    if (existingEntry.userId !== userId) {
+    const existingEntryData = existingEntrySnap.data();
+    if (existingEntryData.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Update mood entry
-    const updatedEntry = await prisma.moodEntry.update({
-      where: { id },
-      data: validationResult.data,
-      select: {
-        id: true,
-        moodValue: true,
-        notes: true,
-        date: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const updateData = {
+      ...validationResult.data,
+      updatedAt: Timestamp.now(),
+    };
+
+    await updateDoc(existingEntryRef, updateData);
+
+    // Get updated data
+    const updatedEntrySnap = await getDoc(existingEntryRef);
+    const updatedEntryData = updatedEntrySnap.data()!;
+
+    const updatedEntry = {
+      id: updatedEntrySnap.id,
+      moodValue: updatedEntryData.moodValue,
+      notes: updatedEntryData.notes || '',
+      date: updatedEntryData.date.toDate().toISOString().split('T')[0],
+      createdAt: updatedEntryData.createdAt.toDate().toISOString(),
+      updatedAt: updatedEntryData.updatedAt.toDate().toISOString(),
+    };
 
     return NextResponse.json({
       message: 'Mood entry updated successfully',
@@ -173,26 +185,23 @@ export async function DELETE(
     }
 
     // Check if mood entry exists and user owns it
-    const existingEntry = await prisma.moodEntry.findUnique({
-      where: { id },
-      select: { userId: true },
-    });
+    const existingEntryRef = doc(db, 'mood_entries', id);
+    const existingEntrySnap = await getDoc(existingEntryRef);
 
-    if (!existingEntry) {
+    if (!existingEntrySnap.exists()) {
       return NextResponse.json(
         { error: 'Mood entry not found' },
         { status: 404 }
       );
     }
 
-    if (existingEntry.userId !== userId) {
+    const existingEntryData = existingEntrySnap.data();
+    if (existingEntryData.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Delete mood entry
-    await prisma.moodEntry.delete({
-      where: { id },
-    });
+    await deleteDoc(existingEntryRef);
 
     return NextResponse.json({
       message: 'Mood entry deleted successfully',

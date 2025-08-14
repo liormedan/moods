@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, updateDoc, Timestamp } from 'firebase/firestore';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
@@ -36,26 +37,26 @@ export async function POST(request: NextRequest) {
     // Demo implementation - accept any token for demo user
     if (token === 'demo-reset-token') {
       // Find demo user
-      const user = await prisma.user.findUnique({
-        where: { email: 'demo@example.com' },
-      });
+      const usersRef = collection(db, 'users');
+      const userQuery = query(usersRef, where('email', '==', 'demo@example.com'));
+      const userSnapshot = await getDocs(userQuery);
 
-      if (!user) {
+      if (userSnapshot.empty) {
         return NextResponse.json({ error: 'משתמש לא נמצא' }, { status: 404 });
       }
+
+      const userDoc = userSnapshot.docs[0];
 
       // Hash new password
       const hashedPassword = await bcrypt.hash(password, 12);
 
       // Update user password
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          password: hashedPassword,
-          // In a real app, you would also clear the reset token here
-          // resetToken: null,
-          // resetTokenExpiry: null,
-        },
+      await updateDoc(userDoc.ref, {
+        password: hashedPassword,
+        updatedAt: Timestamp.now(),
+        // In a real app, you would also clear the reset token here
+        // resetToken: null,
+        // resetTokenExpiry: null,
       });
 
       return NextResponse.json({

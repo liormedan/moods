@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 
 interface ReportMetrics {
   moodImprovement: number;
@@ -57,52 +58,83 @@ export async function GET(request: NextRequest) {
     if (startDate) periodStart = new Date(startDate);
     if (endDate) periodEnd = new Date(endDate);
 
+    // Convert dates to Firebase Timestamps
+    const startTimestamp = Timestamp.fromDate(periodStart);
+    const endTimestamp = Timestamp.fromDate(periodEnd);
+
     // Get mood entries for the period
-    const moodEntries = await prisma.moodEntry.findMany({
-      where: {
-        userId: userId,
-        date: {
-          gte: periodStart,
-          lte: periodEnd,
-        },
-      },
-      orderBy: { date: 'asc' },
+    const moodQuery = query(
+      collection(db, 'mood_entries'),
+      where('userId', '==', userId),
+      where('date', '>=', startTimestamp),
+      where('date', '<=', endTimestamp)
+    );
+    const moodSnapshot = await getDocs(moodQuery);
+    const moodEntries = moodSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        ...data,
+        id: doc.id,
+        date: data.date.toDate(),
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      };
     });
 
     // Get journal entries for the period
-    const journalEntries = await prisma.journalEntry.findMany({
-      where: {
-        userId: userId,
-        createdAt: {
-          gte: periodStart,
-          lte: periodEnd,
-        },
-      },
-      orderBy: { createdAt: 'asc' },
+    const journalQuery = query(
+      collection(db, 'journal_entries'),
+      where('userId', '==', userId),
+      where('createdAt', '>=', startTimestamp),
+      where('createdAt', '<=', endTimestamp)
+    );
+    const journalSnapshot = await getDocs(journalQuery);
+    const journalEntries = journalSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        ...data,
+        id: doc.id,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      };
     });
 
     // Get breathing sessions for the period
-    const breathingSessions = await prisma.breathingSession.findMany({
-      where: {
-        userId: userId,
-        createdAt: {
-          gte: periodStart,
-          lte: periodEnd,
-        },
-      },
-      orderBy: { createdAt: 'asc' },
+    const breathingQuery = query(
+      collection(db, 'breathing_sessions'),
+      where('userId', '==', userId),
+      where('createdAt', '>=', startTimestamp),
+      where('createdAt', '<=', endTimestamp)
+    );
+    const breathingSnapshot = await getDocs(breathingQuery);
+    const breathingSessions = breathingSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        ...data,
+        id: doc.id,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      };
     });
 
     // Get goals for the period
-    const goals = await prisma.goal.findMany({
-      where: {
-        userId: userId,
-        createdAt: {
-          gte: periodStart,
-          lte: periodEnd,
-        },
-      },
-      orderBy: { createdAt: 'asc' },
+    const goalsQuery = query(
+      collection(db, 'goals'),
+      where('userId', '==', userId),
+      where('createdAt', '>=', startTimestamp),
+      where('createdAt', '<=', endTimestamp)
+    );
+    const goalsSnapshot = await getDocs(goalsQuery);
+    const goals = goalsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        ...data,
+        id: doc.id,
+        targetDate: data.targetDate.toDate(),
+        completedAt: data.completedAt ? data.completedAt.toDate() : null,
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      };
     });
 
     // Calculate metrics
@@ -134,14 +166,25 @@ export async function GET(request: NextRequest) {
     );
     const previousPeriodEnd = periodStart;
 
-    const previousMoodEntries = await prisma.moodEntry.findMany({
-      where: {
-        userId: userId,
-        date: {
-          gte: previousPeriodStart,
-          lte: previousPeriodEnd,
-        },
-      },
+    const previousStartTimestamp = Timestamp.fromDate(previousPeriodStart);
+    const previousEndTimestamp = Timestamp.fromDate(previousPeriodEnd);
+
+    const previousMoodQuery = query(
+      collection(db, 'mood_entries'),
+      where('userId', '==', userId),
+      where('date', '>=', previousStartTimestamp),
+      where('date', '<=', previousEndTimestamp)
+    );
+    const previousMoodSnapshot = await getDocs(previousMoodQuery);
+    const previousMoodEntries = previousMoodSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        ...data,
+        id: doc.id,
+        date: data.date.toDate(),
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      };
     });
 
     const previousMetrics = calculateMetrics(

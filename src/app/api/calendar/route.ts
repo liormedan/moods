@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, addDoc, updateDoc, Timestamp } from 'firebase/firestore';
 
 // GET /api/calendar - Get calendar events and mood data
 export async function GET(request: NextRequest) {
@@ -13,84 +14,114 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type'); // 'mood', 'activity', 'goal', 'reminder'
 
     // Build date filter
-    const dateFilter: any = {};
+    let startTimestamp = null;
+    let endTimestamp = null;
+    
     if (startDate) {
-      dateFilter.gte = new Date(startDate);
+      startTimestamp = Timestamp.fromDate(new Date(startDate));
     }
     if (endDate) {
-      dateFilter.lte = new Date(endDate);
+      endTimestamp = Timestamp.fromDate(new Date(endDate));
     }
 
     // Get mood entries
-    const moodEntries = await prisma.moodEntry.findMany({
-      where: {
-        userId: userId,
-        ...(Object.keys(dateFilter).length > 0 && { date: dateFilter }),
-      },
-      orderBy: { date: 'asc' },
-      select: {
-        id: true,
-        moodValue: true,
-        notes: true,
-        date: true,
-        createdAt: true,
-      },
+    let moodQuery = query(
+      collection(db, 'mood_entries'),
+      where('userId', '==', userId),
+      where('date', '>=', startTimestamp || Timestamp.fromDate(new Date('2020-01-01')))
+    );
+    
+    if (endTimestamp) {
+      moodQuery = query(moodQuery, where('date', '<=', endTimestamp));
+    }
+    
+    const moodSnapshot = await getDocs(moodQuery);
+    const moodEntries = moodSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        moodValue: data.moodValue,
+        notes: data.notes || '',
+        date: data.date.toDate(),
+        createdAt: data.createdAt.toDate(),
+      };
     });
 
     // Get journal entries (as activities)
-    const journalEntries = await prisma.journalEntry.findMany({
-      where: {
-        userId: userId,
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
-      },
-      orderBy: { createdAt: 'asc' },
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        mood: true,
-        tags: true,
-        template: true,
-        createdAt: true,
-      },
+    let journalQuery = query(
+      collection(db, 'journal_entries'),
+      where('userId', '==', userId),
+      where('createdAt', '>=', startTimestamp || Timestamp.fromDate(new Date('2020-01-01')))
+    );
+    
+    if (endTimestamp) {
+      journalQuery = query(journalQuery, where('createdAt', '<=', endTimestamp));
+    }
+    
+    const journalSnapshot = await getDocs(journalQuery);
+    const journalEntries = journalSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title,
+        content: data.content,
+        mood: data.mood,
+        tags: data.tags || [],
+        template: data.template,
+        createdAt: data.createdAt.toDate(),
+      };
     });
 
     // Get breathing sessions (as activities)
-    const breathingSessions = await prisma.breathingSession.findMany({
-      where: {
-        userId: userId,
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
-      },
-      orderBy: { createdAt: 'asc' },
-      select: {
-        id: true,
-        exerciseName: true,
-        duration: true,
-        cycles: true,
-        completed: true,
-        createdAt: true,
-      },
+    let breathingQuery = query(
+      collection(db, 'breathing_sessions'),
+      where('userId', '==', userId),
+      where('createdAt', '>=', startTimestamp || Timestamp.fromDate(new Date('2020-01-01')))
+    );
+    
+    if (endTimestamp) {
+      breathingQuery = query(breathingQuery, where('createdAt', '<=', endTimestamp));
+    }
+    
+    const breathingSnapshot = await getDocs(breathingQuery);
+    const breathingSessions = breathingSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        exerciseName: data.exerciseName,
+        duration: data.duration,
+        cycles: data.cycles,
+        completed: data.completed,
+        createdAt: data.createdAt.toDate(),
+      };
     });
 
     // Get goals
-    const goals = await prisma.goal.findMany({
-      where: {
-        userId: userId,
-        ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter }),
-      },
-      orderBy: { createdAt: 'asc' },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        category: true,
-        progress: true,
-        status: true,
-        priority: true,
-        targetDate: true,
-        completedAt: true,
-        createdAt: true,
-      },
+    let goalsQuery = query(
+      collection(db, 'goals'),
+      where('userId', '==', userId),
+      where('createdAt', '>=', startTimestamp || Timestamp.fromDate(new Date('2020-01-01')))
+    );
+    
+    if (endTimestamp) {
+      goalsQuery = query(goalsQuery, where('createdAt', '<=', endTimestamp));
+    }
+    
+    const goalsSnapshot = await getDocs(goalsQuery);
+    const goals = goalsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        progress: data.progress,
+        status: data.status,
+        priority: data.priority,
+        targetDate: data.targetDate.toDate(),
+        completedAt: data.completedAt ? data.completedAt.toDate() : null,
+        createdAt: data.createdAt.toDate(),
+      };
     });
 
     // Transform data to calendar events format
@@ -123,7 +154,7 @@ export async function GET(request: NextRequest) {
           description: entry.content.substring(0, 100) + '...',
           activityType: 'כתיבה',
           duration: Math.ceil(entry.content.length / 10), // Estimate reading time
-          tags: entry.tags ? JSON.parse(entry.tags) : [],
+          tags: entry.tags || [],
           createdAt: entry.createdAt,
         });
       });
@@ -250,98 +281,114 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if mood entry already exists for this date
-        const existingMood = await prisma.moodEntry.findFirst({
-          where: {
-            userId: userId,
-            date: new Date(date),
-          },
-        });
-
-        if (existingMood) {
+        const existingMoodQuery = query(
+          collection(db, 'mood_entries'),
+          where('userId', '==', userId),
+          where('date', '==', Timestamp.fromDate(new Date(date)))
+        );
+        
+        const existingMoodSnapshot = await getDocs(existingMoodQuery);
+        
+        if (!existingMoodSnapshot.empty) {
           // Update existing mood entry
-          createdEvent = await prisma.moodEntry.update({
-            where: { id: existingMood.id },
-            data: {
-              moodValue: moodValue,
-              notes: description || '',
-            },
+          const existingMoodDoc = existingMoodSnapshot.docs[0];
+          await updateDoc(existingMoodDoc.ref, {
+            moodValue: moodValue,
+            notes: description || '',
+            updatedAt: Timestamp.now(),
           });
+          createdEvent = { id: existingMoodDoc.id, moodValue, notes: description || '' };
         } else {
           // Create new mood entry
-          createdEvent = await prisma.moodEntry.create({
-            data: {
-              userId: userId,
-              moodValue: moodValue,
-              notes: description || '',
-              date: new Date(date),
-            },
-          });
+          const moodData = {
+            userId: userId,
+            moodValue: moodValue,
+            notes: description || '',
+            date: Timestamp.fromDate(new Date(date)),
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+          };
+          
+          const docRef = await addDoc(collection(db, 'mood_entries'), moodData);
+          createdEvent = { id: docRef.id, ...moodData };
         }
         break;
 
       case 'activity':
         if (activityType === 'כתיבה') {
           // Create journal entry
-          createdEvent = await prisma.journalEntry.create({
-            data: {
-              userId: userId,
-              title: title,
-              content: description || '',
-              mood: moodValue || null,
-              tags: JSON.stringify([]),
-              template: null,
-            },
-          });
+          const journalData = {
+            userId: userId,
+            title: title,
+            content: description || '',
+            mood: moodValue || null,
+            tags: [],
+            template: null,
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+          };
+          
+          const docRef = await addDoc(collection(db, 'journal_entries'), journalData);
+          createdEvent = { id: docRef.id, ...journalData };
         } else if (activityType === 'תרגילי נשימה') {
           // Create breathing session
-          createdEvent = await prisma.breathingSession.create({
-            data: {
-              userId: userId,
-              exerciseId: 'custom',
-              exerciseName: title,
-              duration: (duration || 10) * 60, // Convert to seconds
-              cycles: Math.ceil((duration || 10) / 2),
-              inhaleTime: 4,
-              holdTime: 4,
-              exhaleTime: 4,
-              completed: true,
-            },
-          });
+          const breathingData = {
+            userId: userId,
+            exerciseId: 'custom',
+            exerciseName: title,
+            duration: (duration || 10) * 60, // Convert to seconds
+            cycles: Math.ceil((duration || 10) / 2),
+            inhaleTime: 4,
+            holdTime: 4,
+            exhaleTime: 4,
+            completed: true,
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+          };
+          
+          const docRef = await addDoc(collection(db, 'breathing_sessions'), breathingData);
+          createdEvent = { id: docRef.id, ...breathingData };
         }
         break;
 
       case 'goal':
         // Create goal
-        createdEvent = await prisma.goal.create({
-          data: {
-            userId: userId,
-            title: title,
-            description: description || '',
-            category: 'personal',
-            targetDate: new Date(date),
-            progress: 0,
-            status: 'not-started',
-            priority: priority || 'medium',
-            milestones: JSON.stringify([]),
-          },
-        });
+        const goalData = {
+          userId: userId,
+          title: title,
+          description: description || '',
+          category: 'personal',
+          targetDate: Timestamp.fromDate(new Date(date)),
+          progress: 0,
+          status: 'not-started',
+          priority: priority || 'medium',
+          milestones: [],
+          createdAt: Timestamp.now(),
+          updatedAt: Timestamp.now(),
+        };
+        
+        const docRef = await addDoc(collection(db, 'goals'), goalData);
+        createdEvent = { id: docRef.id, ...goalData };
         break;
 
       case 'reminder':
         // For reminders, we'll store them as goals with a special category
-        createdEvent = await prisma.goal.create({
-          data: {
-            userId: userId,
-            title: title,
-            description: description || '',
-            category: 'reminder',
-            targetDate: new Date(date),
-            progress: 0,
-            status: 'not-started',
-            priority: priority || 'medium',
-            milestones: JSON.stringify([]),
-          },
-        });
+        const reminderData = {
+          userId: userId,
+          title: title,
+          description: description || '',
+          category: 'reminder',
+          targetDate: Timestamp.fromDate(new Date(date)),
+          progress: 0,
+          status: 'not-started',
+          priority: priority || 'medium',
+          milestones: [],
+          createdAt: Timestamp.now(),
+          updatedAt: Timestamp.now(),
+        };
+        
+        const reminderRef = await addDoc(collection(db, 'goals'), reminderData);
+        createdEvent = { id: reminderRef.id, ...reminderData };
         break;
 
       default:

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, updateDoc, Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 import crypto from 'crypto';
 
@@ -27,25 +28,24 @@ export async function POST(request: NextRequest) {
     const { email } = validationResult.data;
 
     // Check if user exists
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const usersRef = collection(db, 'users');
+    const userQuery = query(usersRef, where('email', '==', email));
+    const userSnapshot = await getDocs(userQuery);
 
     // Always return success to prevent email enumeration attacks
     // But only send email if user exists
-    if (user) {
+    if (!userSnapshot.empty) {
+      const userDoc = userSnapshot.docs[0];
+      
       // Generate reset token
       const resetToken = crypto.randomBytes(32).toString('hex');
-      const resetTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      const resetTokenExpiry = Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)); // 24 hours
 
       // Save reset token to database
-      await prisma.user.update({
-        where: { email },
-        data: {
-          // Note: You'll need to add these fields to your User model
-          // resetToken,
-          // resetTokenExpiry,
-        },
+      await updateDoc(userDoc.ref, {
+        resetToken,
+        resetTokenExpiry,
+        updatedAt: Timestamp.now(),
       });
 
       // TODO: Send email with reset link

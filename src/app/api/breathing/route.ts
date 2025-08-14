@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  limit as firestoreLimit, 
+  getDocs, 
+  addDoc, 
+  getCountFromServer, 
+  Timestamp 
+} from 'firebase/firestore';
 import { z } from 'zod';
 
 // Validation schema for breathing session
@@ -32,29 +43,38 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    const breathingSessions = await prisma.breathingSession.findMany({
-      where: { userId: userId },
-      orderBy: { createdAt: 'desc' },
-      take: Math.min(limit, 100), // Cap at 100 sessions
-      skip: offset,
-      select: {
-        id: true,
-        exerciseId: true,
-        exerciseName: true,
-        duration: true,
-        cycles: true,
-        inhaleTime: true,
-        holdTime: true,
-        exhaleTime: true,
-        completed: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
     // Get total count for pagination
-    const totalCount = await prisma.breathingSession.count({
-      where: { userId: userId },
+    const countQuery = query(
+      collection(db, 'breathing_sessions'),
+      where('userId', '==', userId)
+    );
+    const countSnapshot = await getCountFromServer(countQuery);
+    const totalCount = countSnapshot.data().count;
+
+    // Get breathing sessions from Firebase
+    const breathingQuery = query(
+      collection(db, 'breathing_sessions'),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      firestoreLimit(Math.min(limit, 100)) // Cap at 100 sessions
+    );
+
+    const breathingSnapshot = await getDocs(breathingQuery);
+    const breathingSessions = breathingSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        exerciseId: data.exerciseId,
+        exerciseName: data.exerciseName,
+        duration: data.duration,
+        cycles: data.cycles,
+        inhaleTime: data.inhaleTime,
+        holdTime: data.holdTime,
+        exhaleTime: data.exhaleTime,
+        completed: data.completed,
+        createdAt: data.createdAt.toDate().toISOString(),
+        updatedAt: data.updatedAt.toDate().toISOString(),
+      };
     });
 
     return NextResponse.json({
@@ -113,32 +133,35 @@ export async function POST(request: NextRequest) {
     } = validationResult.data;
 
     // Create new breathing session
-    const breathingSession = await prisma.breathingSession.create({
-      data: {
-        userId: userId,
-        exerciseId,
-        exerciseName,
-        duration,
-        cycles,
-        inhaleTime,
-        holdTime,
-        exhaleTime,
-        completed,
-      },
-      select: {
-        id: true,
-        exerciseId: true,
-        exerciseName: true,
-        duration: true,
-        cycles: true,
-        inhaleTime: true,
-        holdTime: true,
-        exhaleTime: true,
-        completed: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const breathingSessionData = {
+      userId: userId,
+      exerciseId,
+      exerciseName,
+      duration,
+      cycles,
+      inhaleTime,
+      holdTime,
+      exhaleTime,
+      completed,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
+
+    const docRef = await addDoc(collection(db, 'breathing_sessions'), breathingSessionData);
+
+    const breathingSession = {
+      id: docRef.id,
+      exerciseId,
+      exerciseName,
+      duration,
+      cycles,
+      inhaleTime,
+      holdTime,
+      exhaleTime,
+      completed,
+      createdAt: breathingSessionData.createdAt.toDate().toISOString(),
+      updatedAt: breathingSessionData.updatedAt.toDate().toISOString(),
+    };
 
     return NextResponse.json(
       {

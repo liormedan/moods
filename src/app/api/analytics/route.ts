@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  Timestamp,
+} from 'firebase/firestore';
 import {
   subDays,
   subWeeks,
@@ -49,23 +57,26 @@ export async function GET(request: NextRequest) {
         startDate = subMonths(now, 1);
     }
 
-    // Fetch mood entries for the time range
-    const moodEntries = await prisma.moodEntry.findMany({
-      where: {
-        userId: userId,
-        date: {
-          gte: startDate,
-          lte: now,
-        },
-      },
-      orderBy: { date: 'asc' },
-      select: {
-        id: true,
-        moodValue: true,
-        notes: true,
-        date: true,
-        createdAt: true,
-      },
+    // Fetch mood entries from Firebase for the time range
+    const moodEntriesRef = collection(db, 'mood_entries');
+    const moodQuery = query(
+      moodEntriesRef,
+      where('userId', '==', userId),
+      where('date', '>=', Timestamp.fromDate(startDate)),
+      where('date', '<=', Timestamp.fromDate(now)),
+      orderBy('date', 'asc')
+    );
+
+    const moodSnapshot = await getDocs(moodQuery);
+    const moodEntries = moodSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        moodValue: data.moodValue,
+        notes: data.notes || '',
+        date: data.date.toDate(), // Convert Firestore Timestamp to Date
+        createdAt: data.createdAt.toDate(), // Convert Firestore Timestamp to Date
+      };
     });
 
     // Calculate daily moods

@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  getDocs, 
+  Timestamp 
+} from 'firebase/firestore';
 
 // GET /api/mood/stats - Get mood statistics for the authenticated user
 export async function GET(request: NextRequest) {
@@ -27,19 +35,22 @@ export async function GET(request: NextRequest) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - periodDays);
 
-    // Get mood entries for the specified period
-    const moodEntries = await prisma.moodEntry.findMany({
-      where: {
-        userId: userId,
-        date: {
-          gte: startDate,
-        },
-      },
-      orderBy: { date: 'asc' },
-      select: {
-        moodValue: true,
-        date: true,
-      },
+    // Get mood entries from Firebase for the specified period
+    const moodEntriesRef = collection(db, 'mood_entries');
+    const moodQuery = query(
+      moodEntriesRef,
+      where('userId', '==', userId),
+      where('date', '>=', Timestamp.fromDate(startDate)),
+      orderBy('date', 'asc')
+    );
+
+    const moodSnapshot = await getDocs(moodQuery);
+    const moodEntries = moodSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        moodValue: data.moodValue,
+        date: data.date.toDate(), // Convert Firestore Timestamp to Date
+      };
     });
 
     if (moodEntries.length === 0) {

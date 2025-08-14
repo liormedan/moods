@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  limit as firestoreLimit, 
+  startAfter, 
+  getDocs, 
+  addDoc, 
+  Timestamp,
+  getCountFromServer
+} from 'firebase/firestore';
 import { z } from 'zod';
 import { PaginationSchema, DateRangeSchema } from '@/lib/validation';
 
@@ -26,7 +38,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = (session as any).user.id;
+    const userId = (session as any).user.id; // This is now Firebase UID
 
     const { searchParams } = new URL(request.url);
 
@@ -55,8 +67,12 @@ export async function GET(request: NextRequest) {
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
 
-    // Build where clause for demo
-    const where: any = { userId: userId };
+    // Build Firebase query
+    let moodQuery = query(
+      collection(db, 'mood_entries'),
+      where('uid', '==', userId),
+      orderBy('date', 'desc')
+    );
 
     if (date) {
       // Single date filter
@@ -74,10 +90,11 @@ export async function GET(request: NextRequest) {
       const endDate = new Date(parsedDate);
       endDate.setDate(endDate.getDate() + 1);
 
-      where.date = {
-        gte: parsedDate,
-        lt: endDate,
-      };
+      moodQuery = query(
+        moodQuery,
+        where('date', '>=', Timestamp.fromDate(parsedDate)),
+        where('date', '<', Timestamp.fromDate(endDate))
+      );
     } else if (startDateParam || endDateParam) {
       const dateRangeResult = DateRangeSchema.safeParse({
         startDate: startDateParam,
@@ -96,25 +113,31 @@ export async function GET(request: NextRequest) {
 
       const { startDate, endDate } = dateRangeResult.data;
 
-      where.date = {
-        gte: startDate,
-        lte: endDate,
-      };
+      moodQuery = query(
+        moodQuery,
+        where('date', '>=', Timestamp.fromDate(startDate)),
+        where('date', '<=', Timestamp.fromDate(endDate))
+      );
     }
 
-    const moodEntries = await prisma.moodEntry.findMany({
-      where,
-      orderBy: { date: 'desc' },
-      take: Math.min(limit, 100), // Cap at 100 entries
-      skip: offset,
-      select: {
-        id: true,
-        moodValue: true,
-        notes: true,
-        date: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+    // Get total count
+    const countSnapshot = await getCountFromServer(moodQuery);
+    const totalCount = countSnapshot.data().count;
+
+    // Apply pagination
+    moodQuery = query(moodQuery, firestoreLimit(Math.min(limit, 100)));
+
+    const moodSnapshot = await getDocs(moodQuery);
+    const moodEntries = moodSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        moodValue: data.moodValue,
+        notes: data.notes || '',
+        date: data.date.toDate(), // Convert Firestore Timestamp to Date
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt.toDate(),
+      };
     });
 
     // Format the data to match the expected interface
@@ -126,9 +149,6 @@ export async function GET(request: NextRequest) {
       createdAt: entry.createdAt.toISOString(),
       updatedAt: entry.updatedAt.toISOString(),
     }));
-
-    // Get total count for pagination
-    const totalCount = await prisma.moodEntry.count({ where });
 
     return NextResponse.json({
       data: formattedEntries,
@@ -178,16 +198,14 @@ export async function POST(request: NextRequest) {
     const entryDate = date ? new Date(date) : new Date();
 
     // Check if entry already exists for this date
-    const existingEntry = await prisma.moodEntry.findUnique({
-      where: {
-        userId_date: {
-          userId: userId,
-          date: entryDate,
-        },
-      },
-    });
-
-    if (existingEntry) {
+    const existingQuery = query(
+      collection(db, 'mood_entries'),
+      where('userId', '==', userId),
+      where('date', '==', Timestamp.fromDate(entryDate))
+    );
+    
+    const existingSnapshot = await getDocs(existingQuery);
+    if (!existingSnapshot.empty) {
       return NextResponse.json(
         { error: 'Mood entry already exists for this date' },
         { status: 409 }
@@ -195,22 +213,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new mood entry
-    const moodEntry = await prisma.moodEntry.create({
-      data: {
-        userId: userId,
-        moodValue,
-        notes,
-        date: entryDate,
-      },
-      select: {
-        id: true,
-        moodValue: true,
-        notes: true,
-        date: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const moodEntryData = {
+              uid: userId,
+      moodValue,
+      notes: notes || '',
+      date: Timestamp.fromDate(entryDate),
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
+
+    const docRef = await addDoc(collection(db, 'mood_entries'), moodEntryData);
+
+    const moodEntry = {
+      id: docRef.id,
+      moodValue,
+      notes: notes || '',
+      date: entryDate.toISOString().split('T')[0],
+      createdAt: moodEntryData.createdAt.toDate().toISOString(),
+      updatedAt: moodEntryData.updatedAt.toDate().toISOString(),
+    };
 
     return NextResponse.json(
       {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, getCountFromServer, Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
 // Validation schema for profile updates
@@ -56,17 +57,6 @@ export async function GET(request: NextRequest) {
 
     // Mock user ID for demo
     const userId = 'demo-user';
-
-    // In a real app, fetch from database
-    // const user = await prisma.user.findUnique({
-    //   where: { id: userId },
-    //   select: {
-    //     id: true,
-    //     name: true,
-    //     email: true,
-    //     // ... other fields
-    //   }
-    // });
 
     // Mock profile data
     const profile = {
@@ -145,12 +135,6 @@ export async function PUT(request: NextRequest) {
 
     const updateData = validationResult.data;
 
-    // In a real app, update the database
-    // const updatedUser = await prisma.user.update({
-    //   where: { id: userId },
-    //   data: updateData,
-    // });
-
     // For demo, just return the updated data
     const updatedProfile = {
       id: userId,
@@ -196,15 +180,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // In a real app, delete all user data
-    // await prisma.$transaction([
-    //   prisma.moodEntry.deleteMany({ where: { userId } }),
-    //   prisma.journalEntry.deleteMany({ where: { userId } }),
-    //   prisma.breathingSession.deleteMany({ where: { userId } }),
-    //   prisma.goal.deleteMany({ where: { userId } }),
-    //   prisma.user.delete({ where: { id: userId } }),
-    // ]);
-
     // Log the activity before deletion
     await logActivity(userId, 'account_deleted', 'מחיקת חשבון משתמש');
 
@@ -223,18 +198,6 @@ export async function DELETE(request: NextRequest) {
 // Helper function to get activity statistics
 async function getActivityStats(userId: string) {
   try {
-    // In a real app, query the database
-    // const [moodCount, journalCount, breathingCount, goalStats] = await Promise.all([
-    //   prisma.moodEntry.count({ where: { userId } }),
-    //   prisma.journalEntry.count({ where: { userId } }),
-    //   prisma.breathingSession.count({ where: { userId } }),
-    //   prisma.goal.aggregate({
-    //     where: { userId },
-    //     _count: { id: true },
-    //     _sum: { progress: true },
-    //   }),
-    // ]);
-
     // Mock data for demo
     return {
       totalMoodEntries: 156,
@@ -268,18 +231,6 @@ async function logActivity(
   description: string
 ) {
   try {
-    // In a real app, save to database
-    // await prisma.activityLog.create({
-    //   data: {
-    //     userId,
-    //     action,
-    //     description,
-    //     timestamp: new Date(),
-    //     ipAddress: request.ip,
-    //     userAgent: request.headers.get('user-agent'),
-    //   },
-    // });
-
     console.log(
       `Activity logged: ${action} - ${description} for user ${userId}`
     );

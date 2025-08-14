@@ -1,7 +1,37 @@
-import { User, MoodEntry, Insight } from '@prisma/client';
+// Firebase types - replacing Prisma types
+// This file is kept for compatibility but now uses Firebase-compatible types
 
-// Export Prisma types
-export type { User, MoodEntry, Insight };
+// Basic types for Firebase
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MoodEntry {
+  id: string;
+  userId: string;
+  moodValue: number;
+  notes?: string;
+  date: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Insight {
+  id: string;
+  userId: string;
+  type: 'recommendation' | 'warning' | 'celebration';
+  title: string;
+  description: string;
+  isRead: boolean;
+  priority: 'low' | 'medium' | 'high';
+  actionable: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Re-export specialized types
 export * from './mood';

@@ -1,5 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  limit as firestoreLimit, 
+  getDocs, 
+  addDoc, 
+  getCountFromServer, 
+  Timestamp,
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc
+} from 'firebase/firestore';
 import { z } from 'zod';
 
 // Validation schema for goal
@@ -44,49 +59,53 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // Build where clause
-    const where: any = { userId: userId };
+    // Build Firebase query
+    let goalsQuery = query(
+      collection(db, 'goals'),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
 
     if (category && category !== 'all') {
-      where.category = category;
+      goalsQuery = query(goalsQuery, where('category', '==', category));
     }
 
     if (status && status !== 'all') {
-      where.status = status;
+      goalsQuery = query(goalsQuery, where('status', '==', status));
     }
 
-    const goals = await prisma.goal.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: Math.min(limit, 100),
-      skip: offset,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        category: true,
-        targetDate: true,
-        progress: true,
-        status: true,
-        priority: true,
-        milestones: true,
-        createdAt: true,
-        updatedAt: true,
-        completedAt: true,
-      },
+    // Get total count for pagination
+    const countQuery = query(
+      collection(db, 'goals'),
+      where('userId', '==', userId)
+    );
+    const countSnapshot = await getCountFromServer(countQuery);
+    const totalCount = countSnapshot.data().count;
+
+    // Get goals from Firebase
+    goalsQuery = query(goalsQuery, firestoreLimit(Math.min(limit, 100)));
+
+    const goalsSnapshot = await getDocs(goalsQuery);
+    const goals = goalsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title,
+        description: data.description || '',
+        category: data.category,
+        targetDate: data.targetDate.toDate().toISOString().split('T')[0],
+        progress: data.progress || 0,
+        status: data.status || 'not-started',
+        priority: data.priority || 'medium',
+        milestones: data.milestones || [],
+        createdAt: data.createdAt.toDate().toISOString(),
+        updatedAt: data.updatedAt.toDate().toISOString(),
+        completedAt: data.completedAt ? data.completedAt.toDate().toISOString() : null,
+      };
     });
 
-    // Parse milestones from JSON
-    const formattedGoals = goals.map((goal) => ({
-      ...goal,
-      milestones: goal.milestones ? JSON.parse(goal.milestones) : [],
-    }));
-
-    // Get total count for pagination
-    const totalCount = await prisma.goal.count({ where });
-
     return NextResponse.json({
-      data: formattedGoals,
+      data: goals,
       pagination: {
         total: totalCount,
         limit,
@@ -155,45 +174,42 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new goal
-    const goal = await prisma.goal.create({
-      data: {
-        userId: userId,
-        title,
-        description: description || '',
-        category,
-        targetDate: new Date(targetDate),
-        progress,
-        status,
-        priority,
-        milestones: JSON.stringify(milestones),
-        completedAt: status === 'completed' ? new Date() : null,
-      },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        category: true,
-        targetDate: true,
-        progress: true,
-        status: true,
-        priority: true,
-        milestones: true,
-        createdAt: true,
-        updatedAt: true,
-        completedAt: true,
-      },
-    });
+    const goalData = {
+      userId: userId,
+      title,
+      description: description || '',
+      category,
+      targetDate: Timestamp.fromDate(new Date(targetDate)),
+      progress,
+      status,
+      priority,
+      milestones: milestones,
+      completedAt: status === 'completed' ? Timestamp.now() : null,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
 
-    // Parse milestones for response
-    const formattedGoal = {
-      ...goal,
-      milestones: goal.milestones ? JSON.parse(goal.milestones) : [],
+    const docRef = await addDoc(collection(db, 'goals'), goalData);
+
+    const goal = {
+      id: docRef.id,
+      title,
+      description: description || '',
+      category,
+      targetDate: targetDate,
+      progress,
+      status,
+      priority,
+      milestones: milestones,
+      createdAt: goalData.createdAt.toDate().toISOString(),
+      updatedAt: goalData.updatedAt.toDate().toISOString(),
+      completedAt: goalData.completedAt ? goalData.completedAt.toDate().toISOString() : null,
     };
 
     return NextResponse.json(
       {
         message: 'Goal created successfully',
-        data: formattedGoal,
+        data: goal,
       },
       { status: 201 }
     );
@@ -222,109 +238,46 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Validate update data
-    const validationResult = goalSchema.partial().safeParse(updateData);
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Invalid input',
-          details: validationResult.error.issues,
-        },
-        { status: 400 }
-      );
+    // Check if goal exists and belongs to user
+    const goalRef = doc(db, 'goals', id);
+    const goalSnap = await getDoc(goalRef);
+
+    if (!goalSnap.exists()) {
+      return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
     }
 
-    const validatedData = validationResult.data;
-
-    // Calculate progress and status if milestones are updated
-    let calculatedData: any = { ...validatedData };
-
-    if (validatedData.milestones) {
-      const completedMilestones = validatedData.milestones.filter(
-        (m) => m.completed
-      ).length;
-      const progress =
-        validatedData.milestones.length > 0
-          ? Math.round(
-              (completedMilestones / validatedData.milestones.length) * 100
-            )
-          : 0;
-
-      let status: 'not-started' | 'in-progress' | 'completed' | 'overdue' =
-        'not-started';
-      if (progress === 100) {
-        status = 'completed';
-      } else if (progress > 0) {
-        status = 'in-progress';
-      }
-
-      // Check if overdue
-      const targetDate =
-        validatedData.targetDate ||
-        (
-          await prisma.goal.findUnique({
-            where: { id },
-            select: { targetDate: true },
-          })
-        )?.targetDate;
-
-      if (targetDate) {
-        const target = new Date(targetDate);
-        const now = new Date();
-        if (target < now && status !== 'completed') {
-          status = 'overdue';
-        }
-      }
-
-      calculatedData.progress = progress;
-      calculatedData.status = status;
-      calculatedData.milestones = JSON.stringify(validatedData.milestones);
-      calculatedData.completedAt = status === 'completed' ? new Date() : null;
-    }
-
-    // Convert targetDate to Date object if provided
-    if (calculatedData.targetDate) {
-      calculatedData.targetDate = new Date(calculatedData.targetDate);
+    const goalData = goalSnap.data();
+    if (goalData.userId !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Update goal
-    const goal = await prisma.goal.update({
-      where: {
-        id: id,
-        userId: userId, // Ensure user can only update their own goals
-      },
-      data: calculatedData,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        category: true,
-        targetDate: true,
-        progress: true,
-        status: true,
-        priority: true,
-        milestones: true,
-        createdAt: true,
-        updatedAt: true,
-        completedAt: true,
-      },
-    });
+    const updateDataWithTimestamp = {
+      ...updateData,
+      updatedAt: Timestamp.now(),
+    };
 
-    // Parse milestones for response
-    const formattedGoal = {
-      ...goal,
-      milestones: goal.milestones ? JSON.parse(goal.milestones) : [],
+    await updateDoc(goalRef, updateDataWithTimestamp);
+
+    // Get updated data
+    const updatedGoalSnap = await getDoc(goalRef);
+    const updatedGoalData = updatedGoalSnap.data()!;
+
+    const updatedGoal = {
+      id: updatedGoalSnap.id,
+      ...updatedGoalData,
+      targetDate: updatedGoalData.targetDate.toDate().toISOString().split('T')[0],
+      createdAt: updatedGoalData.createdAt.toDate().toISOString(),
+      updatedAt: updatedGoalData.updatedAt.toDate().toISOString(),
+      completedAt: updatedGoalData.completedAt ? updatedGoalData.completedAt.toDate().toISOString() : null,
     };
 
     return NextResponse.json({
       message: 'Goal updated successfully',
-      data: formattedGoal,
+      data: updatedGoal,
     });
   } catch (error) {
     console.error('Error updating goal:', error);
-    if ((error as any).code === 'P2025') {
-      return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
-    }
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -348,22 +301,27 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Check if goal exists and belongs to user
+    const goalRef = doc(db, 'goals', id);
+    const goalSnap = await getDoc(goalRef);
+
+    if (!goalSnap.exists()) {
+      return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
+    }
+
+    const goalData = goalSnap.data();
+    if (goalData.userId !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Delete goal
-    await prisma.goal.delete({
-      where: {
-        id: id,
-        userId: userId, // Ensure user can only delete their own goals
-      },
-    });
+    await deleteDoc(goalRef);
 
     return NextResponse.json({
       message: 'Goal deleted successfully',
     });
   } catch (error) {
     console.error('Error deleting goal:', error);
-    if ((error as any).code === 'P2025') {
-      return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
-    }
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

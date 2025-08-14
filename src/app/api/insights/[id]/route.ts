@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { db } from '@/lib/firebase';
+import { 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  deleteDoc, 
+  Timestamp 
+} from 'firebase/firestore';
 import { z } from 'zod';
 
 // Validation schema for insight updates
@@ -41,22 +48,36 @@ export async function PATCH(
     }
 
     // Check if insight exists and belongs to user
-    const existingInsight = await prisma.insight.findFirst({
-      where: {
-        id,
-        userId: (session as any).user.id,
-      },
-    });
+    const insightRef = doc(db, 'insights', id);
+    const insightSnap = await getDoc(insightRef);
 
-    if (!existingInsight) {
+    if (!insightSnap.exists()) {
       return NextResponse.json({ error: 'Insight not found' }, { status: 404 });
     }
 
+    const insightData = insightSnap.data();
+    if (insightData.userId !== (session as any).user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Update the insight
-    const updatedInsight = await prisma.insight.update({
-      where: { id },
-      data: validationResult.data,
-    });
+    const updateData = {
+      ...validationResult.data,
+      updatedAt: Timestamp.now(),
+    };
+
+    await updateDoc(insightRef, updateData);
+
+    // Get updated data
+    const updatedInsightSnap = await getDoc(insightRef);
+    const updatedInsightData = updatedInsightSnap.data()!;
+
+    const updatedInsight = {
+      id: updatedInsightSnap.id,
+      ...updatedInsightData,
+      createdAt: updatedInsightData.createdAt.toDate().toISOString(),
+      updatedAt: updatedInsightData.updatedAt.toDate().toISOString(),
+    };
 
     return NextResponse.json({ data: updatedInsight });
   } catch (error) {
@@ -82,23 +103,24 @@ export async function DELETE(
     }
 
     // Check if insight exists and belongs to user
-    const existingInsight = await prisma.insight.findFirst({
-      where: {
-        id,
-        userId: (session as any).user.id,
-      },
-    });
+    const insightRef = doc(db, 'insights', id);
+    const insightSnap = await getDoc(insightRef);
 
-    if (!existingInsight) {
+    if (!insightSnap.exists()) {
       return NextResponse.json({ error: 'Insight not found' }, { status: 404 });
     }
 
-    // Delete the insight
-    await prisma.insight.delete({
-      where: { id },
-    });
+    const insightData = insightSnap.data();
+    if (insightData.userId !== (session as any).user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
-    return NextResponse.json({ message: 'Insight deleted successfully' });
+    // Delete the insight
+    await deleteDoc(insightRef);
+
+    return NextResponse.json({
+      message: 'Insight deleted successfully',
+    });
   } catch (error) {
     console.error('Error deleting insight:', error);
     return NextResponse.json(
