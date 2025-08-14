@@ -13,9 +13,9 @@ const moodUpdateSchema = z.object({
 // GET /api/mood/[id] - Get a specific mood entry
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -73,9 +73,9 @@ export async function GET(
 // PUT /api/mood/[id] - Update a specific mood entry
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -153,9 +153,9 @@ export async function PUT(
 // DELETE /api/mood/[id] - Delete a specific mood entry
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
