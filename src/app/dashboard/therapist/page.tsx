@@ -9,847 +9,700 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Brain,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import {
+  UserCheck,
+  Calendar,
+  MessageSquare,
   Phone,
+  Video,
   Mail,
   MapPin,
-  Clock,
   Star,
+  Clock,
+  Shield,
+  Share2,
   Search,
   Filter,
-  Calendar,
-  Video,
-  MessageCircle,
-  UserCheck,
-  Shield,
-  Award,
-  Languages,
-  DollarSign,
-  Clock3,
-  CheckCircle,
-  ExternalLink,
+  Plus,
+  Send,
+  FileText,
+  Download,
+  Upload,
   Heart,
+  Brain,
   Users,
-  BookOpen,
-  Activity,
+  Award,
+  CheckCircle,
+  AlertCircle,
+  Info,
+  Settings,
+  Eye,
+  EyeOff,
+  Lock,
+  Unlock,
 } from 'lucide-react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
 
 interface Therapist {
   id: string;
   name: string;
   title: string;
-  specialization: string[];
+  specializations: string[];
   experience: number;
   rating: number;
   reviewCount: number;
-  location: string;
-  address: string;
-  phone: string;
-  email: string;
-  website?: string;
   languages: string[];
-  sessionTypes: 'in-person' | 'online' | 'hybrid';
-  sessionDuration: number;
-  price: {
-    min: number;
-    max: number;
-    currency: string;
-  };
-  availability: {
-    days: string[];
-    hours: string;
-    emergency: boolean;
-  };
+  location: string;
+  isOnline: boolean;
+  priceRange: string;
+  availability: string[];
+  bio: string;
   education: string[];
   certifications: string[];
-  approach: string;
-  description: string;
-  photo?: string;
-  verified: boolean;
-  acceptsInsurance: boolean;
-  slidingScale: boolean;
+  profileImage?: string;
+  isVerified: boolean;
+  responseTime: string;
 }
 
-const therapists: Therapist[] = [
-  {
-    id: '1',
-    name: 'ד"ר יעל כהן',
-    title: 'פסיכולוגית קלינית מומחית',
-    specialization: ['חרדה', 'דיכאון', 'טראומה', 'CBT'],
-    experience: 15,
-    rating: 4.9,
-    reviewCount: 127,
-    location: 'תל אביב',
-    address: 'רחוב דיזנגוף 123, תל אביב',
-    phone: '03-1234567',
-    email: 'yael.cohen@therapy.co.il',
-    website: 'https://yael-cohen-therapy.co.il',
-    languages: ['עברית', 'אנגלית'],
-    sessionTypes: 'hybrid',
-    sessionDuration: 50,
-    price: {
-      min: 300,
-      max: 400,
-      currency: 'ILS',
-    },
-    availability: {
-      days: ['ראשון', 'שני', 'שלישי', 'רביעי'],
-      hours: '09:00-18:00',
-      emergency: true,
-    },
-    education: ['תואר שני בפסיכולוגיה קלינית, אוניברסיטת תל אביב'],
-    certifications: ['פסיכולוגית מומחית', 'מטפלת CBT מוסמכת'],
-    approach: 'טיפול קוגניטיבי-התנהגותי (CBT) משולב עם גישות נוספות',
-    description:
-      'מטפלת מנוסה המתמחה בטיפול בחרדה, דיכאון וטראומה. משתמשת בגישות מבוססות מחקר ומתאימה את הטיפול לצרכים האישיים של כל מטופל.',
-    verified: true,
-    acceptsInsurance: true,
-    slidingScale: true,
-  },
-  {
-    id: '2',
-    name: 'עו"ס דוד אברהם',
-    title: 'עובד סוציאלי קליני',
-    specialization: ['משפחה', 'זוגות', 'ילדים ונוער', 'משברי חיים'],
-    experience: 12,
-    rating: 4.7,
-    reviewCount: 89,
-    location: 'ירושלים',
-    address: 'רחוב יפו 456, ירושלים',
-    phone: '02-9876543',
-    email: 'david.abraham@socialwork.co.il',
-    languages: ['עברית', 'ערבית'],
-    sessionTypes: 'in-person',
-    sessionDuration: 60,
-    price: {
-      min: 250,
-      max: 350,
-      currency: 'ILS',
-    },
-    availability: {
-      days: ['ראשון', 'שלישי', 'חמישי'],
-      hours: '16:00-20:00',
-      emergency: false,
-    },
-    education: ['תואר שני בעבודה סוציאלית קלינית, האוניברסיטה העברית'],
-    certifications: ['עובד סוציאלי קליני', 'מטפל משפחתי מוסמך'],
-    approach: 'טיפול משפחתי מערכתי עם דגש על יחסים ותקשורת',
-    description:
-      'מטפל מנוסה המתמחה בעבודה עם משפחות, זוגות וילדים. מאמין בכוחה של המשפחה כמערכת תומכת ומשקם.',
-    verified: true,
-    acceptsInsurance: true,
-    slidingScale: false,
-  },
-  {
-    id: '3',
-    name: 'ד"ר אחמד נסר',
-    title: 'פסיכיאטר מומחה',
-    specialization: ['דיכאון', 'חרדה', 'הפרעות אישיות', 'פסיכופרמקולוגיה'],
-    experience: 20,
-    rating: 4.8,
-    reviewCount: 156,
-    location: 'חיפה',
-    address: 'רחוב הרצל 789, חיפה',
-    phone: '04-5551234',
-    email: 'ahmad.nassar@psychiatry.co.il',
-    languages: ['עברית', 'ערבית', 'אנגלית'],
-    sessionTypes: 'hybrid',
-    sessionDuration: 45,
-    price: {
-      min: 400,
-      max: 500,
-      currency: 'ILS',
-    },
-    availability: {
-      days: ['ראשון', 'שני', 'רביעי', 'חמישי'],
-      hours: '08:00-17:00',
-      emergency: true,
-    },
-    education: ['תואר שני ברפואה, אוניברסיטת חיפה', 'התמחות בפסיכיאטריה'],
-    certifications: ['פסיכיאטר מומחה', 'מומחה בפסיכופרמקולוגיה'],
-    approach: 'טיפול משולב של פסיכותרפיה ותרופות בהתאם לצורך',
-    description:
-      'פסיכיאטר מנוסה המתמחה בטיפול בדיכאון וחרדה. מאמין בגישה הוליסטית המשלבת טיפול נפשי ותרופתי.',
-    verified: true,
-    acceptsInsurance: true,
-    slidingScale: false,
-  },
-  {
-    id: '4',
-    name: 'מיכל לוי',
-    title: 'מטפלת באומנות',
-    specialization: ['טראומה', 'ילדים ונוער', 'הבעה ויצירה', 'מיינדפולנס'],
-    experience: 8,
-    rating: 4.6,
-    reviewCount: 67,
-    location: 'באר שבע',
-    address: 'רחוב העצמאות 321, באר שבע',
-    phone: '08-1234567',
-    email: 'michal.levy@arttherapy.co.il',
-    languages: ['עברית', 'אנגלית'],
-    sessionTypes: 'in-person',
-    sessionDuration: 60,
-    price: {
-      min: 200,
-      max: 300,
-      currency: 'ILS',
-    },
-    availability: {
-      days: ['שני', 'שלישי', 'חמישי'],
-      hours: '14:00-19:00',
-      emergency: false,
-    },
-    education: ['תואר שני בטיפול באומנות, אוניברסיטת בן גוריון'],
-    certifications: ['מטפלת באומנות מוסמכת', 'מדריכת מיינדפולנס'],
-    approach: 'טיפול באומנות משולב עם טכניקות מיינדפולנס ורגיעה',
-    description:
-      'מטפלת יצירתית המתמחה בעבודה עם ילדים ונוער. משתמשת באומנות ככלי לביטוי רגשי וריפוי.',
-    verified: true,
-    acceptsInsurance: false,
-    slidingScale: true,
-  },
-  {
-    id: '5',
-    name: 'יוסי כהן',
-    title: 'מטפל זוגי ומשפחתי',
-    specialization: ['זוגות', 'משפחה', 'תקשורת', 'אינטימיות'],
-    experience: 10,
-    rating: 4.5,
-    reviewCount: 78,
-    location: 'רמת גן',
-    address: 'רחוב ביאליק 654, רמת גן',
-    phone: '03-9876543',
-    email: 'yossi.cohen@couples.co.il',
-    languages: ['עברית', 'אנגלית'],
-    sessionTypes: 'online',
-    sessionDuration: 90,
-    price: {
-      min: 350,
-      max: 450,
-      currency: 'ILS',
-    },
-    availability: {
-      days: ['ראשון', 'שלישי', 'חמישי'],
-      hours: '18:00-21:00',
-      emergency: false,
-    },
-    education: ['תואר שני בטיפול משפחתי, אוניברסיטת בר אילן'],
-    certifications: ['מטפל זוגי מוסמך', 'מטפל משפחתי מוסמך'],
-    approach: 'טיפול זוגי ומשפחתי עם דגש על שיפור תקשורת ואינטימיות',
-    description:
-      'מטפל מנוסה המתמחה בעבודה עם זוגות ומשפחות. עובד בעיקר אונליין ומתמחה בפתרון קונפליקטים.',
-    verified: true,
-    acceptsInsurance: false,
-    slidingScale: true,
-  },
-];
+interface Appointment {
+  id: string;
+  therapistId: string;
+  therapistName: string;
+  date: string;
+  time: string;
+  duration: number;
+  type: 'video' | 'phone' | 'in-person';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'pending';
+  notes?: string;
+  cost: number;
+}
 
-const specializations = [
-  'חרדה',
-  'דיכאון',
-  'טראומה',
-  'CBT',
-  'משפחה',
-  'זוגות',
-  'ילדים ונוער',
-  'משברי חיים',
-  'הפרעות אישיות',
-  'פסיכופרמקולוגיה',
-  'הבעה ויצירה',
-  'מיינדפולנס',
-  'תקשורת',
-  'אינטימיות',
-];
-
-const locations = ['תל אביב', 'ירושלים', 'חיפה', 'באר שבע', 'רמת גן'];
+interface Message {
+  id: string;
+  therapistId: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  timestamp: string;
+  isRead: boolean;
+  type: 'text' | 'file' | 'appointment' | 'report';
+}
 
 export default function TherapistPage() {
-  const [currentTherapists, setCurrentTherapists] =
-    useState<Therapist[]>(therapists);
-  const [selectedSpecialization, setSelectedSpecialization] =
-    useState<string>('all');
-  const [selectedLocation, setSelectedLocation] = useState<string>('all');
-  const [selectedSessionType, setSelectedSessionType] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showContactForm, setShowContactForm] = useState<string | null>(null);
-  const [contactForm, setContactForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    reason: '',
-    preferredTime: '',
-    insurance: false,
-  });
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'find' | 'appointments' | 'messages' | 'my-therapist'>('find');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [specializationFilter, setSpecializationFilter] = useState('all');
+  const [locationFilter, setLocationFilter] = useState('all');
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
+  const [currentTherapist, setCurrentTherapist] = useState<Therapist | null>(null);
 
-  const filteredTherapists = currentTherapists.filter((therapist) => {
-    if (
-      selectedSpecialization !== 'all' &&
-      !therapist.specialization.includes(selectedSpecialization)
-    )
-      return false;
-    if (selectedLocation !== 'all' && therapist.location !== selectedLocation)
-      return false;
-    if (
-      selectedSessionType !== 'all' &&
-      therapist.sessionTypes !== selectedSessionType
-    )
-      return false;
-    if (
-      searchQuery &&
-      !therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !therapist.specialization.some((spec) =>
-        spec.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    )
-      return false;
-    return true;
-  });
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const handleContactSubmit = (therapistId: string) => {
-    if (!contactForm.name || !contactForm.email || !contactForm.reason) return;
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [therapistsRes, appointmentsRes, messagesRes] = await Promise.all([
+        fetch('/api/therapists'),
+        fetch('/api/therapists/appointments'),
+        fetch('/api/therapists/messages'),
+      ]);
 
-    // Simulate contact submission
-    alert('בקשת הקשר נשלחה בהצלחה! המטפל יצור איתך קשר בקרוב.');
+      if (therapistsRes.ok) {
+        const therapistsResult = await therapistsRes.json();
+        setTherapists(therapistsResult.data);
+        // Set current therapist if user has one
+        const current = therapistsResult.data.find((t: Therapist) => t.id === 'therapist-1');
+        setCurrentTherapist(current);
+      }
 
-    // Reset form
-    setContactForm({
-      name: '',
-      email: '',
-      phone: '',
-      reason: '',
-      preferredTime: '',
-      insurance: false,
-    });
-    setShowContactForm(null);
-  };
+      if (appointmentsRes.ok) {
+        const appointmentsResult = await appointmentsRes.json();
+        setAppointments(appointmentsResult.data);
+      }
 
-  const getSessionTypeText = (type: string) => {
-    switch (type) {
-      case 'in-person':
-        return 'פרונטלי';
-      case 'online':
-        return 'מקוון';
-      case 'hybrid':
-        return 'היברידי';
-      default:
-        return type;
+      if (messagesRes.ok) {
+        const messagesResult = await messagesRes.json();
+        setMessages(messagesResult.data);
+      }
+    } catch (error) {
+      console.error('Error loading therapist data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getSessionTypeIcon = (type: string) => {
-    switch (type) {
-      case 'in-person':
-        return <MapPin className="w-4 h-4" />;
-      case 'online':
-        return <Video className="w-4 h-4" />;
-      case 'hybrid':
-        return <Users className="w-4 h-4" />;
-      default:
-        return <MessageCircle className="w-4 h-4" />;
-    }
-  };
-
-  const getPriceRange = (therapist: Therapist) => {
-    const { min, max, currency } = therapist.price;
-    if (min === max) {
-      return `${min} ${currency}`;
-    }
-    return `${min}-${max} ${currency}`;
-  };
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">טוען מידע מטפלים...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            יצירת קשר עם מטפלים מקצועיים 🧠💙
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            מצא מטפל מקצועי מתאים וקבל טיפול מותאם אישית לרווחה הנפשית שלך
-          </p>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input
-              placeholder="חפש מטפלים לפי שם או התמחות..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-3 text-lg"
-            />
-          </div>
-
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-4">
-            <select
-              value={selectedSpecialization}
-              onChange={(e) => setSelectedSpecialization(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">כל ההתמחויות</option>
-              {specializations.map((spec) => (
-                <option key={spec} value={spec}>
-                  {spec}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">כל המיקומים</option>
-              {locations.map((location) => (
-                <option key={location} value={location}>
-                  {location}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={selectedSessionType}
-              onChange={(e) => setSelectedSessionType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">כל סוגי הפגישות</option>
-              <option value="in-person">פרונטלי</option>
-              <option value="online">מקוון</option>
-              <option value="hybrid">היברידי</option>
-            </select>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <UserCheck className="w-8 h-8" />
+              יצירת קשר עם מטפל
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              מצא מטפל מתאים, קבע פגישות ושתף נתונים בצורה מאובטחת
+            </p>
           </div>
         </div>
 
-        {/* Therapists List */}
-        <div className="space-y-6">
-          {filteredTherapists.length === 0 ? (
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardContent className="py-12 text-center">
-                <Brain className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  לא נמצאו מטפלים
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  נסה לשנות את הסינון או החיפוש
-                </p>
+        {/* Tabs */}
+        <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+          {[
+            { id: 'find', label: 'חיפוש מטפלים', icon: Search },
+            { id: 'my-therapist', label: 'המטפל שלי', icon: UserCheck },
+            { id: 'appointments', label: 'פגישות', icon: Calendar },
+            { id: 'messages', label: 'הודעות', icon: MessageSquare },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+                activeTab === tab.id
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+              {tab.id === 'messages' && messages.filter(m => !m.isRead).length > 0 && (
+                <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {messages.filter(m => !m.isRead).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Content based on active tab */}
+        {activeTab === 'find' && (
+          <>
+            {/* Search and Filters */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex-1 min-w-64">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        placeholder="חפש מטפלים לפי שם או התמחות..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <Select value={specializationFilter} onValueChange={setSpecializationFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">כל ההתמחויות</SelectItem>
+                      <SelectItem value="anxiety">חרדה</SelectItem>
+                      <SelectItem value="depression">דיכאון</SelectItem>
+                      <SelectItem value="trauma">טראומה</SelectItem>
+                      <SelectItem value="couples">זוגיות</SelectItem>
+                      <SelectItem value="family">משפחה</SelectItem>
+                      <SelectItem value="addiction">התמכרויות</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={locationFilter} onValueChange={setLocationFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">כל המיקומים</SelectItem>
+                      <SelectItem value="online">מקוון</SelectItem>
+                      <SelectItem value="tel-aviv">תל אביב</SelectItem>
+                      <SelectItem value="jerusalem">ירושלים</SelectItem>
+                      <SelectItem value="haifa">חיפה</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </CardContent>
             </Card>
-          ) : (
-            filteredTherapists.map((therapist) => (
-              <Card
-                key={therapist.id}
-                className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="flex items-center space-x-2">
-                          <Brain className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                          <CardTitle className="text-xl text-gray-900 dark:text-gray-100">
-                            {therapist.name}
-                          </CardTitle>
-                          {therapist.verified && (
-                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              מאומת
-                            </Badge>
+
+            {/* Therapists Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {therapists
+                .filter(therapist => {
+                  const matchesSearch = therapist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                      therapist.specializations.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
+                  const matchesSpecialization = specializationFilter === 'all' || 
+                                               therapist.specializations.includes(specializationFilter);
+                  const matchesLocation = locationFilter === 'all' || 
+                                         (locationFilter === 'online' && therapist.isOnline) ||
+                                         therapist.location.toLowerCase().includes(locationFilter);
+                  return matchesSearch && matchesSpecialization && matchesLocation;
+                })
+                .map((therapist) => (
+                  <Card key={therapist.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-start gap-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                          {therapist.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-lg">{therapist.name}</CardTitle>
+                            {therapist.isVerified && (
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                            )}
+                          </div>
+                          <CardDescription>{therapist.title}</CardDescription>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              <span className="text-sm font-medium">{therapist.rating}</span>
+                              <span className="text-sm text-gray-500">({therapist.reviewCount})</span>
+                            </div>
+                            <span className="text-sm text-gray-500">•</span>
+                            <span className="text-sm text-gray-500">{therapist.experience} שנות ניסיון</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">התמחויות:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {therapist.specializations.slice(0, 3).map((spec, index) => (
+                            <span key={index} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full">
+                              {spec}
+                            </span>
+                          ))}
+                          {therapist.specializations.length > 3 && (
+                            <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded-full">
+                              +{therapist.specializations.length - 3}
+                            </span>
                           )}
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                          <span className="font-medium text-gray-900 dark:text-gray-100">
-                            {therapist.rating}
-                          </span>
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
-                            ({therapist.reviewCount} ביקורות)
-                          </span>
-                        </div>
                       </div>
 
-                      <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 mb-2">
-                        <div className="flex items-center space-x-1">
-                          <Award className="w-4 h-4" />
-                          <span>{therapist.title}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Clock3 className="w-4 h-4" />
-                          <span>{therapist.experience} שנות ניסיון</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                        <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
-                          <span>{therapist.location}</span>
+                          {therapist.location}
+                          {therapist.isOnline && <span className="text-green-600">• מקוון</span>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          זמן תגובה: {therapist.responseTime}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{therapist.priceRange}</span>
                         </div>
                       </div>
 
-                      <CardDescription className="text-gray-600 dark:text-gray-400 text-base mb-3">
-                        {therapist.description}
-                      </CardDescription>
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={() => setSelectedTherapist(therapist)}
+                          className="flex-1"
+                          size="sm"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          צפה בפרופיל
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          שלח הודעה
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+          </>
+        )}
+
+        {/* Other tabs content will be added in the next part */}
+      </div>
+    </DashboardLayout>
+  );
+}      
+  {activeTab === 'my-therapist' && currentTherapist && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Therapist Profile */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-start gap-4">
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xl">
+                      {currentTherapist.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CardTitle className="text-xl">{currentTherapist.name}</CardTitle>
+                        <CheckCircle className="w-5 h-5 text-green-500" />
+                      </div>
+                      <CardDescription className="text-base">{currentTherapist.title}</CardDescription>
+                      <div className="flex items-center gap-4 mt-2">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-medium">{currentTherapist.rating}</span>
+                          <span className="text-gray-500">({currentTherapist.reviewCount} ביקורות)</span>
+                        </div>
+                        <span className="text-gray-500">•</span>
+                        <span className="text-gray-500">{currentTherapist.experience} שנות ניסיון</span>
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-3">אודות</h4>
+                    <p className="text-gray-700 dark:text-gray-300">{currentTherapist.bio}</p>
+                  </div>
 
-                <CardContent className="space-y-4">
-                  {/* Specializations */}
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                      התמחויות:
-                    </h4>
+                  <div>
+                    <h4 className="font-semibold mb-3">התמחויות</h4>
                     <div className="flex flex-wrap gap-2">
-                      {therapist.specialization.map((spec, index) => (
-                        <Badge
-                          key={index}
-                          variant="secondary"
-                          className="text-xs"
-                        >
+                      {currentTherapist.specializations.map((spec, index) => (
+                        <span key={index} className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm">
                           {spec}
-                        </Badge>
+                        </span>
                       ))}
                     </div>
                   </div>
 
-                  {/* Session Info */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="text-center">
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        סוג פגישה
-                      </div>
-                      <div className="flex items-center justify-center space-x-1">
-                        {getSessionTypeIcon(therapist.sessionTypes)}
-                        <span className="font-medium text-gray-900 dark:text-gray-100">
-                          {getSessionTypeText(therapist.sessionTypes)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        משך פגישה
-                      </div>
-                      <div className="font-medium text-gray-900 dark:text-gray-100">
-                        {therapist.sessionDuration} דקות
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        מחיר
-                      </div>
-                      <div className="font-medium text-gray-900 dark:text-gray-100">
-                        {getPriceRange(therapist)}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        שפות
-                      </div>
-                      <div className="font-medium text-gray-900 dark:text-gray-100">
-                        {therapist.languages.join(', ')}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Availability */}
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                      זמינות:
-                    </h4>
-                    <div className="flex items-center space-x-4 text-sm">
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {therapist.availability.days.join(', ')}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {therapist.availability.hours}
-                        </span>
-                      </div>
-                      {therapist.availability.emergency && (
-                        <Badge className="bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
-                          זמין לחירום
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Education & Certifications */}
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                      השכלה והסמכות:
-                    </h4>
-                    <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                      {therapist.education.map((edu, index) => (
-                        <div key={index}>• {edu}</div>
+                  <div>
+                    <h4 className="font-semibold mb-3">השכלה</h4>
+                    <ul className="space-y-2">
+                      {currentTherapist.education.map((edu, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <Award className="w-4 h-4 mt-0.5 text-blue-500" />
+                          {edu}
+                        </li>
                       ))}
-                      {therapist.certifications.map((cert, index) => (
-                        <div key={index}>• {cert}</div>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold mb-3">הסמכות</h4>
+                    <ul className="space-y-2">
+                      {currentTherapist.certifications.map((cert, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <Shield className="w-4 h-4 mt-0.5 text-green-500" />
+                          {cert}
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
-
-                  {/* Additional Info */}
-                  <div className="flex items-center space-x-4 text-sm">
-                    {therapist.acceptsInsurance && (
-                      <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-                        <Shield className="w-3 h-3 mr-1" />
-                        מקבל ביטוח
-                      </Badge>
-                    )}
-                    {therapist.slidingScale && (
-                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                        <DollarSign className="w-3 h-3 mr-1" />
-                        מחיר מותאם
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Contact Actions */}
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
-                    <div className="flex items-center space-x-4 text-sm">
-                      {therapist.phone && (
-                        <div className="flex items-center space-x-1">
-                          <Phone className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600 dark:text-gray-400">
-                            {therapist.phone}
-                          </span>
-                        </div>
-                      )}
-                      {therapist.email && (
-                        <div className="flex items-center space-x-1">
-                          <Mail className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600 dark:text-gray-400">
-                            {therapist.email}
-                          </span>
-                        </div>
-                      )}
-                      {therapist.website && (
-                        <div className="flex items-center space-x-1">
-                          <ExternalLink className="w-4 h-4 text-gray-400" />
-                          <a
-                            href={therapist.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                          >
-                            אתר אינטרנט
-                          </a>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          window.open(`tel:${therapist.phone}`, '_self')
-                        }
-                      >
-                        <Phone className="w-4 h-4 mr-1" />
-                        התקשר
-                      </Button>
-                      <Button
-                        onClick={() => setShowContactForm(therapist.id)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        <MessageCircle className="w-4 h-4 mr-1" />
-                        צור קשר
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Contact Form */}
-                  {showContactForm === therapist.id && (
-                    <div className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
-                        טופס יצירת קשר עם {therapist.name}
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            שם מלא *
-                          </label>
-                          <Input
-                            value={contactForm.name}
-                            onChange={(e) =>
-                              setContactForm((prev) => ({
-                                ...prev,
-                                name: e.target.value,
-                              }))
-                            }
-                            placeholder="הכנס את שמך המלא"
-                            className="w-full"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            אימייל *
-                          </label>
-                          <Input
-                            type="email"
-                            value={contactForm.email}
-                            onChange={(e) =>
-                              setContactForm((prev) => ({
-                                ...prev,
-                                email: e.target.value,
-                              }))
-                            }
-                            placeholder="הכנס את כתובת האימייל שלך"
-                            className="w-full"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            טלפון
-                          </label>
-                          <Input
-                            value={contactForm.phone}
-                            onChange={(e) =>
-                              setContactForm((prev) => ({
-                                ...prev,
-                                phone: e.target.value,
-                              }))
-                            }
-                            placeholder="הכנס את מספר הטלפון שלך"
-                            className="w-full"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            זמן מועדף
-                          </label>
-                          <Input
-                            value={contactForm.preferredTime}
-                            onChange={(e) =>
-                              setContactForm((prev) => ({
-                                ...prev,
-                                preferredTime: e.target.value,
-                              }))
-                            }
-                            placeholder="למשל: בוקר, צהריים, ערב"
-                            className="w-full"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          סיבת הפנייה *
-                        </label>
-                        <Textarea
-                          value={contactForm.reason}
-                          onChange={(e) =>
-                            setContactForm((prev) => ({
-                              ...prev,
-                              reason: e.target.value,
-                            }))
-                          }
-                          placeholder="ספר לנו על הסיבה לפנייה שלך..."
-                          rows={3}
-                          className="w-full"
-                        />
-                      </div>
-
-                      <div className="flex items-center space-x-3 mb-4">
-                        <input
-                          type="checkbox"
-                          id={`insurance-${therapist.id}`}
-                          checked={contactForm.insurance}
-                          onChange={(e) =>
-                            setContactForm((prev) => ({
-                              ...prev,
-                              insurance: e.target.checked,
-                            }))
-                          }
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                        />
-                        <label
-                          htmlFor={`insurance-${therapist.id}`}
-                          className="text-sm text-gray-700 dark:text-gray-300"
-                        >
-                          יש לי ביטוח בריאות פרטי
-                        </label>
-                      </div>
-
-                      <div className="flex items-center justify-end space-x-3">
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowContactForm(null)}
-                        >
-                          ביטול
-                        </Button>
-                        <Button
-                          onClick={() => handleContactSubmit(therapist.id)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          שלח בקשת קשר
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
-            ))
-          )}
-        </div>
-
-        {/* Tips Section */}
-        <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              טיפים לבחירת מטפל מתאים
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <UserCheck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  בדוק התאמה
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  ודא שהמטפל מתמחה בנושאים שמעניינים אותך ויש לו ניסיון רלוונטי
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Heart className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  תחושת נוחות
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  חשוב שתרגיש בנוח עם המטפל ותוכל לפתח איתו יחסי אמון
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  גישה טיפולית
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  למד על הגישה הטיפולית של המטפל ודרך העבודה שלו
-                </p>
-              </div>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Quick Actions */}
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">פעולות מהירות</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button className="w-full" size="sm">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    קבע פגישה
+                  </Button>
+                  <Button variant="outline" className="w-full" size="sm">
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    שלח הודעה
+                  </Button>
+                  <Button variant="outline" className="w-full" size="sm">
+                    <Share2 className="w-4 h-4 mr-2" />
+                    שתף נתונים
+                  </Button>
+                  <Button variant="outline" className="w-full" size="sm">
+                    <Video className="w-4 h-4 mr-2" />
+                    פגישה מקוונת
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">הפגישה הבאה</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="w-4 h-4 text-blue-500" />
+                      <span>יום רביעי, 15 באוגוסט</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="w-4 h-4 text-green-500" />
+                      <span>16:00 - 17:00</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Video className="w-4 h-4 text-purple-500" />
+                      <span>פגישה מקוונת</span>
+                    </div>
+                  </div>
+                  <Button className="w-full mt-4" size="sm">
+                    הצטרף לפגישה
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'appointments' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">הפגישות שלי</h2>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                קבע פגישה חדשה
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {appointments.map((appointment) => (
+                <Card key={appointment.id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{appointment.therapistName}</CardTitle>
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        appointment.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                        appointment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                        appointment.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                        'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {appointment.status === 'scheduled' ? 'מתוכנן' :
+                         appointment.status === 'completed' ? 'הושלם' :
+                         appointment.status === 'cancelled' ? 'בוטל' : 'ממתין'}
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-blue-500" />
+                        <span>{new Date(appointment.date).toLocaleDateString('he-IL')}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-green-500" />
+                        <span>{appointment.time} ({appointment.duration} דקות)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {appointment.type === 'video' && <Video className="w-4 h-4 text-purple-500" />}
+                        {appointment.type === 'phone' && <Phone className="w-4 h-4 text-orange-500" />}
+                        {appointment.type === 'in-person' && <MapPin className="w-4 h-4 text-red-500" />}
+                        <span>
+                          {appointment.type === 'video' ? 'פגישה מקוונת' :
+                           appointment.type === 'phone' ? 'שיחת טלפון' : 'פגישה פרונטלית'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">₪{appointment.cost}</span>
+                      </div>
+                    </div>
+
+                    {appointment.notes && (
+                      <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded text-sm">
+                        <strong>הערות:</strong> {appointment.notes}
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      {appointment.status === 'scheduled' && (
+                        <>
+                          <Button size="sm" className="flex-1">
+                            {appointment.type === 'video' ? 'הצטרף' : 'פרטים'}
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            בטל
+                          </Button>
+                        </>
+                      )}
+                      {appointment.status === 'completed' && (
+                        <Button variant="outline" size="sm" className="w-full">
+                          <FileText className="w-4 h-4 mr-2" />
+                          צפה בסיכום
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'messages' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Messages List */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>הודעות</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {messages.map((message) => (
+                      <div key={message.id} className={`flex gap-3 ${message.senderId === 'user' ? 'flex-row-reverse' : ''}`}>
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                          {message.senderName.charAt(0)}
+                        </div>
+                        <div className={`flex-1 ${message.senderId === 'user' ? 'text-right' : ''}`}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium text-sm">{message.senderName}</span>
+                            <span className="text-xs text-gray-500">
+                              {new Date(message.timestamp).toLocaleString('he-IL')}
+                            </span>
+                            {!message.isRead && message.senderId !== 'user' && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
+                          </div>
+                          <div className={`p-3 rounded-lg text-sm ${
+                            message.senderId === 'user' 
+                              ? 'bg-blue-500 text-white' 
+                              : 'bg-gray-100 dark:bg-gray-800'
+                          }`}>
+                            {message.content}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Message Input */}
+              <Card className="mt-4">
+                <CardContent className="p-4">
+                  <div className="flex gap-3">
+                    <Textarea 
+                      placeholder="כתוב הודעה..."
+                      className="flex-1 min-h-[80px]"
+                    />
+                    <div className="flex flex-col gap-2">
+                      <Button size="sm">
+                        <Send className="w-4 h-4" />
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Upload className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Data Sharing Panel */}
+            <div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">שיתוף נתונים</CardTitle>
+                  <CardDescription>
+                    בחר איזה נתונים לשתף עם המטפל שלך
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-red-500" />
+                        <span className="text-sm">נתוני מצב רוח</span>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Share2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm">רשומות יומן</span>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Share2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Brain className="w-4 h-4 text-purple-500" />
+                        <span className="text-sm">תובנות AI</span>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Share2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-green-500" />
+                        <span className="text-sm">דוחות התקדמות</span>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Share2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <Button className="w-full" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      צור דוח מקיף
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-lg">הגדרות פרטיות</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">שיתוף אוטומטי</span>
+                    <Button variant="outline" size="sm">
+                      <Lock className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">הצפנת הודעות</span>
+                    <Button variant="outline" size="sm">
+                      <Shield className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
