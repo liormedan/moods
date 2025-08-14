@@ -59,7 +59,16 @@ cp .env.example .env
 npx prisma migrate dev
 ```
 
+
 4. **הרצת האפליקציה**
+=======
+ערכו את הקובץ `.env` עם הערכים המתאימים והגדירו:
+
+- `NEXTAUTH_URL` - כתובת הבסיס של האפליקציה (למשל `http://localhost:3000`)
+- `NEXTAUTH_SECRET` - מחרוזת אקראית חזקה להצפנת נתוני NextAuth
+
+5. **הרצת האפליקציה**
+
 
 ```bash
 npm run dev

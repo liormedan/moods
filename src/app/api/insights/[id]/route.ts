@@ -16,9 +16,9 @@ const insightUpdateSchema = z.object({
 // PATCH /api/insights/[id] - Update specific insight
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   try {
     const session = await getServerSession(authOptions);
 
@@ -26,7 +26,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = await params;
     const body = await request.json();
 
     // Validate input
@@ -72,9 +71,9 @@ export async function PATCH(
 // DELETE /api/insights/[id] - Delete specific insight
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   try {
     const session = await getServerSession(authOptions);
 

@@ -1,24 +1,11 @@
-// Temporarily disabled authentication for demo purposes
-// import { withAuth } from 'next-auth/middleware';
+import { withAuth } from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
 
-// export default withAuth(
-//   function middleware() {
-//     // Add any additional middleware logic here
-//   },
-//   {
-//     callbacks: {
-//       authorized: ({ token, req }) => {
-//         // Allow all requests for demo
-//         return true;
-//       },
-//     },
-//   }
-// );
-
-// Allow all requests for demo
-export function middleware() {
-  return;
-}
+export default withAuth(function middleware(req) {
+  if (!req.nextauth?.token) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+});
 
 export const config = {
   matcher: ['/dashboard/:path*', '/api/mood/:path*', '/api/insights/:path*'],
