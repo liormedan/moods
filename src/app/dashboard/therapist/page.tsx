@@ -348,10 +348,7 @@ export default function TherapistPage() {
 
         {/* Other tabs content will be added in the next part */}
       </div>
-    </DashboardLayout>
-  );
-}      
-  {activeTab === 'my-therapist' && currentTherapist && (
+        {activeTab === 'my-therapist' && currentTherapist && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Therapist Profile */}
             <div className="lg:col-span-2">
@@ -697,6 +694,16 @@ export default function TherapistPage() {
                     <Button variant="outline" size="sm">
                       <Shield className="w-4 h-4" />
                     </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}
                   </div>
                 </CardContent>
               </Card>
