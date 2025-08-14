@@ -392,4 +392,3 @@ function calculateMoodTrend(moodEntries: any[]): 'up' | 'down' | 'stable' {
   if (diff < -0.5) return 'down';
   return 'stable';
 }
-

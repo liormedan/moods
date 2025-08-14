@@ -89,6 +89,13 @@ const sidebarSections: SidebarSection[] = [
         icon: Lightbulb,
         description: 'המלצות והתובנות מותאמות אישית',
       },
+      {
+        title: 'תובנות AI מתקדמות',
+        href: '/dashboard/ai-insights',
+        icon: Brain,
+        description: 'ניתוח AI מתקדם ותחזיות',
+        badge: 'PRO',
+      },
     ],
   },
   {

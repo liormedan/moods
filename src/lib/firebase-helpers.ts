@@ -31,7 +31,10 @@ export class FirebaseService<T> {
   ): Promise<string> {
     // Mock implementation
     const mockId = Math.random().toString(36).substr(2, 9);
-    console.log(`Mock Firebase: Creating ${this.collectionName} with ID ${mockId}`, data);
+    console.log(
+      `Mock Firebase: Creating ${this.collectionName} with ID ${mockId}`,
+      data
+    );
     return mockId;
   }
 
@@ -48,7 +51,10 @@ export class FirebaseService<T> {
     data: Partial<Omit<T, 'id' | 'createdAt'>>
   ): Promise<void> {
     // Mock implementation
-    console.log(`Mock Firebase: Updating ${this.collectionName} with ID ${id}`, data);
+    console.log(
+      `Mock Firebase: Updating ${this.collectionName} with ID ${id}`,
+      data
+    );
   }
 
   // Delete a document
@@ -58,13 +64,11 @@ export class FirebaseService<T> {
   }
 
   // Get documents with filters
-  async getWhere(
-    field: string,
-    operator: string,
-    value: any
-  ): Promise<T[]> {
+  async getWhere(field: string, operator: string, value: any): Promise<T[]> {
     // Mock implementation
-    console.log(`Mock Firebase: Getting ${this.collectionName} where ${field} ${operator} ${value}`);
+    console.log(
+      `Mock Firebase: Getting ${this.collectionName} where ${field} ${operator} ${value}`
+    );
     return [];
   }
 
@@ -74,7 +78,9 @@ export class FirebaseService<T> {
     startAfter?: QueryDocumentSnapshot
   ): Promise<T[]> {
     // Mock implementation
-    console.log(`Mock Firebase: Getting ${this.collectionName} with limit ${limit}`);
+    console.log(
+      `Mock Firebase: Getting ${this.collectionName} with limit ${limit}`
+    );
     return [];
   }
 
@@ -84,7 +90,9 @@ export class FirebaseService<T> {
     errorCallback?: (error: Error) => void
   ): Unsubscribe {
     // Mock implementation
-    console.log(`Mock Firebase: Setting up snapshot listener for ${this.collectionName}`);
+    console.log(
+      `Mock Firebase: Setting up snapshot listener for ${this.collectionName}`
+    );
     return () => {
       console.log(`Mock Firebase: Unsubscribing from ${this.collectionName}`);
     };
@@ -93,15 +101,29 @@ export class FirebaseService<T> {
 
 // Export mock functions for compatibility
 export const collection = (db: any, collectionName: string) => collectionName;
-export const doc = (db: any, collectionName: string, id: string) => `${collectionName}/${id}`;
-export const getDoc = async (docRef: any) => ({ exists: () => false, data: () => null });
+export const doc = (db: any, collectionName: string, id: string) =>
+  `${collectionName}/${id}`;
+export const getDoc = async (docRef: any) => ({
+  exists: () => false,
+  data: () => null,
+});
 export const getDocs = async (query: any) => ({ docs: [] });
-export const addDoc = async (collectionRef: any, data: any) => ({ id: Math.random().toString(36).substr(2, 9) });
+export const addDoc = async (collectionRef: any, data: any) => ({
+  id: Math.random().toString(36).substr(2, 9),
+});
 export const updateDoc = async (docRef: any, data: any) => Promise.resolve();
 export const deleteDoc = async (docRef: any) => Promise.resolve();
-export const query = (collectionRef: any, ...constraints: any[]) => collectionRef;
-export const where = (field: string, operator: string, value: any) => ({ field, operator, value });
-export const orderBy = (field: string, direction?: 'asc' | 'desc') => ({ field, direction: direction || 'asc' });
+export const query = (collectionRef: any, ...constraints: any[]) =>
+  collectionRef;
+export const where = (field: string, operator: string, value: any) => ({
+  field,
+  operator,
+  value,
+});
+export const orderBy = (field: string, direction?: 'asc' | 'desc') => ({
+  field,
+  direction: direction || 'asc',
+});
 export const limit = (max: number) => ({ max });
 export const startAfter = (snapshot: any) => ({ snapshot });
 export const writeBatch = (db: any) => ({
@@ -110,7 +132,8 @@ export const writeBatch = (db: any) => ({
   delete: () => ({}),
   commit: () => Promise.resolve(),
 });
-export const runTransaction = async (db: any, updateFunction: any) => Promise.resolve();
+export const runTransaction = async (db: any, updateFunction: any) =>
+  Promise.resolve();
 export const onSnapshot = (query: any, callback: any, errorCallback?: any) => {
   console.log('Mock Firebase: Setting up snapshot listener');
   return () => {

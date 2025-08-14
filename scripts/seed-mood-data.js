@@ -88,9 +88,14 @@ async function main() {
         update: entry,
         create: entry,
       });
-      console.log(`Added mood entry for ${entry.date.toISOString().split('T')[0]}`);
+      console.log(
+        `Added mood entry for ${entry.date.toISOString().split('T')[0]}`
+      );
     } catch (error) {
-      console.error(`Error adding entry for ${entry.date.toISOString().split('T')[0]}:`, error.message);
+      console.error(
+        `Error adding entry for ${entry.date.toISOString().split('T')[0]}:`,
+        error.message
+      );
     }
   }
 

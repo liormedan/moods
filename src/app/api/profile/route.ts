@@ -287,4 +287,3 @@ async function logActivity(
     console.error('Error logging activity:', error);
   }
 }
-

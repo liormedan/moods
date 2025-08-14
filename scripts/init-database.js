@@ -13,23 +13,23 @@ async function main() {
     const demoName = 'משתמש דמו';
 
     console.log('👤 Creating demo user...');
-    
+
     // Check if demo user exists
     let demoUser = await prisma.user.findUnique({
-      where: { email: demoEmail }
+      where: { email: demoEmail },
     });
 
     if (!demoUser) {
       const hashedPassword = await bcrypt.hash(demoPassword, 12);
-      
+
       demoUser = await prisma.user.create({
         data: {
           name: demoName,
           email: demoEmail,
           password: hashedPassword,
-        }
+        },
       });
-      
+
       console.log('✅ Demo user created!');
     } else {
       console.log('✅ Demo user already exists!');
@@ -40,14 +40,14 @@ async function main() {
 
     // Create sample mood entries
     console.log('📊 Creating sample mood data...');
-    
+
     const moodEntries = [];
     const today = new Date();
-    
+
     for (let i = 30; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      
+
       const moodValue = Math.floor(Math.random() * 10) + 1;
       const notes = [
         'יום טוב בסך הכל',
@@ -59,7 +59,7 @@ async function main() {
         'הרגשתי מאוד טוב',
         'קצת עייף',
         'מצב רוח מצוין',
-        'יום מאתגר'
+        'יום מאתגר',
       ][Math.floor(Math.random() * 10)];
 
       try {
@@ -67,19 +67,19 @@ async function main() {
           where: {
             userId_date: {
               userId: demoUser.id,
-              date: date
-            }
+              date: date,
+            },
           },
           update: {
             moodValue,
-            notes
+            notes,
           },
           create: {
             userId: demoUser.id,
             moodValue,
             notes,
-            date
-          }
+            date,
+          },
         });
       } catch (error) {
         // Skip if entry already exists
@@ -90,29 +90,30 @@ async function main() {
 
     // Create sample journal entries
     console.log('📝 Creating sample journal entries...');
-    
+
     const journalEntries = [
       {
         title: 'רפלקציה על השבוע',
         content: 'השבוע היה מלא באתגרים אבל גם בהישגים. למדתי הרבה על עצמי.',
         mood: 7,
         tags: '["רפלקציה", "למידה", "צמיחה"]',
-        template: 'reflection'
+        template: 'reflection',
       },
       {
         title: 'דברים שאני אסיר תודה עליהם',
-        content: 'אני אסיר תודה על המשפחה שלי, על הבריאות, ועל ההזדמנויות שיש לי.',
+        content:
+          'אני אסיר תודה על המשפחה שלי, על הבריאות, ועל ההזדמנויות שיש לי.',
         mood: 8,
         tags: '["הכרת תודה", "משפחה", "בריאות"]',
-        template: 'gratitude'
+        template: 'gratitude',
       },
       {
         title: 'המטרות שלי לחודש הבא',
         content: 'אני רוצה להתחיל לעשות יותר ספורט ולקרוא ספר חדש.',
         mood: 6,
         tags: '["מטרות", "ספורט", "קריאה"]',
-        template: 'goals'
-      }
+        template: 'goals',
+      },
     ];
 
     for (const entry of journalEntries) {
@@ -120,8 +121,8 @@ async function main() {
         await prisma.journalEntry.create({
           data: {
             ...entry,
-            userId: demoUser.id
-          }
+            userId: demoUser.id,
+          },
         });
       } catch (error) {
         // Skip if error
@@ -132,7 +133,7 @@ async function main() {
 
     // Create sample goals
     console.log('🎯 Creating sample goals...');
-    
+
     const goals = [
       {
         title: 'שיפור כושר גופני',
@@ -145,8 +146,8 @@ async function main() {
         milestones: JSON.stringify([
           { id: 1, text: 'רישום לחדר כושר', completed: true },
           { id: 2, text: 'אימון ראשון', completed: true },
-          { id: 3, text: 'שבוע של אימונים', completed: false }
-        ])
+          { id: 3, text: 'שבוע של אימונים', completed: false },
+        ]),
       },
       {
         title: 'מדיטציה יומית',
@@ -159,9 +160,9 @@ async function main() {
         milestones: JSON.stringify([
           { id: 1, text: 'הורדת אפליקציה', completed: true },
           { id: 2, text: 'שבוע ראשון', completed: true },
-          { id: 3, text: 'חודש שלם', completed: false }
-        ])
-      }
+          { id: 3, text: 'חודש שלם', completed: false },
+        ]),
+      },
     ];
 
     for (const goal of goals) {
@@ -169,8 +170,8 @@ async function main() {
         await prisma.goal.create({
           data: {
             ...goal,
-            userId: demoUser.id
-          }
+            userId: demoUser.id,
+          },
         });
       } catch (error) {
         // Skip if error
@@ -186,7 +187,6 @@ async function main() {
     console.log('   Password: demo123');
     console.log('');
     console.log('🌐 Visit: http://localhost:3000/auth/signin');
-
   } catch (error) {
     console.error('❌ Error initializing database:', error);
   }

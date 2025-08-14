@@ -7,6 +7,7 @@ Local Development Guide for Mental Health Tracker
 You have two options for running the application locally:
 
 ### 1. Direct Admin Access 🎯
+
 - **Best for**: Quick development and UI testing
 - **Authentication**: No authentication - directly to dashboard
 - **Data**: Mock data
@@ -14,6 +15,7 @@ You have two options for running the application locally:
 - **Requirements**: Node.js + npm only
 
 ### 2. Firebase Emulators 🔥
+
 - **Best for**: Full development with authentication and data
 - **Authentication**: Full authentication with Firebase Auth
 - **Data**: Local data with Firestore
@@ -23,11 +25,13 @@ You have two options for running the application locally:
 ## 📁 Launch Files
 
 ### Windows Batch File
+
 ```bash
 start-local.bat
 ```
 
 ### PowerShell Script
+
 ```powershell
 .\start-local.ps1
 ```
@@ -35,6 +39,7 @@ start-local.bat
 ## 🛠️ Usage
 
 ### Interactive Menu
+
 ```bash
 # Run the file without parameters
 .\start-local.bat
@@ -43,6 +48,7 @@ start-local.bat
 ```
 
 ### Direct Launch
+
 ```bash
 # Direct admin access
 .\start-local.ps1 -Admin
@@ -57,11 +63,13 @@ start-local.bat
 ## 🔧 System Requirements
 
 ### Direct Admin Access
+
 - ✅ Node.js 18+
 - ✅ npm or yarn
 - ❌ No additional setup required
 
 ### Firebase Emulators
+
 - ✅ Node.js 18+
 - ✅ npm or yarn
 - ✅ Firebase CLI (installed automatically)
@@ -72,6 +80,7 @@ start-local.bat
 **📖 For detailed Java installation instructions, see: [JAVA_INSTALLATION.md](./JAVA_INSTALLATION.md)**
 
 ### Quick Installation Steps
+
 1. Download Java 17 or 21 from [Eclipse Temurin](https://adoptium.net/temurin/releases/) (recommended)
 2. Run the .msi installer as Administrator
 3. Install for all users
@@ -79,22 +88,26 @@ start-local.bat
 5. Restart your terminal
 
 ### Verification
+
 ```bash
 java -version
 ```
 
 ### If Java is not installed
+
 The script will show an error message and return to the main menu.
 
 ## 📋 Launch Steps
 
 ### Direct Admin Access
+
 1. Run the file `start-local.bat` or `start-local.ps1`
 2. Choose option 1
 3. Application will open in browser at `http://localhost:3000`
 4. You'll be taken directly to dashboard without authentication
 
 ### Firebase Emulators
+
 1. Run the file `start-local.bat` or `start-local.ps1`
 2. Choose option 2
 3. Firebase CLI will be installed automatically (if needed)
@@ -108,22 +121,24 @@ The script will show an error message and return to the main menu.
 
 ## 🌐 Ports
 
-| Service | Port | Description |
-|---------|------|-------------|
-| Next.js App | 3000 | Main application |
-| Firebase Auth | 9099 | Authentication emulator |
-| Firebase Firestore | 8080 | Database emulator |
-| Firebase Storage | 9199 | Storage emulator |
-| Emulator UI | 4000 | Emulator management interface |
+| Service            | Port | Description                   |
+| ------------------ | ---- | ----------------------------- |
+| Next.js App        | 3000 | Main application              |
+| Firebase Auth      | 9099 | Authentication emulator       |
+| Firebase Firestore | 8080 | Database emulator             |
+| Firebase Storage   | 9199 | Storage emulator              |
+| Emulator UI        | 4000 | Emulator management interface |
 
 ## 🔍 Troubleshooting
 
 ### Firebase CLI not installed
+
 ```bash
 npm install -g firebase-tools
 ```
 
 ### Java not installed
+
 ```bash
 # Windows
 # Download and install Java from Oracle or OpenJDK
@@ -134,12 +149,14 @@ java -version
 ```
 
 ### Emulators not working
+
 1. Check that ports 9099, 8080, 9199 are free
 2. Verify Java is installed: `java -version`
 3. Restart the script
 4. Check Emulator UI at `http://localhost:4000`
 
 ### Permission errors
+
 ```bash
 # Windows - Run as administrator
 # PowerShell - Change execution policy
@@ -147,6 +164,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ### Encoding issues with Hebrew
+
 ```bash
 # PowerShell - Change encoding
 chcp 65001
@@ -155,6 +173,7 @@ chcp 65001
 ## 🎯 Launch Modes
 
 ### Admin Mode
+
 - Environment variables:
   - `NEXT_PUBLIC_ADMIN_MODE=true`
   - `NEXT_PUBLIC_SKIP_AUTH=true`
@@ -163,6 +182,7 @@ chcp 65001
 - Speed: Fast
 
 ### Firebase Emulator Mode
+
 - Environment variables:
   - `NEXT_PUBLIC_FIREBASE_USE_EMULATOR=true`
   - `NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_URL=http://localhost:9099`
@@ -182,6 +202,7 @@ chcp 65001
 ## 🆘 Support
 
 If you have issues:
+
 1. Check the main README file
 2. Check Firebase Setup files
 3. Ensure Java is installed (for emulators)

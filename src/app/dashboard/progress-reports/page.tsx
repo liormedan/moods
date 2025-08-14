@@ -735,150 +735,150 @@ export default function ProgressReportsPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <>
                       {selectedChart === 'line' && (
-                      <LineChart data={currentReport.trendData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                          dataKey="date"
-                          tickFormatter={(value) =>
-                            new Date(value).toLocaleDateString('he-IL', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          }
-                        />
-                        <YAxis />
-                        <Tooltip
-                          labelFormatter={(value) =>
-                            new Date(value).toLocaleDateString('he-IL')
-                          }
-                          formatter={(value: any, name: string) => [
-                            typeof value === 'number'
-                              ? value.toFixed(1)
-                              : value,
-                            name === 'moodAverage'
-                              ? 'ממוצע מצב רוח'
-                              : name === 'activitiesCount'
-                                ? 'מספר פעילויות'
-                                : name === 'goalsProgress'
-                                  ? 'התקדמות מטרות'
-                                  : name,
-                          ]}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="moodAverage"
-                          stroke="#3B82F6"
-                          strokeWidth={2}
-                          name="moodAverage"
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="activitiesCount"
-                          stroke="#10B981"
-                          strokeWidth={2}
-                          name="activitiesCount"
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="goalsProgress"
-                          stroke="#8B5CF6"
-                          strokeWidth={2}
-                          name="goalsProgress"
-                        />
-                      </LineChart>
-                    )}
-                    {selectedChart === 'area' && (
-                      <AreaChart data={currentReport.trendData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                          dataKey="date"
-                          tickFormatter={(value) =>
-                            new Date(value).toLocaleDateString('he-IL', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          }
-                        />
-                        <YAxis />
-                        <Tooltip
-                          labelFormatter={(value) =>
-                            new Date(value).toLocaleDateString('he-IL')
-                          }
-                          formatter={(value: any, name: string) => [
-                            typeof value === 'number'
-                              ? value.toFixed(1)
-                              : value,
-                            name === 'moodAverage'
-                              ? 'ממוצע מצב רוח'
-                              : name === 'activitiesCount'
-                                ? 'מספר פעילויות'
-                                : name === 'goalsProgress'
-                                  ? 'התקדמות מטרות'
-                                  : name,
-                          ]}
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="moodAverage"
-                          stackId="1"
-                          stroke="#3B82F6"
-                          fill="#3B82F6"
-                          fillOpacity={0.6}
-                          name="moodAverage"
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="activitiesCount"
-                          stackId="2"
-                          stroke="#10B981"
-                          fill="#10B981"
-                          fillOpacity={0.6}
-                          name="activitiesCount"
-                        />
-                      </AreaChart>
-                    )}
-                    {selectedChart === 'bar' && (
-                      <BarChart data={currentReport.trendData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                          dataKey="date"
-                          tickFormatter={(value) =>
-                            new Date(value).toLocaleDateString('he-IL', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          }
-                        />
-                        <YAxis />
-                        <Tooltip
-                          labelFormatter={(value) =>
-                            new Date(value).toLocaleDateString('he-IL')
-                          }
-                          formatter={(value: any, name: string) => [
-                            typeof value === 'number'
-                              ? value.toFixed(1)
-                              : value,
-                            name === 'moodAverage'
-                              ? 'ממוצע מצב רוח'
-                              : name === 'activitiesCount'
-                                ? 'מספר פעילויות'
-                                : name === 'goalsProgress'
-                                  ? 'התקדמות מטרות'
-                                  : name,
-                          ]}
-                        />
-                        <Bar
-                          dataKey="moodAverage"
-                          fill="#3B82F6"
-                          name="moodAverage"
-                        />
-                        <Bar
-                          dataKey="activitiesCount"
-                          fill="#10B981"
-                          name="activitiesCount"
-                        />
-                      </BarChart>
-                    )}
+                        <LineChart data={currentReport.trendData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis
+                            dataKey="date"
+                            tickFormatter={(value) =>
+                              new Date(value).toLocaleDateString('he-IL', {
+                                month: 'short',
+                                day: 'numeric',
+                              })
+                            }
+                          />
+                          <YAxis />
+                          <Tooltip
+                            labelFormatter={(value) =>
+                              new Date(value).toLocaleDateString('he-IL')
+                            }
+                            formatter={(value: any, name: string) => [
+                              typeof value === 'number'
+                                ? value.toFixed(1)
+                                : value,
+                              name === 'moodAverage'
+                                ? 'ממוצע מצב רוח'
+                                : name === 'activitiesCount'
+                                  ? 'מספר פעילויות'
+                                  : name === 'goalsProgress'
+                                    ? 'התקדמות מטרות'
+                                    : name,
+                            ]}
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="moodAverage"
+                            stroke="#3B82F6"
+                            strokeWidth={2}
+                            name="moodAverage"
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="activitiesCount"
+                            stroke="#10B981"
+                            strokeWidth={2}
+                            name="activitiesCount"
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="goalsProgress"
+                            stroke="#8B5CF6"
+                            strokeWidth={2}
+                            name="goalsProgress"
+                          />
+                        </LineChart>
+                      )}
+                      {selectedChart === 'area' && (
+                        <AreaChart data={currentReport.trendData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis
+                            dataKey="date"
+                            tickFormatter={(value) =>
+                              new Date(value).toLocaleDateString('he-IL', {
+                                month: 'short',
+                                day: 'numeric',
+                              })
+                            }
+                          />
+                          <YAxis />
+                          <Tooltip
+                            labelFormatter={(value) =>
+                              new Date(value).toLocaleDateString('he-IL')
+                            }
+                            formatter={(value: any, name: string) => [
+                              typeof value === 'number'
+                                ? value.toFixed(1)
+                                : value,
+                              name === 'moodAverage'
+                                ? 'ממוצע מצב רוח'
+                                : name === 'activitiesCount'
+                                  ? 'מספר פעילויות'
+                                  : name === 'goalsProgress'
+                                    ? 'התקדמות מטרות'
+                                    : name,
+                            ]}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="moodAverage"
+                            stackId="1"
+                            stroke="#3B82F6"
+                            fill="#3B82F6"
+                            fillOpacity={0.6}
+                            name="moodAverage"
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="activitiesCount"
+                            stackId="2"
+                            stroke="#10B981"
+                            fill="#10B981"
+                            fillOpacity={0.6}
+                            name="activitiesCount"
+                          />
+                        </AreaChart>
+                      )}
+                      {selectedChart === 'bar' && (
+                        <BarChart data={currentReport.trendData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis
+                            dataKey="date"
+                            tickFormatter={(value) =>
+                              new Date(value).toLocaleDateString('he-IL', {
+                                month: 'short',
+                                day: 'numeric',
+                              })
+                            }
+                          />
+                          <YAxis />
+                          <Tooltip
+                            labelFormatter={(value) =>
+                              new Date(value).toLocaleDateString('he-IL')
+                            }
+                            formatter={(value: any, name: string) => [
+                              typeof value === 'number'
+                                ? value.toFixed(1)
+                                : value,
+                              name === 'moodAverage'
+                                ? 'ממוצע מצב רוח'
+                                : name === 'activitiesCount'
+                                  ? 'מספר פעילויות'
+                                  : name === 'goalsProgress'
+                                    ? 'התקדמות מטרות'
+                                    : name,
+                            ]}
+                          />
+                          <Bar
+                            dataKey="moodAverage"
+                            fill="#3B82F6"
+                            name="moodAverage"
+                          />
+                          <Bar
+                            dataKey="activitiesCount"
+                            fill="#10B981"
+                            name="activitiesCount"
+                          />
+                        </BarChart>
+                      )}
                     </>
                   </ResponsiveContainer>
                 </div>

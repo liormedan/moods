@@ -187,9 +187,7 @@ function ResetPasswordContent() {
         <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
           <Mail className="w-8 h-8 text-blue-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          איפוס סיסמה
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">איפוס סיסמה</h2>
         <p className="text-gray-600">
           הזן את כתובת האימייל שלך ונשלח לך קוד אימות
         </p>
@@ -197,7 +195,10 @@ function ResetPasswordContent() {
 
       <form onSubmit={handleRequestReset} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             כתובת אימייל
           </label>
           <div className="relative">
@@ -214,11 +215,7 @@ function ResetPasswordContent() {
           </div>
         </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={loading || !email}
-        >
+        <Button type="submit" className="w-full" disabled={loading || !email}>
           {loading ? (
             <>
               <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -250,17 +247,16 @@ function ResetPasswordContent() {
         <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
           <Shield className="w-8 h-8 text-green-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          אימות קוד
-        </h2>
-        <p className="text-gray-600">
-          קוד אימות נשלח ל-{email}
-        </p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">אימות קוד</h2>
+        <p className="text-gray-600">קוד אימות נשלח ל-{email}</p>
       </div>
 
       <form onSubmit={handleVerifyCode} className="space-y-4">
         <div>
-          <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="code"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             קוד אימות
           </label>
           <div className="relative">
@@ -322,17 +318,16 @@ function ResetPasswordContent() {
         <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
           <Lock className="w-8 h-8 text-purple-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          סיסמה חדשה
-        </h2>
-        <p className="text-gray-600">
-          בחר סיסמה חדשה חזקה
-        </p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">סיסמה חדשה</h2>
+        <p className="text-gray-600">בחר סיסמה חדשה חזקה</p>
       </div>
 
       <form onSubmit={handleResetPassword} className="space-y-4">
         <div>
-          <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="newPassword"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             סיסמה חדשה
           </label>
           <div className="relative">
@@ -375,19 +370,24 @@ function ResetPasswordContent() {
                 {calculatePasswordStrength(newPassword).label}
               </p>
               <ul className="text-xs text-gray-500 mt-1 space-y-1">
-                {calculatePasswordStrength(newPassword).feedback.map((item, index) => (
-                  <li key={index} className="flex items-center">
-                    <AlertCircle className="w-3 h-3 mr-1 text-red-500" />
-                    {item}
-                  </li>
-                ))}
+                {calculatePasswordStrength(newPassword).feedback.map(
+                  (item, index) => (
+                    <li key={index} className="flex items-center">
+                      <AlertCircle className="w-3 h-3 mr-1 text-red-500" />
+                      {item}
+                    </li>
+                  )
+                )}
               </ul>
             </div>
           )}
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             אישור סיסמה
           </label>
           <div className="relative">
@@ -455,10 +455,7 @@ function ResetPasswordContent() {
       <p className="text-gray-600">
         הסיסמה שלך אופסה בהצלחה. כעת תוכל להתחבר עם הסיסמה החדשה.
       </p>
-      <Button
-        onClick={() => router.push('/auth/signin')}
-        className="w-full"
-      >
+      <Button onClick={() => router.push('/auth/signin')} className="w-full">
         התחבר עכשיו
         <ArrowRight className="w-4 h-4 mr-2" />
       </Button>
@@ -507,20 +504,22 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-gray-900">
-              טוען...
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <RefreshCw className="w-8 h-8 mx-auto animate-spin text-blue-600" />
-          </CardContent>
-        </Card>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <CardTitle className="text-3xl font-bold text-gray-900">
+                טוען...
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <RefreshCw className="w-8 h-8 mx-auto animate-spin text-blue-600" />
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
       <ResetPasswordContent />
     </Suspense>
   );

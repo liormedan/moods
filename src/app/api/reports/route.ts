@@ -496,4 +496,3 @@ function getPeriodName(period: string): string {
       return 'תקופתי';
   }
 }
-

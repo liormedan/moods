@@ -758,8 +758,10 @@ export default function SupportGroupsPage() {
                     onClick={() => registerForEvent(event.id)}
                     disabled={
                       event.isRegistered ||
-                      !!(event.maxParticipants &&
-                        event.currentParticipants >= event.maxParticipants)
+                      !!(
+                        event.maxParticipants &&
+                        event.currentParticipants >= event.maxParticipants
+                      )
                     }
                     className="w-full"
                   >

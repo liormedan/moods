@@ -5,6 +5,7 @@ This document explains how Firebase Analytics is configured and used in the Ment
 ## Configuration
 
 Firebase is configured in `src/lib/firebase.ts` with the following services:
+
 - **Authentication** - User login/logout
 - **Firestore** - Database for storing user data
 - **Storage** - File storage
@@ -15,9 +16,11 @@ Firebase is configured in `src/lib/firebase.ts` with the following services:
 The analytics utility (`src/lib/analytics.ts`) provides the following tracking functions:
 
 ### Page Tracking
+
 - `trackPageView(pageName)` - Track when users visit specific pages
 
 ### User Actions
+
 - `trackMoodEntry(moodValue, moodType)` - Track mood entries
 - `trackTrendsAnalysis(period, metric)` - Track trends analysis usage
 - `trackGoalProgress(goalId, progress, goalType)` - Track goal progress
@@ -25,10 +28,12 @@ The analytics utility (`src/lib/analytics.ts`) provides the following tracking f
 - `trackJournalEntry(entryLength, hasTags, isPrivate)` - Track journal entries
 
 ### Feature Usage
+
 - `trackFeatureUsage(featureName, usageType)` - Track how users interact with features
 - `trackUserEngagement(action, duration)` - Track user engagement patterns
 
 ### Data Actions
+
 - `trackDataAction(action, dataType)` - Track data export, sharing, and downloads
 
 ## Usage Examples
@@ -70,6 +75,7 @@ const handleButtonClick = () => {
 ## Analytics Dashboard
 
 You can view the analytics data in the [Firebase Console](https://console.firebase.google.com/):
+
 1. Go to your project (moods-76653)
 2. Click on "Analytics" in the left sidebar
 3. View user engagement, feature usage, and custom events
@@ -95,13 +101,13 @@ To add new tracking events:
 3. Document the event parameters and purpose
 
 Example:
+
 ```tsx
 export const trackNewFeature = (param1: string, param2: number) => {
   trackEvent('new_feature', {
     parameter1: param1,
     parameter2: param2,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 };
 ```
-

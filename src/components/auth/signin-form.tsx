@@ -219,18 +219,20 @@ function SignInFormContent() {
 
 export function SignInForm() {
   return (
-    <Suspense fallback={
-      <Card className="w-full max-w-md mx-auto shadow-lg border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-        <CardHeader className="space-y-1 pb-4">
-          <CardTitle className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100">
-            טוען...
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-center">
-          <RefreshCw className="w-8 h-8 mx-auto animate-spin text-blue-600" />
-        </CardContent>
-      </Card>
-    }>
+    <Suspense
+      fallback={
+        <Card className="w-full max-w-md mx-auto shadow-lg border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100">
+              טוען...
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-center">
+            <RefreshCw className="w-8 h-8 mx-auto animate-spin text-blue-600" />
+          </CardContent>
+        </Card>
+      }
+    >
       <SignInFormContent />
     </Suspense>
   );

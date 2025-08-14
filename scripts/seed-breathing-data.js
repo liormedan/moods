@@ -89,9 +89,14 @@ async function main() {
       await prisma.breathingSession.create({
         data: session,
       });
-      console.log(`Added breathing session: ${session.exerciseName} (${session.duration}s)`);
+      console.log(
+        `Added breathing session: ${session.exerciseName} (${session.duration}s)`
+      );
     } catch (error) {
-      console.error(`Error adding session "${session.exerciseName}":`, error.message);
+      console.error(
+        `Error adding session "${session.exerciseName}":`,
+        error.message
+      );
     }
   }
 

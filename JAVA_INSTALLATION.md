@@ -11,13 +11,16 @@ Firebase emulators (Auth, Firestore, Storage) require Java Runtime Environment (
 ### Method 1: Manual Download (Recommended)
 
 #### Step 1: Choose a Java Distribution
+
 - **Oracle JDK**: Official Oracle distribution (requires Oracle account)
 - **Eclipse Temurin**: Open-source, community-supported (recommended)
 - **Microsoft OpenJDK**: Microsoft's OpenJDK build
 - **Azul Zulu**: Enterprise-ready OpenJDK distribution
 
 #### Step 2: Download Java 17 or 21
+
 **Eclipse Temurin (Recommended):**
+
 1. Visit: https://adoptium.net/temurin/releases/
 2. Select version: **17** (LTS) or **21** (LTS)
 3. Select operating system: **Windows**
@@ -25,16 +28,19 @@ Firebase emulators (Auth, Firestore, Storage) require Java Runtime Environment (
 5. Download the **.msi** installer
 
 **Microsoft OpenJDK:**
+
 1. Visit: https://docs.microsoft.com/en-us/java/openjdk/download
 2. Download **Microsoft Build of OpenJDK 17** for Windows x64
 
 #### Step 3: Install Java
+
 1. Run the downloaded **.msi** file
 2. Follow the installation wizard
 3. **Important**: Install for all users (requires admin rights)
 4. Use default installation path: `C:\Program Files\Java\jdk-17.x.x`
 
 #### Step 4: Set Environment Variables
+
 1. Open **System Properties** (Win + R, type `sysdm.cpl`)
 2. Click **Environment Variables**
 3. Under **System Variables**, click **New**
@@ -48,12 +54,14 @@ Firebase emulators (Auth, Firestore, Storage) require Java Runtime Environment (
 ### Method 2: Using Package Managers (Advanced)
 
 #### Windows Package Manager (winget)
+
 ```cmd
 # Run as Administrator
 winget install Microsoft.OpenJDK.17
 ```
 
 #### Chocolatey
+
 ```cmd
 # Run as Administrator
 choco install openjdk17 -y
@@ -68,6 +76,7 @@ java -version
 ```
 
 Expected output:
+
 ```
 openjdk version "17.0.x" 2023-xx-xx
 OpenJDK Runtime Environment Temurin-17.0.x+x (build 17.0.x+x)
@@ -77,22 +86,26 @@ OpenJDK 64-Bit Server VM Temurin-17.0.x+x (build 17.0.x+x, mixed mode, sharing)
 ## 🔧 Troubleshooting
 
 ### Java not found after installation
+
 1. **Restart your terminal/command prompt**
 2. **Restart your computer** (recommended)
 3. Check environment variables are set correctly
 4. Verify the installation path exists
 
 ### Permission denied errors
+
 - **Run terminal as Administrator**
 - **Install Java for all users** (not just current user)
 - **Check antivirus software** isn't blocking installation
 
 ### Port conflicts
+
 - Ensure ports 9099, 8080, 9199 are free
 - Check no other Java applications are running
 - Restart your computer if needed
 
 ### Environment variable issues
+
 ```cmd
 # Check current Java path
 echo %JAVA_HOME%

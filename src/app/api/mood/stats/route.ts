@@ -231,4 +231,3 @@ function generateInsights(
 
   return insights;
 }
-

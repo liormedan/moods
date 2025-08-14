@@ -561,4 +561,3 @@ describe('Insights System', () => {
     });
   });
 });
-

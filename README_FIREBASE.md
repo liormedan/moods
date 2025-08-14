@@ -5,6 +5,7 @@
 ## סקירה כללית
 
 Moods Dashboard היא אפליקציה מתקדמת למעקב אחר מצב בריאות נפשית, המאפשרת למשתמשים:
+
 - תיעוד יומי של מצב רוח ופעילויות
 - הגדרת מטרות אישיות ומעקב אחר התקדמות
 - כתיבת יומן אישי עם תגיות
@@ -28,34 +29,40 @@ Moods Dashboard היא אפליקציה מתקדמת למעקב אחר מצב ב
 ## התקנה והגדרה
 
 ### דרישות מקדימות
-- Node.js 18+ 
+
+- Node.js 18+
 - npm או yarn
 - חשבון Firebase
 
 ### שלב 1: שכפול הפרויקט
+
 ```bash
 git clone <repository-url>
 cd mental-health-tracker
 ```
 
 ### שלב 2: התקנת תלויות
+
 ```bash
 npm install
 ```
 
 ### שלב 3: הגדרת Firebase
+
 1. עקוב אחר המדריך המפורט ב-[FIREBASE_SETUP.md](./FIREBASE_SETUP.md)
 2. צור פרויקט Firebase חדש
 3. הפעל Authentication ו-Firestore
 4. העתק את פרטי התצורה
 
 ### שלב 4: הגדרת משתני סביבה
+
 ```bash
 cp env.example .env.local
 # ערוך את .env.local עם הפרטים שלך מ-Firebase
 ```
 
 ### שלב 5: הפעלת האפליקציה
+
 ```bash
 npm run dev
 ```
@@ -97,40 +104,47 @@ mental-health-tracker/
 ## תכונות עיקריות
 
 ### 🔐 אימות משתמשים
+
 - הרשמה והתחברות עם אימייל וסיסמה
 - ניהול פרופיל משתמש
 - הגדרות פרטיות ואבטחה
 
 ### 📊 מעקב מצב רוח
+
 - תיעוד יומי של מצב רוח (1-10)
 - סיווג סוגי מצב רוח
 - תיעוד פעילויות ומזג אוויר
 - מעקב אחר שעות שינה
 
 ### 🎯 ניהול מטרות
+
 - הגדרת מטרות אישיות
 - מעקב אחר התקדמות
 - אבני דרך ומועדי יעד
 - קטגוריות שונות (בריאות, קריירה, אישי)
 
 ### 📝 יומן אישי
+
 - כתיבת רשומות אישיות
 - תגיות וסיווג
 - הגדרות פרטיות
 - חיפוש וסינון
 
 ### 🧘 תרגילי נשימה
+
 - טכניקות שונות (4-7-8, Box, וכו')
 - מעקב אחר מצב רוח לפני ואחרי
 - תזכורות ותזמון
 
 ### 📈 תובנות וניתוח
+
 - ניתוח מגמות מצב רוח
 - קורלציות בין פעילויות ומצב רוח
 - דוחות התקדמות שבועיים/חודשיים
 - המלצות מותאמות אישית
 
 ### 👥 קהילה ותמיכה
+
 - קבוצות תמיכה
 - שיתוף אנונימי
 - משאבים ומידע
@@ -139,50 +153,60 @@ mental-health-tracker/
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - הרשמת משתמש חדש
 - `POST /api/auth/login` - התחברות משתמש
 - `POST /api/auth/logout` - התנתקות
 
 ### Mood Tracking
+
 - `POST /api/mood/save` - שמירת רשומת מצב רוח
 - `GET /api/mood/history` - היסטוריית מצב רוח
 
 ### Goals
+
 - `POST /api/goals/save` - שמירת מטרה
 - `PUT /api/goals/save` - עדכון מטרה
 
 ### Journal
+
 - `POST /api/journal/save` - שמירת רשומת יומן
 - `PUT /api/journal/save` - עדכון רשומת יומן
 
 ### And more...
+
 ראה את תיקיית `src/app/api` לכל ה-API endpoints הזמינים.
 
 ## פיתוח
 
 ### הפעלת שרת פיתוח
+
 ```bash
 npm run dev
 ```
 
 ### בניית הפרויקט
+
 ```bash
 npm run build
 ```
 
 ### בדיקת קוד
+
 ```bash
 npm run lint
 npm run lint:fix
 ```
 
 ### עיצוב קוד
+
 ```bash
 npm run format
 npm run format:check
 ```
 
 ### בדיקות
+
 ```bash
 npm test
 npm run test:watch
@@ -209,6 +233,7 @@ firebase emulators:start
 ## פריסה (Deployment)
 
 ### Vercel (מומלץ)
+
 1. חבר את הפרויקט ל-GitHub
 2. התחבר ל-[Vercel](https://vercel.com)
 3. ייבא את הפרויקט
@@ -216,6 +241,7 @@ firebase emulators:start
 5. פרוס!
 
 ### Netlify
+
 1. חבר את הפרויקט ל-GitHub
 2. התחבר ל-[Netlify](https://netlify.com)
 3. ייבא את הפרויקט
@@ -244,6 +270,7 @@ firebase emulators:start
 ## תמיכה
 
 אם אתה נתקל בבעיות:
+
 1. בדוק את ה-Console של הדפדפן
 2. בדוק את Firebase Console
 3. פתח Issue ב-GitHub
