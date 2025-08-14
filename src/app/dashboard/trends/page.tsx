@@ -115,7 +115,9 @@ export default function TrendsPage() {
   const loadTrendsData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/trends?range=${timeRange}&type=${analysisType}`);
+      const response = await fetch(
+        `/api/trends?range=${timeRange}&type=${analysisType}`
+      );
       if (response.ok) {
         const result = await response.json();
         setTrendData(result.data.trends);
@@ -133,18 +135,29 @@ export default function TrendsPage() {
 
   const exportTrends = () => {
     const csvContent = [
-      ['תקופה', 'ממוצע מצב רוח', 'רשומות יומן', 'דקות נשימה', 'מטרות הושלמו', 'ימים פעילים'],
-      ...trendData.map(item => [
+      [
+        'תקופה',
+        'ממוצע מצב רוח',
+        'רשומות יומן',
+        'דקות נשימה',
+        'מטרות הושלמו',
+        'ימים פעילים',
+      ],
+      ...trendData.map((item) => [
         item.period,
         item.moodAverage,
         item.journalEntries,
         item.breathingMinutes,
         item.goalsCompleted,
-        item.activeDays
-      ])
-    ].map(row => row.join(',')).join('\n');
+        item.activeDays,
+      ]),
+    ]
+      .map((row) => row.join(','))
+      .join('\n');
 
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `מגמות_ארוכות_טווח_${new Date().toISOString().split('T')[0]}.csv`;
@@ -153,22 +166,24 @@ export default function TrendsPage() {
 
   const getTrendDirection = (data: TrendData[]) => {
     if (data.length < 2) return 'stable';
-    const recent = data.slice(-3).reduce((sum, item) => sum + item.moodAverage, 0) / 3;
-    const earlier = data.slice(0, 3).reduce((sum, item) => sum + item.moodAverage, 0) / 3;
-    
+    const recent =
+      data.slice(-3).reduce((sum, item) => sum + item.moodAverage, 0) / 3;
+    const earlier =
+      data.slice(0, 3).reduce((sum, item) => sum + item.moodAverage, 0) / 3;
+
     if (recent > earlier + 0.5) return 'improving';
     if (recent < earlier - 0.5) return 'declining';
     return 'stable';
   };
 
   const getSeasonalInsight = () => {
-    const bestSeason = seasonalData.reduce((best, current) => 
+    const bestSeason = seasonalData.reduce((best, current) =>
       current.moodAverage > best.moodAverage ? current : best
     );
-    const worstSeason = seasonalData.reduce((worst, current) => 
+    const worstSeason = seasonalData.reduce((worst, current) =>
       current.moodAverage < worst.moodAverage ? current : worst
     );
-    
+
     return { best: bestSeason, worst: worstSeason };
   };
 
@@ -245,12 +260,18 @@ export default function TrendsPage() {
                 )}
                 <div>
                   <h3 className="font-semibold text-lg">
-                    {trendDirection === 'improving' ? 'מגמה חיובית' : 
-                     trendDirection === 'declining' ? 'מגמה שלילית' : 'מגמה יציבה'}
+                    {trendDirection === 'improving'
+                      ? 'מגמה חיובית'
+                      : trendDirection === 'declining'
+                        ? 'מגמה שלילית'
+                        : 'מגמה יציבה'}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {trendDirection === 'improving' ? 'מצב הרוח משתפר לאורך זמן' : 
-                     trendDirection === 'declining' ? 'מצב הרוח יורד לאורך זמן' : 'מצב רוח יציב ללא שינויים משמעותיים'}
+                    {trendDirection === 'improving'
+                      ? 'מצב הרוח משתפר לאורך זמן'
+                      : trendDirection === 'declining'
+                        ? 'מצב הרוח יורד לאורך זמן'
+                        : 'מצב רוח יציב ללא שינויים משמעותיים'}
                   </p>
                 </div>
               </div>
@@ -264,7 +285,8 @@ export default function TrendsPage() {
                 <div>
                   <h3 className="font-semibold text-lg">עונה טובה ביותר</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {seasonalInsight.best?.season} - ממוצע {seasonalInsight.best?.moodAverage.toFixed(1)}
+                    {seasonalInsight.best?.season} - ממוצע{' '}
+                    {seasonalInsight.best?.moodAverage.toFixed(1)}
                   </p>
                 </div>
               </div>
@@ -278,10 +300,9 @@ export default function TrendsPage() {
                 <div>
                   <h3 className="font-semibold text-lg">יעילות מטרות</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {trendData.length > 0 ? 
-                      `${(trendData.reduce((sum, item) => sum + item.goalsCompleted, 0) / trendData.length).toFixed(1)} מטרות בממוצע` :
-                      'אין נתונים'
-                    }
+                    {trendData.length > 0
+                      ? `${(trendData.reduce((sum, item) => sum + item.goalsCompleted, 0) / trendData.length).toFixed(1)} מטרות בממוצע`
+                      : 'אין נתונים'}
                   </p>
                 </div>
               </div>
@@ -306,18 +327,18 @@ export default function TrendsPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="period" />
                 <YAxis domain={[1, 10]} />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: any, name: string) => [
                     typeof value === 'number' ? value.toFixed(1) : value,
-                    name === 'moodAverage' ? 'ממוצע מצב רוח' : name
+                    name === 'moodAverage' ? 'ממוצע מצב רוח' : name,
                   ]}
                   labelFormatter={(label) => `תקופה: ${label}`}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="moodAverage" 
-                  stroke="#3b82f6" 
+                <Line
+                  type="monotone"
+                  dataKey="moodAverage"
+                  stroke="#3b82f6"
                   strokeWidth={3}
                   name="ממוצע מצב רוח"
                   dot={{ fill: '#3b82f6', strokeWidth: 2, r: 6 }}
@@ -334,9 +355,7 @@ export default function TrendsPage() {
               <BarChart3 className="w-5 h-5" />
               ניתוח רב-מדדי
             </CardTitle>
-            <CardDescription>
-              השוואת מדדים שונים לאורך זמן
-            </CardDescription>
+            <CardDescription>השוואת מדדים שונים לאורך זמן</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
@@ -346,30 +365,30 @@ export default function TrendsPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Area 
-                  type="monotone" 
-                  dataKey="moodAverage" 
+                <Area
+                  type="monotone"
+                  dataKey="moodAverage"
                   stackId="1"
-                  stroke="#3b82f6" 
-                  fill="#3b82f6" 
+                  stroke="#3b82f6"
+                  fill="#3b82f6"
                   fillOpacity={0.6}
                   name="מצב רוח"
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="activeDays" 
+                <Area
+                  type="monotone"
+                  dataKey="activeDays"
                   stackId="2"
-                  stroke="#10b981" 
-                  fill="#10b981" 
+                  stroke="#10b981"
+                  fill="#10b981"
                   fillOpacity={0.6}
                   name="ימים פעילים"
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="goalsCompleted" 
+                <Area
+                  type="monotone"
+                  dataKey="goalsCompleted"
                   stackId="3"
-                  stroke="#f59e0b" 
-                  fill="#f59e0b" 
+                  stroke="#f59e0b"
+                  fill="#f59e0b"
                   fillOpacity={0.6}
                   name="מטרות הושלמו"
                 />
@@ -396,18 +415,18 @@ export default function TrendsPage() {
                   <PolarGrid />
                   <PolarAngleAxis dataKey="season" />
                   <PolarRadiusAxis domain={[0, 10]} />
-                  <Radar 
-                    name="מצב רוח" 
-                    dataKey="moodAverage" 
-                    stroke="#3b82f6" 
-                    fill="#3b82f6" 
+                  <Radar
+                    name="מצב רוח"
+                    dataKey="moodAverage"
+                    stroke="#3b82f6"
+                    fill="#3b82f6"
                     fillOpacity={0.3}
                   />
-                  <Radar 
-                    name="רמת פעילות" 
-                    dataKey="activityLevel" 
-                    stroke="#10b981" 
-                    fill="#10b981" 
+                  <Radar
+                    name="רמת פעילות"
+                    dataKey="activityLevel"
+                    stroke="#10b981"
+                    fill="#10b981"
                     fillOpacity={0.3}
                   />
                   <Legend />
@@ -416,12 +435,23 @@ export default function TrendsPage() {
 
               <div className="space-y-4">
                 {seasonalData.map((season, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
-                      {season.season === 'אביב' && <Sun className="w-5 h-5 text-green-500" />}
-                      {season.season === 'קיץ' && <Sun className="w-5 h-5 text-yellow-500" />}
-                      {season.season === 'סתיו' && <Cloud className="w-5 h-5 text-orange-500" />}
-                      {season.season === 'חורף' && <Snowflake className="w-5 h-5 text-blue-500" />}
+                      {season.season === 'אביב' && (
+                        <Sun className="w-5 h-5 text-green-500" />
+                      )}
+                      {season.season === 'קיץ' && (
+                        <Sun className="w-5 h-5 text-yellow-500" />
+                      )}
+                      {season.season === 'סתיו' && (
+                        <Cloud className="w-5 h-5 text-orange-500" />
+                      )}
+                      {season.season === 'חורף' && (
+                        <Snowflake className="w-5 h-5 text-blue-500" />
+                      )}
                       <div>
                         <h4 className="font-medium">{season.season}</h4>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -460,25 +490,25 @@ export default function TrendsPage() {
                 <YAxis domain={[1, 10]} />
                 <Tooltip />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="actual" 
-                  stroke="#3b82f6" 
+                <Line
+                  type="monotone"
+                  dataKey="actual"
+                  stroke="#3b82f6"
                   strokeWidth={2}
                   name="נתונים בפועל"
                   connectNulls={false}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="predicted" 
-                  stroke="#f59e0b" 
+                <Line
+                  type="monotone"
+                  dataKey="predicted"
+                  stroke="#f59e0b"
                   strokeWidth={2}
                   strokeDasharray="5 5"
                   name="חיזוי"
                 />
               </LineChart>
             </ResponsiveContainer>
-            
+
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
                 💡 תובנות חיזוי
@@ -506,7 +536,10 @@ export default function TrendsPage() {
           <CardContent>
             <div className="space-y-4">
               {correlations.map((correlation, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
                   <div className="flex items-center gap-3">
                     {correlation.correlation > 0.5 ? (
                       <CheckCircle className="w-5 h-5 text-green-500" />
@@ -524,7 +557,8 @@ export default function TrendsPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold">
-                      {correlation.correlation > 0 ? '+' : ''}{(correlation.correlation * 100).toFixed(0)}%
+                      {correlation.correlation > 0 ? '+' : ''}
+                      {(correlation.correlation * 100).toFixed(0)}%
                     </div>
                     <div className="text-sm text-gray-500">
                       {correlation.significance}
@@ -550,7 +584,10 @@ export default function TrendsPage() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {insights.map((insight, index) => (
-                <div key={index} className="p-4 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg">
+                <div
+                  key={index}
+                  className="p-4 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg"
+                >
                   <div className="flex items-start gap-3">
                     <Lightbulb className="w-5 h-5 text-purple-500 mt-0.5" />
                     <p className="text-sm text-gray-700 dark:text-gray-300">
@@ -570,54 +607,68 @@ export default function TrendsPage() {
               <Activity className="w-5 h-5" />
               סיכום סטטיסטי
             </CardTitle>
-            <CardDescription>
-              נתונים מרכזיים מהניתוח ארוך הטווח
-            </CardDescription>
+            <CardDescription>נתונים מרכזיים מהניתוח ארוך הטווח</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {trendData.length > 0 ? 
-                    (trendData.reduce((sum, item) => sum + item.moodAverage, 0) / trendData.length).toFixed(1) : 
-                    '0'
-                  }
+                  {trendData.length > 0
+                    ? (
+                        trendData.reduce(
+                          (sum, item) => sum + item.moodAverage,
+                          0
+                        ) / trendData.length
+                      ).toFixed(1)
+                    : '0'}
                 </div>
                 <div className="text-sm text-blue-800 dark:text-blue-300">
                   ממוצע מצב רוח כללי
                 </div>
               </div>
-              
+
               <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
                 <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {trendData.length > 0 ? 
-                    Math.round(trendData.reduce((sum, item) => sum + item.activeDays, 0) / trendData.length) : 
-                    '0'
-                  }
+                  {trendData.length > 0
+                    ? Math.round(
+                        trendData.reduce(
+                          (sum, item) => sum + item.activeDays,
+                          0
+                        ) / trendData.length
+                      )
+                    : '0'}
                 </div>
                 <div className="text-sm text-green-800 dark:text-green-300">
                   ממוצע ימים פעילים
                 </div>
               </div>
-              
+
               <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
                 <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {trendData.length > 0 ? 
-                    Math.round(trendData.reduce((sum, item) => sum + item.goalsCompleted, 0) / trendData.length) : 
-                    '0'
-                  }
+                  {trendData.length > 0
+                    ? Math.round(
+                        trendData.reduce(
+                          (sum, item) => sum + item.goalsCompleted,
+                          0
+                        ) / trendData.length
+                      )
+                    : '0'}
                 </div>
                 <div className="text-sm text-purple-800 dark:text-purple-300">
                   ממוצע מטרות הושלמו
                 </div>
               </div>
-              
+
               <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg">
                 <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                  {trendData.length > 0 ? 
-                    Math.round(trendData.reduce((sum, item) => sum + item.breathingMinutes, 0) / trendData.length) : 
-                    '0'
-                  }
+                  {trendData.length > 0
+                    ? Math.round(
+                        trendData.reduce(
+                          (sum, item) => sum + item.breathingMinutes,
+                          0
+                        ) / trendData.length
+                      )
+                    : '0'}
                 </div>
                 <div className="text-sm text-orange-800 dark:text-orange-300">
                   ממוצע דקות נשימה

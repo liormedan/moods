@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 
 interface ActivityLog {
   id: string;
   action: string;
   description: string;
   timestamp: string;
-  type: 'mood' | 'journal' | 'breathing' | 'goal' | 'login' | 'settings' | 'profile' | 'export';
+  type:
+    | 'mood'
+    | 'journal'
+    | 'breathing'
+    | 'goal'
+    | 'login'
+    | 'settings'
+    | 'profile'
+    | 'export';
   ipAddress?: string;
   device?: string;
   location?: string;
@@ -111,7 +117,7 @@ const mockActivityLogs: ActivityLog[] = [
 export async function GET(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -130,18 +136,19 @@ export async function GET(request: NextRequest) {
 
     // Filter by type
     if (type && type !== 'all') {
-      filteredLogs = filteredLogs.filter(log => log.type === type);
+      filteredLogs = filteredLogs.filter((log) => log.type === type);
     }
 
     // Filter by date range
     const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    filteredLogs = filteredLogs.filter(log => 
-      new Date(log.timestamp) >= cutoffDate
+    filteredLogs = filteredLogs.filter(
+      (log) => new Date(log.timestamp) >= cutoffDate
     );
 
     // Sort by timestamp (newest first)
-    filteredLogs.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    filteredLogs.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
 
     // Apply pagination
@@ -150,12 +157,19 @@ export async function GET(request: NextRequest) {
     // Calculate statistics
     const stats = {
       total: filteredLogs.length,
-      byType: filteredLogs.reduce((acc, log) => {
-        acc[log.type] = (acc[log.type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
-      uniqueDevices: [...new Set(filteredLogs.map(log => log.device).filter(Boolean))].length,
-      uniqueLocations: [...new Set(filteredLogs.map(log => log.location).filter(Boolean))].length,
+      byType: filteredLogs.reduce(
+        (acc, log) => {
+          acc[log.type] = (acc[log.type] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
+      uniqueDevices: [
+        ...new Set(filteredLogs.map((log) => log.device).filter(Boolean)),
+      ].length,
+      uniqueLocations: [
+        ...new Set(filteredLogs.map((log) => log.location).filter(Boolean)),
+      ].length,
       lastActivity: filteredLogs[0]?.timestamp,
     };
 
@@ -182,7 +196,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -222,10 +236,13 @@ export async function POST(request: NextRequest) {
     // For demo, add to mock data
     mockActivityLogs.unshift(newLog);
 
-    return NextResponse.json({
-      message: 'Activity logged successfully',
-      data: newLog,
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: 'Activity logged successfully',
+        data: newLog,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error logging activity:', error);
     return NextResponse.json(
@@ -239,7 +256,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -253,7 +270,7 @@ export async function DELETE(request: NextRequest) {
     if (days > 0) {
       // Delete logs older than specified days
       const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-      
+
       // In a real app, delete from database
       // await prisma.activityLog.deleteMany({
       //   where: {
@@ -264,8 +281,12 @@ export async function DELETE(request: NextRequest) {
 
       // For demo, filter mock data
       const initialCount = mockActivityLogs.length;
-      mockActivityLogs.splice(0, mockActivityLogs.length, 
-        ...mockActivityLogs.filter(log => new Date(log.timestamp) >= cutoffDate)
+      mockActivityLogs.splice(
+        0,
+        mockActivityLogs.length,
+        ...mockActivityLogs.filter(
+          (log) => new Date(log.timestamp) >= cutoffDate
+        )
       );
       const deletedCount = initialCount - mockActivityLogs.length;
 
@@ -297,3 +318,4 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+

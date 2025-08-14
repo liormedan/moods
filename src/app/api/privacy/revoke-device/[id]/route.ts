@@ -3,17 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 // POST /api/privacy/revoke-device/[id] - Revoke device access
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         {
           success: false,
           error: 'Device ID is required',
-          message: 'Missing device ID'
+          message: 'Missing device ID',
         },
         { status: 400 }
       );
@@ -23,20 +23,20 @@ export async function POST(
     console.log(`Revoking device access ${id}:`, {
       timestamp: new Date().toISOString(),
       deviceId: id,
-      action: 'revoke_device_access'
+      action: 'revoke_device_access',
     });
 
     // Simulate revocation delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     return NextResponse.json({
       success: true,
       data: {
         deviceId: id,
         revoked: true,
-        revokedAt: new Date().toISOString()
+        revokedAt: new Date().toISOString(),
       },
-      message: 'Device access revoked successfully'
+      message: 'Device access revoked successfully',
     });
   } catch (error) {
     console.error('Error revoking device access:', error);
@@ -44,7 +44,7 @@ export async function POST(
       {
         success: false,
         error: 'Failed to revoke device access',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

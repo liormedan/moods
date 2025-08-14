@@ -102,12 +102,18 @@ export default function TherapistPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'find' | 'appointments' | 'messages' | 'my-therapist'>('find');
+  const [activeTab, setActiveTab] = useState<
+    'find' | 'appointments' | 'messages' | 'my-therapist'
+  >('find');
   const [searchTerm, setSearchTerm] = useState('');
   const [specializationFilter, setSpecializationFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
-  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
-  const [currentTherapist, setCurrentTherapist] = useState<Therapist | null>(null);
+  const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(
+    null
+  );
+  const [currentTherapist, setCurrentTherapist] = useState<Therapist | null>(
+    null
+  );
 
   useEffect(() => {
     loadData();
@@ -126,7 +132,9 @@ export default function TherapistPage() {
         const therapistsResult = await therapistsRes.json();
         setTherapists(therapistsResult.data);
         // Set current therapist if user has one
-        const current = therapistsResult.data.find((t: Therapist) => t.id === 'therapist-1');
+        const current = therapistsResult.data.find(
+          (t: Therapist) => t.id === 'therapist-1'
+        );
         setCurrentTherapist(current);
       }
 
@@ -194,11 +202,12 @@ export default function TherapistPage() {
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
-              {tab.id === 'messages' && messages.filter(m => !m.isRead).length > 0 && (
-                <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                  {messages.filter(m => !m.isRead).length}
-                </span>
-              )}
+              {tab.id === 'messages' &&
+                messages.filter((m) => !m.isRead).length > 0 && (
+                  <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                    {messages.filter((m) => !m.isRead).length}
+                  </span>
+                )}
             </button>
           ))}
         </div>
@@ -222,7 +231,10 @@ export default function TherapistPage() {
                     </div>
                   </div>
 
-                  <Select value={specializationFilter} onValueChange={setSpecializationFilter}>
+                  <Select
+                    value={specializationFilter}
+                    onValueChange={setSpecializationFilter}
+                  >
                     <SelectTrigger className="w-48">
                       <SelectValue />
                     </SelectTrigger>
@@ -237,7 +249,10 @@ export default function TherapistPage() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <Select
+                    value={locationFilter}
+                    onValueChange={setLocationFilter}
+                  >
                     <SelectTrigger className="w-40">
                       <SelectValue />
                     </SelectTrigger>
@@ -256,26 +271,43 @@ export default function TherapistPage() {
             {/* Therapists Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {therapists
-                .filter(therapist => {
-                  const matchesSearch = therapist.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                      therapist.specializations.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
-                  const matchesSpecialization = specializationFilter === 'all' || 
-                                               therapist.specializations.includes(specializationFilter);
-                  const matchesLocation = locationFilter === 'all' || 
-                                         (locationFilter === 'online' && therapist.isOnline) ||
-                                         therapist.location.toLowerCase().includes(locationFilter);
-                  return matchesSearch && matchesSpecialization && matchesLocation;
+                .filter((therapist) => {
+                  const matchesSearch =
+                    therapist.name
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase()) ||
+                    therapist.specializations.some((s) =>
+                      s.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                  const matchesSpecialization =
+                    specializationFilter === 'all' ||
+                    therapist.specializations.includes(specializationFilter);
+                  const matchesLocation =
+                    locationFilter === 'all' ||
+                    (locationFilter === 'online' && therapist.isOnline) ||
+                    therapist.location.toLowerCase().includes(locationFilter);
+                  return (
+                    matchesSearch && matchesSpecialization && matchesLocation
+                  );
                 })
                 .map((therapist) => (
-                  <Card key={therapist.id} className="hover:shadow-lg transition-shadow">
+                  <Card
+                    key={therapist.id}
+                    className="hover:shadow-lg transition-shadow"
+                  >
                     <CardHeader>
                       <div className="flex items-start gap-4">
                         <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                          {therapist.name.split(' ').map(n => n[0]).join('')}
+                          {therapist.name
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <CardTitle className="text-lg">{therapist.name}</CardTitle>
+                            <CardTitle className="text-lg">
+                              {therapist.name}
+                            </CardTitle>
                             {therapist.isVerified && (
                               <CheckCircle className="w-4 h-4 text-green-500" />
                             )}
@@ -284,11 +316,17 @@ export default function TherapistPage() {
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1">
                               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                              <span className="text-sm font-medium">{therapist.rating}</span>
-                              <span className="text-sm text-gray-500">({therapist.reviewCount})</span>
+                              <span className="text-sm font-medium">
+                                {therapist.rating}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                ({therapist.reviewCount})
+                              </span>
                             </div>
                             <span className="text-sm text-gray-500">•</span>
-                            <span className="text-sm text-gray-500">{therapist.experience} שנות ניסיון</span>
+                            <span className="text-sm text-gray-500">
+                              {therapist.experience} שנות ניסיון
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -297,11 +335,16 @@ export default function TherapistPage() {
                       <div>
                         <h4 className="font-medium text-sm mb-2">התמחויות:</h4>
                         <div className="flex flex-wrap gap-1">
-                          {therapist.specializations.slice(0, 3).map((spec, index) => (
-                            <span key={index} className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full">
-                              {spec}
-                            </span>
-                          ))}
+                          {therapist.specializations
+                            .slice(0, 3)
+                            .map((spec, index) => (
+                              <span
+                                key={index}
+                                className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full"
+                              >
+                                {spec}
+                              </span>
+                            ))}
                           {therapist.specializations.length > 3 && (
                             <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded-full">
                               +{therapist.specializations.length - 3}
@@ -314,19 +357,23 @@ export default function TherapistPage() {
                         <div className="flex items-center gap-2">
                           <MapPin className="w-4 h-4" />
                           {therapist.location}
-                          {therapist.isOnline && <span className="text-green-600">• מקוון</span>}
+                          {therapist.isOnline && (
+                            <span className="text-green-600">• מקוון</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
                           זמן תגובה: {therapist.responseTime}
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{therapist.priceRange}</span>
+                          <span className="font-medium">
+                            {therapist.priceRange}
+                          </span>
                         </div>
                       </div>
 
                       <div className="flex gap-2">
-                        <Button 
+                        <Button
                           onClick={() => setSelectedTherapist(therapist)}
                           className="flex-1"
                           size="sm"
@@ -346,8 +393,6 @@ export default function TherapistPage() {
           </>
         )}
 
-        {/* Other tabs content will be added in the next part */}
-      </div>
         {activeTab === 'my-therapist' && currentTherapist && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Therapist Profile */}
@@ -356,22 +401,35 @@ export default function TherapistPage() {
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xl">
-                      {currentTherapist.name.split(' ').map(n => n[0]).join('')}
+                      {currentTherapist.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <CardTitle className="text-xl">{currentTherapist.name}</CardTitle>
+                        <CardTitle className="text-xl">
+                          {currentTherapist.name}
+                        </CardTitle>
                         <CheckCircle className="w-5 h-5 text-green-500" />
                       </div>
-                      <CardDescription className="text-base">{currentTherapist.title}</CardDescription>
+                      <CardDescription className="text-base">
+                        {currentTherapist.title}
+                      </CardDescription>
                       <div className="flex items-center gap-4 mt-2">
                         <div className="flex items-center gap-1">
                           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-medium">{currentTherapist.rating}</span>
-                          <span className="text-gray-500">({currentTherapist.reviewCount} ביקורות)</span>
+                          <span className="font-medium">
+                            {currentTherapist.rating}
+                          </span>
+                          <span className="text-gray-500">
+                            ({currentTherapist.reviewCount} ביקורות)
+                          </span>
                         </div>
                         <span className="text-gray-500">•</span>
-                        <span className="text-gray-500">{currentTherapist.experience} שנות ניסיון</span>
+                        <span className="text-gray-500">
+                          {currentTherapist.experience} שנות ניסיון
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -379,14 +437,19 @@ export default function TherapistPage() {
                 <CardContent className="space-y-6">
                   <div>
                     <h4 className="font-semibold mb-3">אודות</h4>
-                    <p className="text-gray-700 dark:text-gray-300">{currentTherapist.bio}</p>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {currentTherapist.bio}
+                    </p>
                   </div>
 
                   <div>
                     <h4 className="font-semibold mb-3">התמחויות</h4>
                     <div className="flex flex-wrap gap-2">
                       {currentTherapist.specializations.map((spec, index) => (
-                        <span key={index} className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm">
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm"
+                        >
                           {spec}
                         </span>
                       ))}
@@ -397,7 +460,10 @@ export default function TherapistPage() {
                     <h4 className="font-semibold mb-3">השכלה</h4>
                     <ul className="space-y-2">
                       {currentTherapist.education.map((edu, index) => (
-                        <li key={index} className="flex items-start gap-2 text-sm">
+                        <li
+                          key={index}
+                          className="flex items-start gap-2 text-sm"
+                        >
                           <Award className="w-4 h-4 mt-0.5 text-blue-500" />
                           {edu}
                         </li>
@@ -409,7 +475,10 @@ export default function TherapistPage() {
                     <h4 className="font-semibold mb-3">הסמכות</h4>
                     <ul className="space-y-2">
                       {currentTherapist.certifications.map((cert, index) => (
-                        <li key={index} className="flex items-start gap-2 text-sm">
+                        <li
+                          key={index}
+                          className="flex items-start gap-2 text-sm"
+                        >
                           <Shield className="w-4 h-4 mt-0.5 text-green-500" />
                           {cert}
                         </li>
@@ -489,16 +558,27 @@ export default function TherapistPage() {
                 <Card key={appointment.id}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{appointment.therapistName}</CardTitle>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        appointment.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
-                        appointment.status === 'completed' ? 'bg-green-100 text-green-700' :
-                        appointment.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                        'bg-yellow-100 text-yellow-700'
-                      }`}>
-                        {appointment.status === 'scheduled' ? 'מתוכנן' :
-                         appointment.status === 'completed' ? 'הושלם' :
-                         appointment.status === 'cancelled' ? 'בוטל' : 'ממתין'}
+                      <CardTitle className="text-lg">
+                        {appointment.therapistName}
+                      </CardTitle>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          appointment.status === 'scheduled'
+                            ? 'bg-blue-100 text-blue-700'
+                            : appointment.status === 'completed'
+                              ? 'bg-green-100 text-green-700'
+                              : appointment.status === 'cancelled'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-yellow-100 text-yellow-700'
+                        }`}
+                      >
+                        {appointment.status === 'scheduled'
+                          ? 'מתוכנן'
+                          : appointment.status === 'completed'
+                            ? 'הושלם'
+                            : appointment.status === 'cancelled'
+                              ? 'בוטל'
+                              : 'ממתין'}
                       </span>
                     </div>
                   </CardHeader>
@@ -506,19 +586,34 @@ export default function TherapistPage() {
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-blue-500" />
-                        <span>{new Date(appointment.date).toLocaleDateString('he-IL')}</span>
+                        <span>
+                          {new Date(appointment.date).toLocaleDateString(
+                            'he-IL'
+                          )}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-green-500" />
-                        <span>{appointment.time} ({appointment.duration} דקות)</span>
+                        <span>
+                          {appointment.time} ({appointment.duration} דקות)
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {appointment.type === 'video' && <Video className="w-4 h-4 text-purple-500" />}
-                        {appointment.type === 'phone' && <Phone className="w-4 h-4 text-orange-500" />}
-                        {appointment.type === 'in-person' && <MapPin className="w-4 h-4 text-red-500" />}
+                        {appointment.type === 'video' && (
+                          <Video className="w-4 h-4 text-purple-500" />
+                        )}
+                        {appointment.type === 'phone' && (
+                          <Phone className="w-4 h-4 text-orange-500" />
+                        )}
+                        {appointment.type === 'in-person' && (
+                          <MapPin className="w-4 h-4 text-red-500" />
+                        )}
                         <span>
-                          {appointment.type === 'video' ? 'פגישה מקוונת' :
-                           appointment.type === 'phone' ? 'שיחת טלפון' : 'פגישה פרונטלית'}
+                          {appointment.type === 'video'
+                            ? 'פגישה מקוונת'
+                            : appointment.type === 'phone'
+                              ? 'שיחת טלפון'
+                              : 'פגישה פרונטלית'}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -568,25 +663,36 @@ export default function TherapistPage() {
                 <CardContent>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
                     {messages.map((message) => (
-                      <div key={message.id} className={`flex gap-3 ${message.senderId === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <div
+                        key={message.id}
+                        className={`flex gap-3 ${message.senderId === 'user' ? 'flex-row-reverse' : ''}`}
+                      >
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                           {message.senderName.charAt(0)}
                         </div>
-                        <div className={`flex-1 ${message.senderId === 'user' ? 'text-right' : ''}`}>
+                        <div
+                          className={`flex-1 ${message.senderId === 'user' ? 'text-right' : ''}`}
+                        >
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-sm">{message.senderName}</span>
+                            <span className="font-medium text-sm">
+                              {message.senderName}
+                            </span>
                             <span className="text-xs text-gray-500">
-                              {new Date(message.timestamp).toLocaleString('he-IL')}
+                              {new Date(message.timestamp).toLocaleString(
+                                'he-IL'
+                              )}
                             </span>
                             {!message.isRead && message.senderId !== 'user' && (
                               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                             )}
                           </div>
-                          <div className={`p-3 rounded-lg text-sm ${
-                            message.senderId === 'user' 
-                              ? 'bg-blue-500 text-white' 
-                              : 'bg-gray-100 dark:bg-gray-800'
-                          }`}>
+                          <div
+                            className={`p-3 rounded-lg text-sm ${
+                              message.senderId === 'user'
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800'
+                            }`}
+                          >
                             {message.content}
                           </div>
                         </div>
@@ -600,7 +706,7 @@ export default function TherapistPage() {
               <Card className="mt-4">
                 <CardContent className="p-4">
                   <div className="flex gap-3">
-                    <Textarea 
+                    <Textarea
                       placeholder="כתוב הודעה..."
                       className="flex-1 min-h-[80px]"
                     />
@@ -637,7 +743,7 @@ export default function TherapistPage() {
                         <Share2 className="w-4 h-4" />
                       </Button>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-blue-500" />
@@ -647,7 +753,7 @@ export default function TherapistPage() {
                         <Share2 className="w-4 h-4" />
                       </Button>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Brain className="w-4 h-4 text-purple-500" />
@@ -657,7 +763,7 @@ export default function TherapistPage() {
                         <Share2 className="w-4 h-4" />
                       </Button>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-green-500" />
@@ -694,16 +800,6 @@ export default function TherapistPage() {
                     <Button variant="outline" size="sm">
                       <Shield className="w-4 h-4" />
                     </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
-      </div>
-    </DashboardLayout>
-  );
-}
                   </div>
                 </CardContent>
               </Card>

@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 
 interface Notification {
   id: string;
-  type: 'mood' | 'goal' | 'journal' | 'breathing' | 'report' | 'reminder' | 'social' | 'system';
+  type:
+    | 'mood'
+    | 'goal'
+    | 'journal'
+    | 'breathing'
+    | 'report'
+    | 'reminder'
+    | 'social'
+    | 'system';
   title: string;
   message: string;
   timestamp: string;
@@ -20,11 +28,24 @@ function generateNotifications(): Notification[] {
 
   // Recent notifications (last 7 days)
   for (let i = 0; i < 15; i++) {
-    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000 + Math.random() * 24 * 60 * 60 * 1000);
-    
-    const types = ['mood', 'goal', 'journal', 'breathing', 'report', 'reminder', 'social', 'system'] as const;
+    const date = new Date(
+      now.getTime() -
+        i * 24 * 60 * 60 * 1000 +
+        Math.random() * 24 * 60 * 60 * 1000
+    );
+
+    const types = [
+      'mood',
+      'goal',
+      'journal',
+      'breathing',
+      'report',
+      'reminder',
+      'social',
+      'system',
+    ] as const;
     const type = types[Math.floor(Math.random() * types.length)];
-    
+
     const priorities = ['low', 'medium', 'high', 'urgent'] as const;
     const priority = priorities[Math.floor(Math.random() * priorities.length)];
 
@@ -95,7 +116,9 @@ function generateNotifications(): Notification[] {
   }
 
   // Sort by timestamp (newest first)
-  return notifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  return notifications.sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
 }
 
 // GET /api/notifications - Get all notifications
@@ -108,17 +131,23 @@ export async function GET() {
       data: notifications,
       metadata: {
         total: notifications.length,
-        unread: notifications.filter(n => !n.read).length,
-        byType: notifications.reduce((acc, n) => {
-          acc[n.type] = (acc[n.type] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-        byPriority: notifications.reduce((acc, n) => {
-          acc[n.priority] = (acc[n.priority] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
+        unread: notifications.filter((n) => !n.read).length,
+        byType: notifications.reduce(
+          (acc, n) => {
+            acc[n.type] = (acc[n.type] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
+        byPriority: notifications.reduce(
+          (acc, n) => {
+            acc[n.priority] = (acc[n.priority] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
       },
-      message: 'Notifications loaded successfully'
+      message: 'Notifications loaded successfully',
     });
   } catch (error) {
     console.error('Error loading notifications:', error);
@@ -126,7 +155,7 @@ export async function GET() {
       {
         success: false,
         error: 'Failed to load notifications',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );
@@ -137,7 +166,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const newNotification: Notification = {
       id: `notif-${Date.now()}`,
       type: body.type || 'system',
@@ -156,7 +185,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: newNotification,
-      message: 'Test notification created successfully'
+      message: 'Test notification created successfully',
     });
   } catch (error) {
     console.error('Error creating test notification:', error);
@@ -164,7 +193,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to create test notification',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

@@ -46,7 +46,8 @@ export default function ForgotPasswordPage() {
                     אבטחה ופרטיות
                   </h3>
                   <p className="text-xs text-blue-600 dark:text-blue-300">
-                    הקישור לאיפוס הסיסמה יישלח רק לכתובת האימייל הרשומה בחשבון שלך ויפוג תוך 24 שעות.
+                    הקישור לאיפוס הסיסמה יישלח רק לכתובת האימייל הרשומה בחשבון
+                    שלך ויפוג תוך 24 שעות.
                   </p>
                 </div>
               </div>
@@ -61,9 +62,7 @@ export default function ForgotPasswordPage() {
               <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Shield className="w-12 h-12 text-blue-200" />
               </div>
-              <h2 className="text-3xl font-bold mb-4">
-                אבטחה מתקדמת
-              </h2>
+              <h2 className="text-3xl font-bold mb-4">אבטחה מתקדמת</h2>
               <p className="text-xl text-blue-100 leading-relaxed">
                 אנחנו דואגים לאבטחת החשבון שלך עם הגנות מתקדמות
               </p>
@@ -76,14 +75,14 @@ export default function ForgotPasswordPage() {
                   כל הנתונים שלך מוצפנים ומאובטחים
                 </p>
               </div>
-              
+
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <h3 className="font-semibold mb-2">איפוס מאובטח</h3>
                 <p className="text-sm text-blue-100">
                   קישורי איפוס סיסמה בטוחים ומוגבלים בזמן
                 </p>
               </div>
-              
+
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <h3 className="font-semibold mb-2">פרטיות מלאה</h3>
                 <p className="text-sm text-blue-100">

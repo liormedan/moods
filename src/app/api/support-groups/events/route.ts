@@ -32,7 +32,7 @@ function generateEvents(): Event[] {
       isOnline: true,
       maxParticipants: 25,
       currentParticipants: 18,
-      isRegistered: true
+      isRegistered: true,
     },
     {
       groupId: 'group-2',
@@ -43,7 +43,7 @@ function generateEvents(): Event[] {
       isOnline: true,
       maxParticipants: undefined,
       currentParticipants: 23,
-      isRegistered: false
+      isRegistered: false,
     },
     {
       groupId: 'group-3',
@@ -54,7 +54,7 @@ function generateEvents(): Event[] {
       isOnline: true,
       maxParticipants: 100,
       currentParticipants: 67,
-      isRegistered: true
+      isRegistered: true,
     },
     {
       groupId: 'group-6',
@@ -66,7 +66,7 @@ function generateEvents(): Event[] {
       location: 'מרכז קהילתי, תל אביב',
       maxParticipants: 20,
       currentParticipants: 14,
-      isRegistered: false
+      isRegistered: false,
     },
     {
       groupId: 'group-8',
@@ -77,7 +77,7 @@ function generateEvents(): Event[] {
       isOnline: true,
       maxParticipants: 30,
       currentParticipants: 22,
-      isRegistered: false
+      isRegistered: false,
     },
     {
       groupId: 'group-9',
@@ -88,7 +88,7 @@ function generateEvents(): Event[] {
       isOnline: true,
       maxParticipants: undefined,
       currentParticipants: 15,
-      isRegistered: true
+      isRegistered: true,
     },
     {
       groupId: 'group-1',
@@ -99,7 +99,7 @@ function generateEvents(): Event[] {
       isOnline: true,
       maxParticipants: 50,
       currentParticipants: 31,
-      isRegistered: false
+      isRegistered: false,
     },
     {
       groupId: 'group-4',
@@ -110,15 +110,17 @@ function generateEvents(): Event[] {
       isOnline: true,
       maxParticipants: 15,
       currentParticipants: 12,
-      isRegistered: false
-    }
+      isRegistered: false,
+    },
   ];
 
   sampleEvents.forEach((event, index) => {
     // Generate dates for the next 2 weeks
     const daysFromNow = Math.floor(Math.random() * 14) + 1;
-    const eventDate = new Date(now.getTime() + daysFromNow * 24 * 60 * 60 * 1000);
-    
+    const eventDate = new Date(
+      now.getTime() + daysFromNow * 24 * 60 * 60 * 1000
+    );
+
     // Generate random time between 18:00-21:00
     const hours = 18 + Math.floor(Math.random() * 3);
     const minutes = Math.random() > 0.5 ? 0 : 30;
@@ -132,7 +134,11 @@ function generateEvents(): Event[] {
     });
   });
 
-  return events.sort((a, b) => new Date(a.date + ' ' + a.time).getTime() - new Date(b.date + ' ' + b.time).getTime());
+  return events.sort(
+    (a, b) =>
+      new Date(a.date + ' ' + a.time).getTime() -
+      new Date(b.date + ' ' + b.time).getTime()
+  );
 }
 
 // GET /api/support-groups/events - Get all events
@@ -147,37 +153,45 @@ export async function GET(request: NextRequest) {
 
     // Filter by group if specified
     if (groupId) {
-      events = events.filter(event => event.groupId === groupId);
+      events = events.filter((event) => event.groupId === groupId);
     }
 
     // Filter by type if specified
     if (type && type !== 'all') {
-      events = events.filter(event => event.type === type);
+      events = events.filter((event) => event.type === type);
     }
 
     // Filter upcoming events only
     if (upcoming) {
       const now = new Date();
-      events = events.filter(event => new Date(event.date + ' ' + event.time) > now);
+      events = events.filter(
+        (event) => new Date(event.date + ' ' + event.time) > now
+      );
     }
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     return NextResponse.json({
       success: true,
       data: events,
       metadata: {
         total: events.length,
-        byType: events.reduce((acc, e) => {
-          acc[e.type] = (acc[e.type] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-        registered: events.filter(e => e.isRegistered).length,
-        totalParticipants: events.reduce((sum, e) => sum + e.currentParticipants, 0),
-        onlineEvents: events.filter(e => e.isOnline).length,
+        byType: events.reduce(
+          (acc, e) => {
+            acc[e.type] = (acc[e.type] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
+        registered: events.filter((e) => e.isRegistered).length,
+        totalParticipants: events.reduce(
+          (sum, e) => sum + e.currentParticipants,
+          0
+        ),
+        onlineEvents: events.filter((e) => e.isOnline).length,
       },
-      message: 'Events loaded successfully'
+      message: 'Events loaded successfully',
     });
   } catch (error) {
     console.error('Error loading events:', error);
@@ -185,7 +199,7 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: 'Failed to load events',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );
@@ -196,7 +210,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const newEvent: Event = {
       id: `event-${Date.now()}`,
       groupId: body.groupId || 'group-1',
@@ -210,7 +224,7 @@ export async function POST(request: NextRequest) {
       location: body.location,
       maxParticipants: body.maxParticipants,
       currentParticipants: 0,
-      isRegistered: false
+      isRegistered: false,
     };
 
     console.log('New event created:', newEvent);
@@ -218,7 +232,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: newEvent,
-      message: 'Event created successfully'
+      message: 'Event created successfully',
     });
   } catch (error) {
     console.error('Error creating event:', error);
@@ -226,7 +240,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to create event',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

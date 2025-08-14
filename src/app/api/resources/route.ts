@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 
 // Mock resources data - in a real app, this would come from a database
 const resources = [
   {
     id: '1',
     title: 'מדריך להתמודדות עם חרדה יומיומית',
-    description: 'מדריך מקיף עם טכניקות מעשיות להתמודדות עם חרדה, כולל תרגילי נשימה, מדיטציה וכלים קוגניטיביים. המדריך כולל 15 פרקים עם תרגילים מעשיים.',
+    description:
+      'מדריך מקיף עם טכניקות מעשיות להתמודדות עם חרדה, כולל תרגילי נשימה, מדיטציה וכלים קוגניטיביים. המדריך כולל 15 פרקים עם תרגילים מעשיים.',
     type: 'article',
     category: 'anxiety',
     url: 'https://www.health.gov.il/subjects/mental_health/anxiety',
@@ -19,12 +18,13 @@ const resources = [
     featured: true,
     rating: 4.8,
     views: 15420,
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: '2',
     title: 'סדרת וידאו: יסודות המיינדפולנס',
-    description: 'סדרה של 10 סרטונים קצרים המסבירים ומלמדים את יסודות המיינדפולנס למתחילים. כל סרטון מתמקד בטכניקה אחרת ומלווה בתרגילים מעשיים.',
+    description:
+      'סדרה של 10 סרטונים קצרים המסבירים ומלמדים את יסודות המיינדפולנס למתחילים. כל סרטון מתמקד בטכניקה אחרת ומלווה בתרגילים מעשיים.',
     type: 'video',
     category: 'general',
     url: 'https://www.youtube.com/playlist?list=PLmindfulness123',
@@ -36,12 +36,13 @@ const resources = [
     featured: true,
     rating: 4.9,
     views: 8750,
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: '3',
     title: 'פודקאסט: בריאות הנפש בישראל',
-    description: 'פודקאסט שבועי העוסק בנושאי בריאות הנפש, עם אורחים מומחים ודיונים על נושאים אקטואליים. כל פרק מתמקד בנושא אחר ומספק כלים מעשיים.',
+    description:
+      'פודקאסט שבועי העוסק בנושאי בריאות הנפש, עם אורחים מומחים ודיונים על נושאים אקטואליים. כל פרק מתמקד בנושא אחר ומספק כלים מעשיים.',
     type: 'podcast',
     category: 'general',
     url: 'https://open.spotify.com/show/mental-health-israel',
@@ -53,12 +54,13 @@ const resources = [
     featured: false,
     rating: 4.6,
     views: 12300,
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: '4',
     title: 'אפליקציית מדיטציה מונחית - שקט',
-    description: 'אפליקציה עם עשרות מדיטציות מונחות בעברית, מתאימה למתחילים ומתקדמים. כוללת תרגילי נשימה, סקירת גוף, ומדיטציות לשינה.',
+    description:
+      'אפליקציה עם עשרות מדיטציות מונחות בעברית, מתאימה למתחילים ומתקדמים. כוללת תרגילי נשימה, סקירת גוף, ומדיטציות לשינה.',
     type: 'app',
     category: 'general',
     url: 'https://play.google.com/store/apps/details?id=meditation.shaket',
@@ -69,12 +71,13 @@ const resources = [
     featured: false,
     rating: 4.4,
     views: 5600,
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: '5',
     title: 'קו חירום לבריאות הנפש - ער"ן',
-    description: 'קו חירום 24/7 המספק תמיכה מיידית במצבי משבר נפשי. צוות מקצועי זמין בכל שעה לשיחה אנונימית וחינמית.',
+    description:
+      'קו חירום 24/7 המספק תמיכה מיידית במצבי משבר נפשי. צוות מקצועי זמין בכל שעה לשיחה אנונימית וחינמית.',
     type: 'contact',
     category: 'crisis',
     url: 'tel:1201',
@@ -85,16 +88,17 @@ const resources = [
     featured: true,
     rating: 4.9,
     views: 25000,
-    difficulty: 'all'
+    difficulty: 'all',
   },
   {
     id: '6',
     title: 'ספר: "הדרך לרווחה נפשית"',
-    description: 'ספר מקיף המשלב תיאוריה מערבית עם חכמה מזרחית, כולל תרגילים מעשיים לשיפור הרווחה הנפשית. 300 עמודים עם 50 תרגילים מעשיים.',
+    description:
+      'ספר מקיף המשלב תיאוריה מערבית עם חכמה מזרחית, כולל תרגילים מעשיים לשיפור הרווחה הנפשית. 300 עמודים עם 50 תרגילים מעשיים.',
     type: 'book',
     category: 'self-help',
     url: 'https://www.steimatzky.co.il/book/wellness-path',
-    author: 'פרופ\' דוד לוי, פסיכיאטר ומחבר',
+    author: "פרופ' דוד לוי, פסיכיאטר ומחבר",
     tags: ['ספר', 'רווחה נפשית', 'תרגילים', 'תיאוריה', 'מעשי'],
     isFree: false,
     language: 'hebrew',
@@ -102,12 +106,13 @@ const resources = [
     featured: false,
     rating: 4.7,
     views: 3200,
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: '7',
     title: 'כלי מעקב מצב רוח דיגיטלי - MoodPath',
-    description: 'כלי אינטראקטיבי למעקב אחרי מצב הרוח, זיהוי דפוסים והמלצות מותאמות אישית. כולל גרפים מתקדמים וניתוח מגמות.',
+    description:
+      'כלי אינטראקטיבי למעקב אחרי מצב הרוח, זיהוי דפוסים והמלצות מותאמות אישית. כולל גרפים מתקדמים וניתוח מגמות.',
     type: 'tool',
     category: 'self-help',
     url: 'https://moodpath.com/he',
@@ -118,12 +123,13 @@ const resources = [
     featured: false,
     rating: 4.3,
     views: 7800,
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: '8',
     title: 'סדנה: התמודדות עם לחץ בעבודה',
-    description: 'סדנה מעשית בת 3 שעות על טכניקות להתמודדות עם לחץ בעבודה ושיפור האיזון בין עבודה לחיים. כוללת כלים מעשיים וחומרי עזר.',
+    description:
+      'סדנה מעשית בת 3 שעות על טכניקות להתמודדות עם לחץ בעבודה ושיפור האיזון בין עבודה לחיים. כוללת כלים מעשיים וחומרי עזר.',
     type: 'event',
     category: 'professional',
     url: 'https://www.eventbrite.com/e/work-stress-workshop',
@@ -135,12 +141,13 @@ const resources = [
     featured: true,
     rating: 4.8,
     views: 2100,
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: '9',
     title: 'מדריך להורים: תמיכה בילדים עם חרדה',
-    description: 'מדריך מקיף להורים על איך לזהות ולתמוך בילדים הסובלים מחרדה. כולל טכניקות תקשורת, משחקים טיפוליים ומתי לפנות לעזרה מקצועית.',
+    description:
+      'מדריך מקיף להורים על איך לזהות ולתמוך בילדים הסובלים מחרדה. כולל טכניקות תקשורת, משחקים טיפוליים ומתי לפנות לעזרה מקצועית.',
     type: 'article',
     category: 'family',
     url: 'https://www.clalit.co.il/he/your_health/family/children/anxiety-guide',
@@ -152,12 +159,13 @@ const resources = [
     featured: false,
     rating: 4.6,
     views: 9500,
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: '10',
     title: 'אפליקציית CBT - MindShift',
-    description: 'אפליקציה המבוססת על טיפול קוגניטיבי התנהגותי (CBT) לטיפול בחרדה ודיכאון. כוללת תרגילים יומיים, מעקב מצב רוח וכלים להתמודדות.',
+    description:
+      'אפליקציה המבוססת על טיפול קוגניטיבי התנהגותי (CBT) לטיפול בחרדה ודיכאון. כוללת תרגילים יומיים, מעקב מצב רוח וכלים להתמודדות.',
     type: 'app',
     category: 'anxiety',
     url: 'https://www.anxietybc.com/mindshift-app',
@@ -168,12 +176,13 @@ const resources = [
     featured: false,
     rating: 4.5,
     views: 4300,
-    difficulty: 'intermediate'
+    difficulty: 'intermediate',
   },
   {
     id: '11',
     title: 'קבוצת תמיכה אונליין - "יחד נתגבר"',
-    description: 'קבוצת תמיכה וירטואלית הפועלת פעמיים בשבוע, מיועדת לאנשים המתמודדים עם דיכאון וחרדה. מונחית על ידי פסיכולוג מוסמך.',
+    description:
+      'קבוצת תמיכה וירטואלית הפועלת פעמיים בשבוע, מיועדת לאנשים המתמודדים עם דיכאון וחרדה. מונחית על ידי פסיכולוג מוסמך.',
     type: 'event',
     category: 'depression',
     url: 'https://www.zoom.us/j/supportgroup123',
@@ -185,12 +194,13 @@ const resources = [
     featured: true,
     rating: 4.7,
     views: 1800,
-    difficulty: 'all'
+    difficulty: 'all',
   },
   {
     id: '12',
     title: 'מדריך לנוער: התמודדות עם לחץ חברתי',
-    description: 'מדריך מיוחד לבני נוער על התמודדות עם לחץ חברתי, בעיות דימוי עצמי ובניית ביטחון עצמי. כתוב בשפה נגישה ומותאמת לגילאים 13-18.',
+    description:
+      'מדריך מיוחד לבני נוער על התמודדות עם לחץ חברתי, בעיות דימוי עצמי ובניית ביטחון עצמי. כתוב בשפה נגישה ומותאמת לגילאים 13-18.',
     type: 'article',
     category: 'youth',
     url: 'https://www.youth-mental-health.org.il/social-pressure',
@@ -202,12 +212,13 @@ const resources = [
     featured: false,
     rating: 4.4,
     views: 6700,
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: '13',
     title: 'פודקאסט: "נפש בריאה" - פרקים בערבית',
-    description: 'פודקאסט בערבית העוסק בנושאי בריאות הנפש בחברה הערבית. מתמקד בנושאים תרבותיים ייחודיים ומספק כלים מותאמים תרבותית.',
+    description:
+      'פודקאסט בערבית העוסק בנושאי בריאות הנפש בחברה הערבית. מתמקד בנושאים תרבותיים ייחודיים ומספק כלים מותאמים תרבותית.',
     type: 'podcast',
     category: 'general',
     url: 'https://open.spotify.com/show/nafas-saliha',
@@ -219,12 +230,13 @@ const resources = [
     featured: false,
     rating: 4.5,
     views: 2900,
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   },
   {
     id: '14',
     title: 'מרכז משבר טלפוני לנוער - "נטל"',
-    description: 'קו טלפון מיוחד לנוער ומתבגרים במצבי משבר. פועל בשעות אחר הצהריים והערב, מאויש בצוות מיומן בעבודה עם נוער.',
+    description:
+      'קו טלפון מיוחד לנוער ומתבגרים במצבי משבר. פועל בשעות אחר הצהריים והערב, מאויש בצוות מיומן בעבודה עם נוער.',
     type: 'contact',
     category: 'youth',
     url: 'tel:1800-250-250',
@@ -235,12 +247,13 @@ const resources = [
     featured: true,
     rating: 4.8,
     views: 8900,
-    difficulty: 'all'
+    difficulty: 'all',
   },
   {
     id: '15',
     title: 'כלי הערכה עצמית לדיכאון - PHQ-9',
-    description: 'שאלון מקצועי להערכה עצמית של רמת הדיכאון. כולל הסבר על התוצאות והמלצות לצעדים הבאים. מבוסס על כלי קליני מוכר.',
+    description:
+      'שאלון מקצועי להערכה עצמית של רמת הדיכאון. כולל הסבר על התוצאות והמלצות לצעדים הבאים. מבוסס על כלי קליני מוכר.',
     type: 'tool',
     category: 'depression',
     url: 'https://www.depression-assessment.org.il/phq9',
@@ -251,8 +264,8 @@ const resources = [
     featured: false,
     rating: 4.2,
     views: 11200,
-    difficulty: 'beginner'
-  }
+    difficulty: 'beginner',
+  },
 ];
 
 // GET /api/resources - Get resources with filtering and search
@@ -272,33 +285,38 @@ export async function GET(request: NextRequest) {
 
     // Apply filters
     if (category && category !== 'all') {
-      filteredResources = filteredResources.filter(r => r.category === category);
+      filteredResources = filteredResources.filter(
+        (r) => r.category === category
+      );
     }
 
     if (type && type !== 'all') {
-      filteredResources = filteredResources.filter(r => r.type === type);
+      filteredResources = filteredResources.filter((r) => r.type === type);
     }
 
     if (language && language !== 'all') {
-      filteredResources = filteredResources.filter(r => r.language === language);
+      filteredResources = filteredResources.filter(
+        (r) => r.language === language
+      );
     }
 
     if (isFree === 'true') {
-      filteredResources = filteredResources.filter(r => r.isFree);
+      filteredResources = filteredResources.filter((r) => r.isFree);
     }
 
     if (featured === 'true') {
-      filteredResources = filteredResources.filter(r => r.featured);
+      filteredResources = filteredResources.filter((r) => r.featured);
     }
 
     // Apply search
     if (search) {
       const searchLower = search.toLowerCase();
-      filteredResources = filteredResources.filter(r => 
-        r.title.toLowerCase().includes(searchLower) ||
-        r.description.toLowerCase().includes(searchLower) ||
-        r.tags.some(tag => tag.toLowerCase().includes(searchLower)) ||
-        (r.author && r.author.toLowerCase().includes(searchLower))
+      filteredResources = filteredResources.filter(
+        (r) =>
+          r.title.toLowerCase().includes(searchLower) ||
+          r.description.toLowerCase().includes(searchLower) ||
+          r.tags.some((tag) => tag.toLowerCase().includes(searchLower)) ||
+          (r.author && r.author.toLowerCase().includes(searchLower))
       );
     }
 
@@ -315,20 +333,29 @@ export async function GET(request: NextRequest) {
     // Calculate statistics
     const stats = {
       total: filteredResources.length,
-      byCategory: resources.reduce((acc, r) => {
-        acc[r.category] = (acc[r.category] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
-      byType: resources.reduce((acc, r) => {
-        acc[r.type] = (acc[r.type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
-      byLanguage: resources.reduce((acc, r) => {
-        acc[r.language] = (acc[r.language] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
-      freeResources: resources.filter(r => r.isFree).length,
-      featuredResources: resources.filter(r => r.featured).length,
+      byCategory: resources.reduce(
+        (acc, r) => {
+          acc[r.category] = (acc[r.category] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
+      byType: resources.reduce(
+        (acc, r) => {
+          acc[r.type] = (acc[r.type] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
+      byLanguage: resources.reduce(
+        (acc, r) => {
+          acc[r.language] = (acc[r.language] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
+      freeResources: resources.filter((r) => r.isFree).length,
+      featuredResources: resources.filter((r) => r.featured).length,
     };
 
     return NextResponse.json({
@@ -355,7 +382,7 @@ export async function POST(request: NextRequest) {
   try {
     // In a real app, you'd check for admin permissions here
     const body = await request.json();
-    
+
     const newResource = {
       id: Date.now().toString(),
       ...body,
@@ -367,10 +394,13 @@ export async function POST(request: NextRequest) {
     // In a real app, you'd save to database here
     resources.push(newResource);
 
-    return NextResponse.json({
-      message: 'Resource added successfully',
-      data: newResource,
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: 'Resource added successfully',
+        data: newResource,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error adding resource:', error);
     return NextResponse.json(
@@ -379,3 +409,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

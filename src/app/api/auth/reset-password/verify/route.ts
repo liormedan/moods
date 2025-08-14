@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Missing email or code',
-          message: 'אימייל או קוד חסרים'
+          message: 'אימייל או קוד חסרים',
         },
         { status: 400 }
       );
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Invalid code format',
-          message: 'קוד אימות לא תקין'
+          message: 'קוד אימות לא תקין',
         },
         { status: 400 }
       );
@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       email,
       code,
-      action: 'password_reset_code_verified'
+      action: 'password_reset_code_verified',
     });
 
     // Simulate verification delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     return NextResponse.json({
       success: true,
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         codeVerified: true,
         canResetPassword: true,
       },
-      message: 'קוד אומת בהצלחה'
+      message: 'קוד אומת בהצלחה',
     });
   } catch (error) {
     console.error('Error verifying reset code:', error);
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to verify code',
-        message: 'שגיאה באימות הקוד'
+        message: 'שגיאה באימות הקוד',
       },
       { status: 500 }
     );

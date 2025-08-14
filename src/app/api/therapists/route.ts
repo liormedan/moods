@@ -41,15 +41,15 @@ function generateTherapists(): Therapist[] {
       education: [
         'דוקטורט בפסיכולוגיה קלינית - אוניברסיטת תל אביב',
         'מגיסטר בפסיכולוגיה - האוניברסיטה העברית',
-        'תואר ראשון בפסיכולוגיה - אוניברסיטת בר אילן'
+        'תואר ראשון בפסיכולוגיה - אוניברסיטת בר אילן',
       ],
       certifications: [
         'רישיון פסיכולוג קליני - משרד הבריאות',
         'הסמכה בטיפול CBT - המכון הישראלי לטיפול קוגניטיבי',
-        'הסמכה בטיפול בטראומה - EMDR International'
+        'הסמכה בטיפול בטראומה - EMDR International',
       ],
       isVerified: true,
-      responseTime: 'תוך 2 שעות'
+      responseTime: 'תוך 2 שעות',
     },
     {
       id: 'therapist-2',
@@ -68,15 +68,15 @@ function generateTherapists(): Therapist[] {
       education: [
         'התמחות בפסיכיאטריה - בית חולים הדסה',
         'דוקטורט לרפואה - האוניברסיטה העברית',
-        'התמחות בנוירולוגיה - בית חולים שיבא'
+        'התמחות בנוירולוגיה - בית חולים שיבא',
       ],
       certifications: [
         'רישיון רופא מומחה בפסיכיאטריה - משרד הבריאות',
         'הסמכה בפסיכופרמקולוגיה - האגודה הישראלית לפסיכיאטריה',
-        'הסמכה בטיפול בהפרעות דו-קוטביות'
+        'הסמכה בטיפול בהפרעות דו-קוטביות',
       ],
       isVerified: true,
-      responseTime: 'תוך 4 שעות'
+      responseTime: 'תוך 4 שעות',
     },
     {
       id: 'therapist-3',
@@ -95,15 +95,15 @@ function generateTherapists(): Therapist[] {
       education: [
         'מגיסטר בעבודה סוציאלית קלינית - אוניברסיטת חיפה',
         'תואר ראשון בעבודה סוציאלית - האוניברסיטה העברית',
-        'קורס התמחות בטיפול משפחתי - המכון לטיפול משפחתי'
+        'קורס התמחות בטיפול משפחתי - המכון לטיפול משפחתי',
       ],
       certifications: [
         'רישיון עובדת סוציאלית קלינית - משרד הרווחה',
         'הסמכה בטיפול זוגי ומשפחתי - האגודה הישראלית לטיפול משפחתי',
-        'הסמכה בטיפול בהתמכרויות - המרכז הלאומי להתמכרויות'
+        'הסמכה בטיפול בהתמכרויות - המרכז הלאומי להתמכרויות',
       ],
       isVerified: true,
-      responseTime: 'תוך שעה'
+      responseTime: 'תוך שעה',
     },
     {
       id: 'therapist-4',
@@ -122,15 +122,15 @@ function generateTherapists(): Therapist[] {
       education: [
         'דוקטורט בפסיכולוגיה התפתחותית - אוניברסיטת תל אביב',
         'מגיסטר בפסיכולוגיה חינוכית - אוניברסיטת בר אילן',
-        'תואר ראשון בחינוך מיוחד - האוניברסיטה העברית'
+        'תואר ראשון בחינוך מיוחד - האוניברסיטה העברית',
       ],
       certifications: [
         'רישיון פסיכולוג חינוכי - משרד החינוך',
         'הסמכה בטיפול ב-ADHD - המרכז הלאומי ל-ADHD',
-        'הסמכה במשחק טיפולי - האגודה הישראלית למשחק טיפולי'
+        'הסמכה במשחק טיפולי - האגודה הישראלית למשחק טיפולי',
       ],
       isVerified: true,
-      responseTime: 'תוך 3 שעות'
+      responseTime: 'תוך 3 שעות',
     },
     {
       id: 'therapist-5',
@@ -149,15 +149,15 @@ function generateTherapists(): Therapist[] {
       education: [
         'מגיסטר ביעוץ זוגי ומשפחתי - אוניברסיטת חיפה',
         'תואר ראשון בפסיכולוגיה - המכללה האקדמית תל אביב-יפו',
-        'קורס מתקדם בגישור משפחתי - בית הדין הרבני'
+        'קורס מתקדם בגישור משפחתי - בית הדין הרבני',
       ],
       certifications: [
         'רישיון יועץ זוגי ומשפחתי - משרד הרווחה',
         'הסמכה בגישור משפחתי - לשכת עורכי הדין',
-        'הסמכה בטיפול בגירושין - המכון לגישור משפחתי'
+        'הסמכה בטיפול בגירושין - המכון לגישור משפחתי',
       ],
       isVerified: true,
-      responseTime: 'תוך 6 שעות'
+      responseTime: 'תוך 6 שעות',
     },
     {
       id: 'therapist-6',
@@ -176,16 +176,16 @@ function generateTherapists(): Therapist[] {
       education: [
         'דוקטורט בפסיכולוגיה קלינית - אוניברסיטת בן גוריון',
         'מגיסטר בפסיכולוגיה - אוניברסיטת אריאל',
-        'תואר ראשון בפסיכולוגיה - המכללה האקדמית ספיר'
+        'תואר ראשון בפסיכולוגיה - המכללה האקדמית ספיר',
       ],
       certifications: [
         'רישיון פסיכולוג קליני - משרד הבריאות',
         'הסמכה ב-EMDR - EMDR International Association',
-        'הסמכה בטיפול ב-PTSD - המרכז הלאומי לטראומה'
+        'הסמכה בטיפול ב-PTSD - המרכז הלאומי לטראומה',
       ],
       isVerified: true,
-      responseTime: 'תוך שעתיים'
-    }
+      responseTime: 'תוך שעתיים',
+    },
   ];
 }
 
@@ -195,21 +195,24 @@ export async function GET() {
     const therapists = generateTherapists();
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     return NextResponse.json({
       success: true,
       data: therapists,
       metadata: {
         total: therapists.length,
-        verified: therapists.filter(t => t.isVerified).length,
-        onlineAvailable: therapists.filter(t => t.isOnline).length,
-        averageRating: therapists.reduce((sum, t) => sum + t.rating, 0) / therapists.length,
-        specializations: [...new Set(therapists.flatMap(t => t.specializations))],
-        locations: [...new Set(therapists.map(t => t.location))],
-        languages: [...new Set(therapists.flatMap(t => t.languages))],
+        verified: therapists.filter((t) => t.isVerified).length,
+        onlineAvailable: therapists.filter((t) => t.isOnline).length,
+        averageRating:
+          therapists.reduce((sum, t) => sum + t.rating, 0) / therapists.length,
+        specializations: [
+          ...new Set(therapists.flatMap((t) => t.specializations)),
+        ],
+        locations: [...new Set(therapists.map((t) => t.location))],
+        languages: [...new Set(therapists.flatMap((t) => t.languages))],
       },
-      message: 'Therapists loaded successfully'
+      message: 'Therapists loaded successfully',
     });
   } catch (error) {
     console.error('Error loading therapists:', error);
@@ -217,7 +220,7 @@ export async function GET() {
       {
         success: false,
         error: 'Failed to load therapists',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

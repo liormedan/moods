@@ -126,7 +126,10 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     loadSettings();
@@ -193,7 +196,10 @@ export default function SettingsPage() {
         setMessage({ type: 'success', text: 'ההגדרות נשמרו בהצלחה!' });
         setTimeout(() => setMessage(null), 3000);
       } else {
-        setMessage({ type: 'error', text: result.message || 'שגיאה בשמירת ההגדרות' });
+        setMessage({
+          type: 'error',
+          text: result.message || 'שגיאה בשמירת ההגדרות',
+        });
       }
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -219,10 +225,16 @@ export default function SettingsPage() {
       if (response.ok && result.success) {
         setSettings(result.data);
         setHasChanges(false);
-        setMessage({ type: 'success', text: 'ההגדרות אופסו לברירת המחדל בהצלחה!' });
+        setMessage({
+          type: 'success',
+          text: 'ההגדרות אופסו לברירת המחדל בהצלחה!',
+        });
         setTimeout(() => setMessage(null), 3000);
       } else {
-        setMessage({ type: 'error', text: result.message || 'שגיאה באיפוס ההגדרות' });
+        setMessage({
+          type: 'error',
+          text: result.message || 'שגיאה באיפוס ההגדרות',
+        });
       }
     } catch (error) {
       console.error('Error resetting settings:', error);
@@ -253,7 +265,10 @@ export default function SettingsPage() {
         setMessage({ type: 'success', text: 'גיבוי נוצר בהצלחה!' });
         setTimeout(() => setMessage(null), 3000);
       } else {
-        setMessage({ type: 'error', text: result.message || 'שגיאה ביצירת גיבוי' });
+        setMessage({
+          type: 'error',
+          text: result.message || 'שגיאה ביצירת גיבוי',
+        });
       }
     } catch (error) {
       console.error('Error creating backup:', error);
@@ -272,7 +287,7 @@ export default function SettingsPage() {
       try {
         const text = await file.text();
         const backupData = JSON.parse(text);
-        
+
         if (backupData.settings) {
           setSettings(backupData.settings);
           setHasChanges(true);
@@ -356,11 +371,13 @@ export default function SettingsPage() {
 
         {/* Success/Error Messages */}
         {message && (
-          <div className={`p-4 rounded-lg ${
-            message.type === 'success' 
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800'
-              : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800'
-          }`}>
+          <div
+            className={`p-4 rounded-lg ${
+              message.type === 'success'
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800'
+                : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800'
+            }`}
+          >
             <div className="flex items-center gap-2">
               {message.type === 'success' ? (
                 <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
@@ -599,7 +616,11 @@ export default function SettingsPage() {
                   type="time"
                   value={settings.notifications.reminderTime}
                   onChange={(e) =>
-                    updateSetting('notifications', 'reminderTime', e.target.value)
+                    updateSetting(
+                      'notifications',
+                      'reminderTime',
+                      e.target.value
+                    )
                   }
                   className="mt-1"
                 />
@@ -720,14 +741,20 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">תקופת שמירת נתונים (ימים)</label>
+              <label className="text-sm font-medium">
+                תקופת שמירת נתונים (ימים)
+              </label>
               <Input
                 type="number"
                 min="30"
                 max="3650"
                 value={settings.privacy.dataRetention}
                 onChange={(e) =>
-                  updateSetting('privacy', 'dataRetention', parseInt(e.target.value))
+                  updateSetting(
+                    'privacy',
+                    'dataRetention',
+                    parseInt(e.target.value)
+                  )
                 }
                 className="mt-1"
               />
@@ -988,14 +1015,20 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium">מספר גיבויים מקסימלי</label>
+              <label className="text-sm font-medium">
+                מספר גיבויים מקסימלי
+              </label>
               <Input
                 type="number"
                 min="1"
                 max="50"
                 value={settings.backup.maxBackups}
                 onChange={(e) =>
-                  updateSetting('backup', 'maxBackups', parseInt(e.target.value))
+                  updateSetting(
+                    'backup',
+                    'maxBackups',
+                    parseInt(e.target.value)
+                  )
                 }
                 className="mt-1"
               />
@@ -1295,13 +1328,14 @@ export default function SettingsPage() {
                 ייצא הגדרות
               </Button>
             </div>
-            
+
             <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
               <h4 className="font-medium text-yellow-900 dark:text-yellow-100 mb-2">
                 ⚠️ אזהרה
               </h4>
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                איפוס ההגדרות יחזיר את כל ההגדרות לברירת המחדל. פעולה זו לא ניתנת לביטול.
+                איפוס ההגדרות יחזיר את כל ההגדרות לברירת המחדל. פעולה זו לא
+                ניתנת לביטול.
               </p>
             </div>
           </CardContent>

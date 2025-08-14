@@ -75,9 +75,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: 'שגיאה פנימית בשרת' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'שגיאה פנימית בשרת' }, { status: 500 });
   }
 }

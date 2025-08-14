@@ -52,7 +52,9 @@ export async function POST(request: NextRequest) {
       // In a real application, you would send an email here
       // For demo purposes, we'll just log the token
       console.log(`Reset token for ${email}: ${resetToken}`);
-      console.log(`Reset link: ${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`);
+      console.log(
+        `Reset link: ${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`
+      );
     }
 
     return NextResponse.json({
@@ -60,9 +62,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error in forgot password:', error);
-    return NextResponse.json(
-      { error: 'שגיאה פנימית בשרת' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'שגיאה פנימית בשרת' }, { status: 500 });
   }
 }

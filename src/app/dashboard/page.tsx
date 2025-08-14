@@ -75,7 +75,7 @@ export default function DashboardPage() {
 
       const result = await response.json();
       const apiData = result.data;
-      
+
       // Transform API data to match our interface
       const transformedStats: DashboardStats = {
         totalEntries: apiData.totalEntries || 0,
@@ -84,12 +84,15 @@ export default function DashboardPage() {
         bestStreak: apiData.streakDays || 0, // For now, use current streak as best
         insightsCount: apiData.insights?.length || 0,
         unreadInsights: Math.min(apiData.insights?.length || 0, 2), // Mock unread count
-        weeklyAverage: apiData.weeklyAverages?.slice(-1)[0]?.average || apiData.averageMood || 0,
+        weeklyAverage:
+          apiData.weeklyAverages?.slice(-1)[0]?.average ||
+          apiData.averageMood ||
+          0,
         monthlyAverage: apiData.averageMood || 0,
         moodTrend: apiData.moodTrend || 'stable',
         lastEntryDate: apiData.recentMood?.date || null,
       };
-      
+
       setStats(transformedStats);
     } catch (err) {
       console.error('Dashboard stats error:', err);
@@ -248,17 +251,20 @@ export default function DashboardPage() {
               <span>הגדרות</span>
               <ChevronDown className="w-4 h-4" />
             </button>
-            
-            <div id="profile-menu" className="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+
+            <div
+              id="profile-menu"
+              className="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10"
+            >
               <button
-                onClick={() => window.location.href = '/dashboard/profile'}
+                onClick={() => (window.location.href = '/dashboard/profile')}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-md flex items-center space-x-2"
               >
                 <User className="w-4 h-4" />
                 <span>פרופיל</span>
               </button>
               <button
-                onClick={() => window.location.href = '/dashboard/settings'}
+                onClick={() => (window.location.href = '/dashboard/settings')}
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-md flex items-center space-x-2"
               >
                 <Settings className="w-4 h-4" />

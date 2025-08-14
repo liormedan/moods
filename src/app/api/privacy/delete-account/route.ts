@@ -13,11 +13,11 @@ export async function DELETE() {
     console.log('Account deletion requested:', {
       timestamp: new Date().toISOString(),
       action: 'delete_account',
-      reason: 'user_request'
+      reason: 'user_request',
     });
 
     // Simulate deletion process delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     return NextResponse.json({
       success: true,
@@ -26,7 +26,7 @@ export async function DELETE() {
         deletedAt: new Date().toISOString(),
         confirmationId: `del-${Date.now()}`,
       },
-      message: 'Account deleted successfully'
+      message: 'Account deleted successfully',
     });
   } catch (error) {
     console.error('Error deleting account:', error);
@@ -34,7 +34,7 @@ export async function DELETE() {
       {
         success: false,
         error: 'Failed to delete account',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

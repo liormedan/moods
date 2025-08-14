@@ -3,78 +3,98 @@ import { z } from 'zod';
 
 // Validation schema for settings
 const settingsSchema = z.object({
-  display: z.object({
-    theme: z.enum(['light', 'dark', 'auto']).optional(),
-    fontSize: z.enum(['small', 'medium', 'large']).optional(),
-    compactMode: z.boolean().optional(),
-    showAnimations: z.boolean().optional(),
-    colorScheme: z.enum(['default', 'high-contrast', 'colorblind-friendly']).optional(),
-    language: z.enum(['hebrew', 'english', 'arabic']).optional(),
-  }).optional(),
-  notifications: z.object({
-    email: z.boolean().optional(),
-    push: z.boolean().optional(),
-    sms: z.boolean().optional(),
-    moodReminders: z.boolean().optional(),
-    goalDeadlines: z.boolean().optional(),
-    weeklyReports: z.boolean().optional(),
-    dailyCheckins: z.boolean().optional(),
-    reminderTime: z.string().optional(),
-    quietHours: z.object({
-      enabled: z.boolean().optional(),
-      start: z.string().optional(),
-      end: z.string().optional(),
-    }).optional(),
-  }).optional(),
-  privacy: z.object({
-    shareData: z.boolean().optional(),
-    anonymousMode: z.boolean().optional(),
-    dataRetention: z.number().min(30).max(3650).optional(),
-    allowAnalytics: z.boolean().optional(),
-    shareWithTherapist: z.boolean().optional(),
-    publicProfile: z.boolean().optional(),
-  }).optional(),
-  performance: z.object({
-    enableCaching: z.boolean().optional(),
-    lazyLoading: z.boolean().optional(),
-    backgroundSync: z.boolean().optional(),
-    dataCompression: z.boolean().optional(),
-    offlineMode: z.boolean().optional(),
-    syncFrequency: z.enum(['realtime', 'hourly', 'daily']).optional(),
-  }).optional(),
-  integrations: z.object({
-    googleCalendar: z.boolean().optional(),
-    appleHealth: z.boolean().optional(),
-    fitbit: z.boolean().optional(),
-    spotify: z.boolean().optional(),
-    weather: z.boolean().optional(),
-    googleFit: z.boolean().optional(),
-    strava: z.boolean().optional(),
-  }).optional(),
-  backup: z.object({
-    autoBackup: z.boolean().optional(),
-    backupFrequency: z.enum(['daily', 'weekly', 'monthly']).optional(),
-    cloudBackup: z.boolean().optional(),
-    localBackup: z.boolean().optional(),
-    encryptBackups: z.boolean().optional(),
-    maxBackups: z.number().min(1).max(50).optional(),
-  }).optional(),
-  accessibility: z.object({
-    highContrast: z.boolean().optional(),
-    largeText: z.boolean().optional(),
-    reduceMotion: z.boolean().optional(),
-    screenReader: z.boolean().optional(),
-    keyboardNavigation: z.boolean().optional(),
-    voiceCommands: z.boolean().optional(),
-  }).optional(),
-  advanced: z.object({
-    developerMode: z.boolean().optional(),
-    debugMode: z.boolean().optional(),
-    betaFeatures: z.boolean().optional(),
-    experimentalFeatures: z.boolean().optional(),
-    apiLogging: z.boolean().optional(),
-    performanceMonitoring: z.boolean().optional(),
-  }).optional(),
+  display: z
+    .object({
+      theme: z.enum(['light', 'dark', 'auto']).optional(),
+      fontSize: z.enum(['small', 'medium', 'large']).optional(),
+      compactMode: z.boolean().optional(),
+      showAnimations: z.boolean().optional(),
+      colorScheme: z
+        .enum(['default', 'high-contrast', 'colorblind-friendly'])
+        .optional(),
+      language: z.enum(['hebrew', 'english', 'arabic']).optional(),
+    })
+    .optional(),
+  notifications: z
+    .object({
+      email: z.boolean().optional(),
+      push: z.boolean().optional(),
+      sms: z.boolean().optional(),
+      moodReminders: z.boolean().optional(),
+      goalDeadlines: z.boolean().optional(),
+      weeklyReports: z.boolean().optional(),
+      dailyCheckins: z.boolean().optional(),
+      reminderTime: z.string().optional(),
+      quietHours: z
+        .object({
+          enabled: z.boolean().optional(),
+          start: z.string().optional(),
+          end: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+  privacy: z
+    .object({
+      shareData: z.boolean().optional(),
+      anonymousMode: z.boolean().optional(),
+      dataRetention: z.number().min(30).max(3650).optional(),
+      allowAnalytics: z.boolean().optional(),
+      shareWithTherapist: z.boolean().optional(),
+      publicProfile: z.boolean().optional(),
+    })
+    .optional(),
+  performance: z
+    .object({
+      enableCaching: z.boolean().optional(),
+      lazyLoading: z.boolean().optional(),
+      backgroundSync: z.boolean().optional(),
+      dataCompression: z.boolean().optional(),
+      offlineMode: z.boolean().optional(),
+      syncFrequency: z.enum(['realtime', 'hourly', 'daily']).optional(),
+    })
+    .optional(),
+  integrations: z
+    .object({
+      googleCalendar: z.boolean().optional(),
+      appleHealth: z.boolean().optional(),
+      fitbit: z.boolean().optional(),
+      spotify: z.boolean().optional(),
+      weather: z.boolean().optional(),
+      googleFit: z.boolean().optional(),
+      strava: z.boolean().optional(),
+    })
+    .optional(),
+  backup: z
+    .object({
+      autoBackup: z.boolean().optional(),
+      backupFrequency: z.enum(['daily', 'weekly', 'monthly']).optional(),
+      cloudBackup: z.boolean().optional(),
+      localBackup: z.boolean().optional(),
+      encryptBackups: z.boolean().optional(),
+      maxBackups: z.number().min(1).max(50).optional(),
+    })
+    .optional(),
+  accessibility: z
+    .object({
+      highContrast: z.boolean().optional(),
+      largeText: z.boolean().optional(),
+      reduceMotion: z.boolean().optional(),
+      screenReader: z.boolean().optional(),
+      keyboardNavigation: z.boolean().optional(),
+      voiceCommands: z.boolean().optional(),
+    })
+    .optional(),
+  advanced: z
+    .object({
+      developerMode: z.boolean().optional(),
+      debugMode: z.boolean().optional(),
+      betaFeatures: z.boolean().optional(),
+      experimentalFeatures: z.boolean().optional(),
+      apiLogging: z.boolean().optional(),
+      performanceMonitoring: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 // Default settings
@@ -181,10 +201,10 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching settings:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to load settings',
-        message: 'Internal server error' 
+        message: 'Internal server error',
       },
       { status: 500 }
     );
@@ -204,7 +224,7 @@ export async function PUT(request: NextRequest) {
           success: false,
           error: 'Invalid settings data',
           details: validationResult.error.issues,
-          message: 'Validation failed'
+          message: 'Validation failed',
         },
         { status: 400 }
       );
@@ -222,7 +242,7 @@ export async function PUT(request: NextRequest) {
     });
 
     // Simulate save delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     return NextResponse.json({
       success: true,
@@ -233,10 +253,10 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Error updating settings:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to update settings',
-        message: 'Internal server error' 
+        message: 'Internal server error',
       },
       { status: 500 }
     );
@@ -247,12 +267,10 @@ export async function PUT(request: NextRequest) {
 function mergeDeep(target: any, source: any): any {
   const output = Object.assign({}, target);
   if (isObject(target) && isObject(source)) {
-    Object.keys(source).forEach(key => {
+    Object.keys(source).forEach((key) => {
       if (isObject(source[key])) {
-        if (!(key in target))
-          Object.assign(output, { [key]: source[key] });
-        else
-          output[key] = mergeDeep(target[key], source[key]);
+        if (!(key in target)) Object.assign(output, { [key]: source[key] });
+        else output[key] = mergeDeep(target[key], source[key]);
       } else {
         Object.assign(output, { [key]: source[key] });
       }
@@ -273,11 +291,11 @@ export async function POST(request: NextRequest) {
 
     if (action === 'reset') {
       // Simulate reset delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       console.log('Settings reset to defaults:', {
         timestamp: new Date().toISOString(),
-        action: 'reset'
+        action: 'reset',
       });
 
       return NextResponse.json({
@@ -299,7 +317,7 @@ export async function POST(request: NextRequest) {
       };
 
       // Simulate backup creation delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       console.log('Backup created:', backupData);
 
@@ -316,7 +334,7 @@ export async function POST(request: NextRequest) {
 
     if (action === 'restore') {
       // In a real app, restore from backup file
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       return NextResponse.json({
         success: true,
@@ -327,20 +345,20 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Invalid action',
-        message: `Action '${action}' is not supported`
+        message: `Action '${action}' is not supported`,
       },
       { status: 400 }
     );
   } catch (error) {
     console.error('Error processing settings action:', error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Failed to process action',
-        message: 'Internal server error' 
+        message: 'Internal server error',
       },
       { status: 500 }
     );

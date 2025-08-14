@@ -16,13 +16,13 @@ const insightUpdateSchema = z.object({
 // PATCH /api/insights/[id] - Update specific insight
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -44,7 +44,7 @@ export async function PATCH(
     const existingInsight = await prisma.insight.findFirst({
       where: {
         id,
-        userId: session.user.id,
+        userId: (session as any).user.id,
       },
     });
 
@@ -71,13 +71,13 @@ export async function PATCH(
 // DELETE /api/insights/[id] - Delete specific insight
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -85,7 +85,7 @@ export async function DELETE(
     const existingInsight = await prisma.insight.findFirst({
       where: {
         id,
-        userId: session.user.id,
+        userId: (session as any).user.id,
       },
     });
 

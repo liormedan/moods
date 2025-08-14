@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Missing required fields',
-          message: 'שדות חובה חסרים'
+          message: 'שדות חובה חסרים',
         },
         { status: 400 }
       );
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Password too weak',
-          message: 'הסיסמה חלשה מדי. אנא בחר סיסמה חזקה יותר'
+          message: 'הסיסמה חלשה מדי. אנא בחר סיסמה חזקה יותר',
         },
         { status: 400 }
       );
@@ -43,11 +43,11 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       email,
       action: 'password_reset_completed',
-      method: token ? 'email_link' : 'verification_code'
+      method: token ? 'email_link' : 'verification_code',
     });
 
     // Simulate password update delay
-    await new Promise(resolve => setTimeout(resolve, 1200));
+    await new Promise((resolve) => setTimeout(resolve, 1200));
 
     return NextResponse.json({
       success: true,
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         passwordReset: true,
         timestamp: new Date().toISOString(),
       },
-      message: 'הסיסמה אופסה בהצלחה'
+      message: 'הסיסמה אופסה בהצלחה',
     });
   } catch (error) {
     console.error('Error confirming password reset:', error);
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to reset password',
-        message: 'שגיאה באיפוס הסיסמה'
+        message: 'שגיאה באיפוס הסיסמה',
       },
       { status: 500 }
     );

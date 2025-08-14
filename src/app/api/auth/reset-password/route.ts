@@ -41,10 +41,7 @@ export async function POST(request: NextRequest) {
       });
 
       if (!user) {
-        return NextResponse.json(
-          { error: 'משתמש לא נמצא' },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: 'משתמש לא נמצא' }, { status: 404 });
       }
 
       // Hash new password
@@ -73,9 +70,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Error resetting password:', error);
-    return NextResponse.json(
-      { error: 'שגיאה פנימית בשרת' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'שגיאה פנימית בשרת' }, { status: 500 });
   }
 }

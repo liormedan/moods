@@ -48,8 +48,24 @@ interface Resource {
   id: string;
   title: string;
   description: string;
-  type: 'article' | 'video' | 'podcast' | 'book' | 'tool' | 'app' | 'contact' | 'event';
-  category: 'anxiety' | 'depression' | 'general' | 'crisis' | 'self-help' | 'professional' | 'family' | 'youth';
+  type:
+    | 'article'
+    | 'video'
+    | 'podcast'
+    | 'book'
+    | 'tool'
+    | 'app'
+    | 'contact'
+    | 'event';
+  category:
+    | 'anxiety'
+    | 'depression'
+    | 'general'
+    | 'crisis'
+    | 'self-help'
+    | 'professional'
+    | 'family'
+    | 'youth';
   url?: string;
   fileUrl?: string;
   author?: string;
@@ -65,15 +81,65 @@ interface Resource {
 }
 
 const categories = [
-  { id: 'all', name: 'כל הקטגוריות', icon: HelpCircle, color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
-  { id: 'anxiety', name: 'חרדה', icon: Brain, color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' },
-  { id: 'depression', name: 'דיכאון', icon: Heart, color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' },
-  { id: 'general', name: 'כללי', icon: HelpCircle, color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' },
-  { id: 'crisis', name: 'משבר', icon: AlertCircle, color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' },
-  { id: 'self-help', name: 'עזרה עצמית', icon: Lightbulb, color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' },
-  { id: 'professional', name: 'מקצועי', icon: Users, color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400' },
-  { id: 'family', name: 'משפחה', icon: Users, color: 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-400' },
-  { id: 'youth', name: 'נוער', icon: Zap, color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400' },
+  {
+    id: 'all',
+    name: 'כל הקטגוריות',
+    icon: HelpCircle,
+    color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+  },
+  {
+    id: 'anxiety',
+    name: 'חרדה',
+    icon: Brain,
+    color:
+      'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+  },
+  {
+    id: 'depression',
+    name: 'דיכאון',
+    icon: Heart,
+    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
+  },
+  {
+    id: 'general',
+    name: 'כללי',
+    icon: HelpCircle,
+    color:
+      'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+  },
+  {
+    id: 'crisis',
+    name: 'משבר',
+    icon: AlertCircle,
+    color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+  },
+  {
+    id: 'self-help',
+    name: 'עזרה עצמית',
+    icon: Lightbulb,
+    color:
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
+  },
+  {
+    id: 'professional',
+    name: 'מקצועי',
+    icon: Users,
+    color:
+      'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
+  },
+  {
+    id: 'family',
+    name: 'משפחה',
+    icon: Users,
+    color: 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-400',
+  },
+  {
+    id: 'youth',
+    name: 'נוער',
+    icon: Zap,
+    color:
+      'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
+  },
 ];
 
 const types = [
@@ -98,7 +164,9 @@ export default function ResourcesPage() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>('all');
   const [bookmarkedResources, setBookmarkedResources] = useState<string[]>([]);
   const [stats, setStats] = useState<any>(null);
-  const [sortBy, setSortBy] = useState<'featured' | 'rating' | 'views' | 'recent'>('featured');
+  const [sortBy, setSortBy] = useState<
+    'featured' | 'rating' | 'views' | 'recent'
+  >('featured');
 
   useEffect(() => {
     // Load bookmarked resources from localStorage
@@ -111,19 +179,27 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     loadResources();
-  }, [selectedCategory, selectedType, selectedLanguage, showFreeOnly, searchQuery]);
+  }, [
+    selectedCategory,
+    selectedType,
+    selectedLanguage,
+    showFreeOnly,
+    searchQuery,
+  ]);
 
   const loadResources = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      
-      if (selectedCategory !== 'all') params.append('category', selectedCategory);
+
+      if (selectedCategory !== 'all')
+        params.append('category', selectedCategory);
       if (selectedType !== 'all') params.append('type', selectedType);
-      if (selectedLanguage !== 'all') params.append('language', selectedLanguage);
+      if (selectedLanguage !== 'all')
+        params.append('language', selectedLanguage);
       if (showFreeOnly) params.append('isFree', 'true');
       if (searchQuery) params.append('search', searchQuery);
-      
+
       const response = await fetch(`/api/resources?${params}`);
       if (response.ok) {
         const result = await response.json();
@@ -147,7 +223,9 @@ export default function ResourcesPage() {
       case 'views':
         return (b.views || 0) - (a.views || 0);
       case 'recent':
-        return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+        return (
+          new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+        );
       case 'featured':
       default:
         if (a.featured && !b.featured) return -1;
@@ -158,21 +236,35 @@ export default function ResourcesPage() {
 
   const exportResources = () => {
     const csvContent = [
-      ['כותרת', 'תיאור', 'סוג', 'קטגוריה', 'שפה', 'חינמי', 'דירוג', 'צפיות', 'מחבר'].join(','),
-      ...resources.map(resource => [
-        `"${resource.title}"`,
-        `"${resource.description}"`,
-        getTypeText(resource.type),
-        getCategoryName(resource.category),
-        getLanguageText(resource.language),
-        resource.isFree ? 'כן' : 'לא',
-        resource.rating || 'לא דורג',
-        resource.views || 0,
-        `"${resource.author || 'לא צוין'}"`
-      ].join(','))
+      [
+        'כותרת',
+        'תיאור',
+        'סוג',
+        'קטגוריה',
+        'שפה',
+        'חינמי',
+        'דירוג',
+        'צפיות',
+        'מחבר',
+      ].join(','),
+      ...resources.map((resource) =>
+        [
+          `"${resource.title}"`,
+          `"${resource.description}"`,
+          getTypeText(resource.type),
+          getCategoryName(resource.category),
+          getLanguageText(resource.language),
+          resource.isFree ? 'כן' : 'לא',
+          resource.rating || 'לא דורג',
+          resource.views || 0,
+          `"${resource.author || 'לא צוין'}"`,
+        ].join(',')
+      ),
     ].join('\n');
 
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `משאבי_עזרה_${new Date().toISOString().split('T')[0]}.csv`;
@@ -218,7 +310,9 @@ export default function ResourcesPage() {
 
   const getCategoryColor = (category: string) => {
     const cat = categories.find((c) => c.id === category);
-    return cat ? cat.color : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    return cat
+      ? cat.color
+      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
   };
 
   const getLanguageText = (language: string) => {
@@ -434,22 +528,34 @@ export default function ResourcesPage() {
               <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
                 <Phone className="w-6 h-6 text-red-600 dark:text-red-400" />
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-gray-100">ער"ן - קו חירום</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">1201 - חינמי</div>
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">
+                    ער"ן - קו חירום
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    1201 - חינמי
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
                 <Phone className="w-6 h-6 text-red-600 dark:text-red-400" />
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-gray-100">נטל - קו נוער</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">1800-250-250</div>
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">
+                    נטל - קו נוער
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    1800-250-250
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
                 <MessageCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
                 <div>
-                  <div className="font-semibold text-gray-900 dark:text-gray-100">צ'אט חירום</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">sahar.org.il</div>
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">
+                    צ'אט חירום
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    sahar.org.il
+                  </div>
                 </div>
               </div>
             </div>
@@ -583,7 +689,9 @@ export default function ResourcesPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const bookmarked = resources.filter(r => bookmarkedResources.includes(r.id));
+                  const bookmarked = resources.filter((r) =>
+                    bookmarkedResources.includes(r.id)
+                  );
                   if (bookmarked.length > 0) {
                     setResources(bookmarked);
                   }
@@ -599,7 +707,9 @@ export default function ResourcesPage() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-gray-600 dark:text-gray-400 mt-4">טוען משאבים...</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-4">
+                טוען משאבים...
+              </p>
             </div>
           ) : regularResources.length === 0 ? (
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
@@ -738,7 +848,9 @@ export default function ResourcesPage() {
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">התחל בהדרגה</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                      התחל בהדרגה
+                    </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       בחר משאב אחד או שניים להתחלה, אל תנסה לעשות הכל בבת אחת
                     </p>
@@ -747,7 +859,9 @@ export default function ResourcesPage() {
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">שמור מה שעובד</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                      שמור מה שעובד
+                    </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       השתמש בכפתור הסימניות כדי לשמור משאבים שמועילים לך
                     </p>
@@ -758,7 +872,9 @@ export default function ResourcesPage() {
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">פנה לעזרה מקצועית</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                      פנה לעזרה מקצועית
+                    </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       משאבים אלה אינם תחליף לטיפול מקצועי במקרה הצורך
                     </p>
@@ -767,7 +883,9 @@ export default function ResourcesPage() {
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">שתף עם אחרים</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                      שתף עם אחרים
+                    </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       משאבים מועילים יכולים לעזור גם לחברים ובני משפחה
                     </p>

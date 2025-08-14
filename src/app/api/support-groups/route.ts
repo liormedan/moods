@@ -4,7 +4,15 @@ interface SupportGroup {
   id: string;
   name: string;
   description: string;
-  category: 'anxiety' | 'depression' | 'general' | 'addiction' | 'trauma' | 'relationships' | 'grief' | 'stress';
+  category:
+    | 'anxiety'
+    | 'depression'
+    | 'general'
+    | 'addiction'
+    | 'trauma'
+    | 'relationships'
+    | 'grief'
+    | 'stress';
   type: 'public' | 'private' | 'closed';
   memberCount: number;
   isJoined: boolean;
@@ -27,7 +35,8 @@ function generateSupportGroups(): SupportGroup[] {
     {
       id: 'group-1',
       name: 'התמודדות עם חרדה יומיומית',
-      description: 'קבוצה תומכת למי שמתמודד עם חרדה בחיי היום יום. נפגשים כדי לשתף כלים וטכניקות להתמודדות.',
+      description:
+        'קבוצה תומכת למי שמתמודד עם חרדה בחיי היום יום. נפגשים כדי לשתף כלים וטכניקות להתמודדות.',
       category: 'anxiety',
       type: 'public',
       memberCount: 127,
@@ -38,16 +47,17 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'רביעי',
         time: '20:00',
-        frequency: 'weekly'
+        frequency: 'weekly',
       },
       onlineStatus: 'online',
       rating: 4.8,
-      language: 'hebrew'
+      language: 'hebrew',
     },
     {
       id: 'group-2',
       name: 'דיכאון - יחד נתגבר',
-      description: 'מרחב בטוח לשיתוף חוויות והתמודדות עם דיכאון. כאן אפשר להיות אמיתיים ולקבל תמיכה.',
+      description:
+        'מרחב בטוח לשיתוף חוויות והתמודדות עם דיכאון. כאן אפשר להיות אמיתיים ולקבל תמיכה.',
       category: 'depression',
       type: 'private',
       memberCount: 89,
@@ -58,16 +68,17 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'ראשון',
         time: '19:30',
-        frequency: 'weekly'
+        frequency: 'weekly',
       },
       onlineStatus: 'scheduled',
       rating: 4.6,
-      language: 'hebrew'
+      language: 'hebrew',
     },
     {
       id: 'group-3',
       name: 'הורים לילדים עם צרכים מיוחדים',
-      description: 'קבוצת תמיכה להורים המתמודדים עם אתגרי הורות לילדים עם צרכים מיוחדים.',
+      description:
+        'קבוצת תמיכה להורים המתמודדים עם אתגרי הורות לילדים עם צרכים מיוחדים.',
       category: 'general',
       type: 'public',
       memberCount: 156,
@@ -78,16 +89,17 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'שני',
         time: '21:00',
-        frequency: 'biweekly'
+        frequency: 'biweekly',
       },
       onlineStatus: 'online',
       rating: 4.9,
-      language: 'hebrew'
+      language: 'hebrew',
     },
     {
       id: 'group-4',
       name: 'התמכרויות - דרך להחלמה',
-      description: 'קבוצה לתמיכה בתהליך החלמה מהתמכרויות שונות. מרחב ללא שיפוטיות עם הבנה עמוקה.',
+      description:
+        'קבוצה לתמיכה בתהליך החלמה מהתמכרויות שונות. מרחב ללא שיפוטיות עם הבנה עמוקה.',
       category: 'addiction',
       type: 'closed',
       memberCount: 43,
@@ -98,16 +110,17 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'חמישי',
         time: '18:00',
-        frequency: 'weekly'
+        frequency: 'weekly',
       },
       onlineStatus: 'offline',
       rating: 4.7,
-      language: 'hebrew'
+      language: 'hebrew',
     },
     {
       id: 'group-5',
       name: 'טראומה ופוסט טראומה',
-      description: 'קבוצת תמיכה למי שעבר טראומה ומתמודד עם השלכותיה. עם הדרכה מקצועית.',
+      description:
+        'קבוצת תמיכה למי שעבר טראומה ומתמודד עם השלכותיה. עם הדרכה מקצועית.',
       category: 'trauma',
       type: 'private',
       memberCount: 67,
@@ -118,16 +131,17 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'שלישי',
         time: '19:00',
-        frequency: 'weekly'
+        frequency: 'weekly',
       },
       onlineStatus: 'scheduled',
       rating: 4.5,
-      language: 'hebrew'
+      language: 'hebrew',
     },
     {
       id: 'group-6',
       name: 'מערכות יחסים בריאות',
-      description: 'קבוצה לשיפור מערכות יחסים, תקשורת זוגית ובניית קשרים בריאים.',
+      description:
+        'קבוצה לשיפור מערכות יחסים, תקשורת זוגית ובניית קשרים בריאים.',
       category: 'relationships',
       type: 'public',
       memberCount: 203,
@@ -138,16 +152,17 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'שישי',
         time: '20:30',
-        frequency: 'weekly'
+        frequency: 'weekly',
       },
       onlineStatus: 'online',
       rating: 4.4,
-      language: 'hebrew'
+      language: 'hebrew',
     },
     {
       id: 'group-7',
       name: 'התמודדות עם אבל',
-      description: 'מרחב תמיכה למי שמתמודד עם אובדן ואבל. יחד נעבור את התהליך הקשה הזה.',
+      description:
+        'מרחב תמיכה למי שמתמודד עם אובדן ואבל. יחד נעבור את התהליך הקשה הזה.',
       category: 'grief',
       type: 'public',
       memberCount: 78,
@@ -158,11 +173,11 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'רביעי',
         time: '18:30',
-        frequency: 'weekly'
+        frequency: 'weekly',
       },
       onlineStatus: 'offline',
       rating: 4.6,
-      language: 'hebrew'
+      language: 'hebrew',
     },
     {
       id: 'group-8',
@@ -178,16 +193,17 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'ראשון',
         time: '12:00',
-        frequency: 'weekly'
+        frequency: 'weekly',
       },
       onlineStatus: 'scheduled',
       rating: 4.3,
-      language: 'hebrew'
+      language: 'hebrew',
     },
     {
       id: 'group-9',
       name: 'צעירים במשבר',
-      description: 'קבוצת תמיכה לצעירים בגילאי 18-25 המתמודדים עם אתגרי המעבר לבגרות.',
+      description:
+        'קבוצת תמיכה לצעירים בגילאי 18-25 המתמודדים עם אתגרי המעבר לבגרות.',
       category: 'general',
       type: 'public',
       memberCount: 92,
@@ -198,16 +214,17 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'חמישי',
         time: '21:00',
-        frequency: 'weekly'
+        frequency: 'weekly',
       },
       onlineStatus: 'online',
       rating: 4.7,
-      language: 'hebrew'
+      language: 'hebrew',
     },
     {
       id: 'group-10',
       name: 'English Support Group',
-      description: 'A supportive community for English speakers dealing with mental health challenges.',
+      description:
+        'A supportive community for English speakers dealing with mental health challenges.',
       category: 'general',
       type: 'public',
       memberCount: 234,
@@ -218,12 +235,12 @@ function generateSupportGroups(): SupportGroup[] {
       meetingSchedule: {
         day: 'Saturday',
         time: '15:00',
-        frequency: 'weekly'
+        frequency: 'weekly',
       },
       onlineStatus: 'scheduled',
       rating: 4.5,
-      language: 'english'
-    }
+      language: 'english',
+    },
   ];
 }
 
@@ -233,26 +250,33 @@ export async function GET() {
     const groups = generateSupportGroups();
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     return NextResponse.json({
       success: true,
       data: groups,
       metadata: {
         total: groups.length,
-        joined: groups.filter(g => g.isJoined).length,
-        byCategory: groups.reduce((acc, g) => {
-          acc[g.category] = (acc[g.category] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-        byType: groups.reduce((acc, g) => {
-          acc[g.type] = (acc[g.type] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
+        joined: groups.filter((g) => g.isJoined).length,
+        byCategory: groups.reduce(
+          (acc, g) => {
+            acc[g.category] = (acc[g.category] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
+        byType: groups.reduce(
+          (acc, g) => {
+            acc[g.type] = (acc[g.type] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
         totalMembers: groups.reduce((sum, g) => sum + g.memberCount, 0),
-        averageRating: groups.reduce((sum, g) => sum + g.rating, 0) / groups.length,
+        averageRating:
+          groups.reduce((sum, g) => sum + g.rating, 0) / groups.length,
       },
-      message: 'Support groups loaded successfully'
+      message: 'Support groups loaded successfully',
     });
   } catch (error) {
     console.error('Error loading support groups:', error);
@@ -260,7 +284,7 @@ export async function GET() {
       {
         success: false,
         error: 'Failed to load support groups',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );
@@ -271,7 +295,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const newGroup: SupportGroup = {
       id: `group-${Date.now()}`,
       name: body.name || 'קבוצה חדשה',
@@ -286,7 +310,7 @@ export async function POST(request: NextRequest) {
       meetingSchedule: body.meetingSchedule,
       onlineStatus: 'online',
       rating: 5.0, // New groups start with perfect rating
-      language: body.language || 'hebrew'
+      language: body.language || 'hebrew',
     };
 
     console.log('New support group created:', newGroup);
@@ -294,7 +318,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: newGroup,
-      message: 'Support group created successfully'
+      message: 'Support group created successfully',
     });
   } catch (error) {
     console.error('Error creating support group:', error);
@@ -302,7 +326,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to create support group',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

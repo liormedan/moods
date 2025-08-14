@@ -3,17 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 // POST /api/support-groups/events/[id]/register - Register for an event
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         {
           success: false,
           error: 'Event ID is required',
-          message: 'Missing event ID'
+          message: 'Missing event ID',
         },
         { status: 400 }
       );
@@ -23,11 +23,11 @@ export async function POST(
     console.log(`User registering for event ${id}:`, {
       timestamp: new Date().toISOString(),
       eventId: id,
-      action: 'register_event'
+      action: 'register_event',
     });
 
     // Simulate registration delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     return NextResponse.json({
       success: true,
@@ -35,9 +35,9 @@ export async function POST(
         eventId: id,
         isRegistered: true,
         registeredAt: new Date().toISOString(),
-        registrationStatus: 'confirmed'
+        registrationStatus: 'confirmed',
       },
-      message: 'Successfully registered for the event'
+      message: 'Successfully registered for the event',
     });
   } catch (error) {
     console.error('Error registering for event:', error);
@@ -45,7 +45,7 @@ export async function POST(
       {
         success: false,
         error: 'Failed to register for event',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

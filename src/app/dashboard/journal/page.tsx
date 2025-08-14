@@ -243,7 +243,7 @@ export default function JournalPage() {
 
   const handleToggleFavorite = async (entryId: string) => {
     try {
-      const entry = entries.find(e => e.id === entryId);
+      const entry = entries.find((e) => e.id === entryId);
       if (!entry) return;
 
       const response = await fetch(`/api/journal/${entryId}`, {
@@ -348,24 +348,29 @@ export default function JournalPage() {
         [''],
         ['רשומות יומן'],
         ['תאריך', 'כותרת', 'תוכן', 'מצב רוח', 'תגיות', 'תבנית', 'מועדף'],
-        ...entries.map(entry => [
+        ...entries.map((entry) => [
           new Date(entry.createdAt).toLocaleDateString('he-IL'),
           entry.title,
           entry.content.replace(/\n/g, ' '), // Remove line breaks for CSV
           entry.mood?.toString() || '',
           entry.tags.join(', '),
-          entry.template ? journalTemplates.find(t => t.id === entry.template)?.name || entry.template : '',
-          entry.isFavorite ? 'כן' : 'לא'
-        ])
+          entry.template
+            ? journalTemplates.find((t) => t.id === entry.template)?.name ||
+              entry.template
+            : '',
+          entry.isFavorite ? 'כן' : 'לא',
+        ]),
       ];
 
       // Add BOM for Hebrew support
       const BOM = '\uFEFF';
       const csvContent = exportData
-        .map(row => row.map(cell => `"${cell}"`).join(','))
+        .map((row) => row.map((cell) => `"${cell}"`).join(','))
         .join('\n');
 
-      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([BOM + csvContent], {
+        type: 'text/csv;charset=utf-8;',
+      });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `journal-export-${new Date().toISOString().split('T')[0]}.csv`;
@@ -397,7 +402,7 @@ export default function JournalPage() {
               <Plus className="w-4 h-4 mr-2" />
               רשומה חדשה
             </Button>
-            <Button 
+            <Button
               variant="outline"
               onClick={handleExportJournal}
               disabled={entries.length === 0}
@@ -803,12 +808,14 @@ export default function JournalPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {entries.filter(e => {
-                  const entryDate = new Date(e.createdAt);
-                  const weekAgo = new Date();
-                  weekAgo.setDate(weekAgo.getDate() - 7);
-                  return entryDate >= weekAgo;
-                }).length}
+                {
+                  entries.filter((e) => {
+                    const entryDate = new Date(e.createdAt);
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return entryDate >= weekAgo;
+                  }).length
+                }
               </div>
             </CardContent>
           </Card>
@@ -850,10 +857,14 @@ export default function JournalPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {entries.filter(e => e.mood).length > 0 
-                  ? (entries.filter(e => e.mood).reduce((sum, e) => sum + (e.mood || 0), 0) / entries.filter(e => e.mood).length).toFixed(1)
-                  : '-'
-                }
+                {entries.filter((e) => e.mood).length > 0
+                  ? (
+                      entries
+                        .filter((e) => e.mood)
+                        .reduce((sum, e) => sum + (e.mood || 0), 0) /
+                      entries.filter((e) => e.mood).length
+                    ).toFixed(1)
+                  : '-'}
               </div>
             </CardContent>
           </Card>

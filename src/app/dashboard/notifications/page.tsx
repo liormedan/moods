@@ -53,7 +53,15 @@ import {
 
 interface Notification {
   id: string;
-  type: 'mood' | 'goal' | 'journal' | 'breathing' | 'report' | 'reminder' | 'social' | 'system';
+  type:
+    | 'mood'
+    | 'goal'
+    | 'journal'
+    | 'breathing'
+    | 'report'
+    | 'reminder'
+    | 'social'
+    | 'system';
   title: string;
   message: string;
   timestamp: string;
@@ -115,7 +123,9 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'notifications' | 'settings'>('notifications');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'settings'>(
+    'notifications'
+  );
 
   useEffect(() => {
     loadNotifications();
@@ -151,8 +161,8 @@ export default function NotificationsPage() {
   const markAsRead = async (id: string) => {
     try {
       await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
-      setNotifications(prev => 
-        prev.map(notif => 
+      setNotifications((prev) =>
+        prev.map((notif) =>
           notif.id === id ? { ...notif, read: true } : notif
         )
       );
@@ -164,8 +174,8 @@ export default function NotificationsPage() {
   const markAllAsRead = async () => {
     try {
       await fetch('/api/notifications/mark-all-read', { method: 'POST' });
-      setNotifications(prev => 
-        prev.map(notif => ({ ...notif, read: true }))
+      setNotifications((prev) =>
+        prev.map((notif) => ({ ...notif, read: true }))
       );
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
@@ -175,7 +185,7 @@ export default function NotificationsPage() {
   const deleteNotification = async (id: string) => {
     try {
       await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
-      setNotifications(prev => prev.filter(notif => notif.id !== id));
+      setNotifications((prev) => prev.filter((notif) => notif.id !== id));
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
@@ -183,7 +193,7 @@ export default function NotificationsPage() {
 
   const clearAllNotifications = async () => {
     if (!confirm('האם אתה בטוח שברצונך למחוק את כל ההתראות?')) return;
-    
+
     try {
       await fetch('/api/notifications/clear-all', { method: 'DELETE' });
       setNotifications([]);
@@ -218,17 +228,21 @@ export default function NotificationsPage() {
   const exportNotifications = () => {
     const csvContent = [
       ['תאריך', 'סוג', 'כותרת', 'הודעה', 'עדיפות', 'נקרא'],
-      ...notifications.map(notif => [
+      ...notifications.map((notif) => [
         new Date(notif.timestamp).toLocaleDateString('he-IL'),
         getTypeLabel(notif.type),
         notif.title,
         notif.message,
         getPriorityLabel(notif.priority),
-        notif.read ? 'כן' : 'לא'
-      ])
-    ].map(row => row.join(',')).join('\n');
+        notif.read ? 'כן' : 'לא',
+      ]),
+    ]
+      .map((row) => row.join(','))
+      .join('\n');
 
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `התראות_${new Date().toISOString().split('T')[0]}.csv`;
@@ -237,60 +251,88 @@ export default function NotificationsPage() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'mood': return <Heart className="w-4 h-4" />;
-      case 'goal': return <Target className="w-4 h-4" />;
-      case 'journal': return <BookOpen className="w-4 h-4" />;
-      case 'breathing': return <Activity className="w-4 h-4" />;
-      case 'report': return <Calendar className="w-4 h-4" />;
-      case 'reminder': return <Clock className="w-4 h-4" />;
-      case 'social': return <Users className="w-4 h-4" />;
-      case 'system': return <Settings className="w-4 h-4" />;
-      default: return <Bell className="w-4 h-4" />;
+      case 'mood':
+        return <Heart className="w-4 h-4" />;
+      case 'goal':
+        return <Target className="w-4 h-4" />;
+      case 'journal':
+        return <BookOpen className="w-4 h-4" />;
+      case 'breathing':
+        return <Activity className="w-4 h-4" />;
+      case 'report':
+        return <Calendar className="w-4 h-4" />;
+      case 'reminder':
+        return <Clock className="w-4 h-4" />;
+      case 'social':
+        return <Users className="w-4 h-4" />;
+      case 'system':
+        return <Settings className="w-4 h-4" />;
+      default:
+        return <Bell className="w-4 h-4" />;
     }
   };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'mood': return 'מצב רוח';
-      case 'goal': return 'מטרות';
-      case 'journal': return 'יומן';
-      case 'breathing': return 'נשימה';
-      case 'report': return 'דוחות';
-      case 'reminder': return 'תזכורת';
-      case 'social': return 'חברתי';
-      case 'system': return 'מערכת';
-      default: return 'כללי';
+      case 'mood':
+        return 'מצב רוח';
+      case 'goal':
+        return 'מטרות';
+      case 'journal':
+        return 'יומן';
+      case 'breathing':
+        return 'נשימה';
+      case 'report':
+        return 'דוחות';
+      case 'reminder':
+        return 'תזכורת';
+      case 'social':
+        return 'חברתי';
+      case 'system':
+        return 'מערכת';
+      default:
+        return 'כללי';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-50 border-red-200';
-      case 'high': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'medium': return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'low': return 'text-gray-600 bg-gray-50 border-gray-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'urgent':
+        return 'text-red-600 bg-red-50 border-red-200';
+      case 'high':
+        return 'text-orange-600 bg-orange-50 border-orange-200';
+      case 'medium':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'low':
+        return 'text-gray-600 bg-gray-50 border-gray-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'דחוף';
-      case 'high': return 'גבוה';
-      case 'medium': return 'בינוני';
-      case 'low': return 'נמוך';
-      default: return 'רגיל';
+      case 'urgent':
+        return 'דחוף';
+      case 'high':
+        return 'גבוה';
+      case 'medium':
+        return 'בינוני';
+      case 'low':
+        return 'נמוך';
+      default:
+        return 'רגיל';
     }
   };
 
-  const filteredNotifications = notifications.filter(notif => {
+  const filteredNotifications = notifications.filter((notif) => {
     if (filter === 'read' && !notif.read) return false;
     if (filter === 'unread' && notif.read) return false;
     if (typeFilter !== 'all' && notif.type !== typeFilter) return false;
     return true;
   });
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   if (loading) {
     return (
@@ -368,7 +410,10 @@ export default function NotificationsPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex flex-wrap items-center gap-4">
-                  <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
+                  <Select
+                    value={filter}
+                    onValueChange={(value: any) => setFilter(value)}
+                  >
                     <SelectTrigger className="w-40">
                       <SelectValue />
                     </SelectTrigger>
@@ -398,12 +443,20 @@ export default function NotificationsPage() {
 
                   <div className="flex gap-2 mr-auto">
                     {unreadCount > 0 && (
-                      <Button onClick={markAllAsRead} variant="outline" size="sm">
+                      <Button
+                        onClick={markAllAsRead}
+                        variant="outline"
+                        size="sm"
+                      >
                         <Check className="w-4 h-4 mr-2" />
                         סמן הכל כנקרא
                       </Button>
                     )}
-                    <Button onClick={clearAllNotifications} variant="outline" size="sm">
+                    <Button
+                      onClick={clearAllNotifications}
+                      variant="outline"
+                      size="sm"
+                    >
                       <Trash2 className="w-4 h-4 mr-2" />
                       מחק הכל
                     </Button>
@@ -422,40 +475,55 @@ export default function NotificationsPage() {
                       אין התראות
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      {filter === 'unread' ? 'כל ההתראות נקראו' : 'אין התראות להצגה'}
+                      {filter === 'unread'
+                        ? 'כל ההתראות נקראו'
+                        : 'אין התראות להצגה'}
                     </p>
                   </CardContent>
                 </Card>
               ) : (
                 filteredNotifications.map((notification) => (
-                  <Card key={notification.id} className={`${!notification.read ? 'border-l-4 border-l-blue-500' : ''}`}>
+                  <Card
+                    key={notification.id}
+                    className={`${!notification.read ? 'border-l-4 border-l-blue-500' : ''}`}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
-                        <div className={`p-2 rounded-full ${getPriorityColor(notification.priority)}`}>
+                        <div
+                          className={`p-2 rounded-full ${getPriorityColor(notification.priority)}`}
+                        >
                           {getTypeIcon(notification.type)}
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <h4 className={`font-medium ${!notification.read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                              <h4
+                                className={`font-medium ${!notification.read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}
+                              >
                                 {notification.title}
                               </h4>
                               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                 {notification.message}
                               </p>
                               <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                <span>{new Date(notification.timestamp).toLocaleString('he-IL')}</span>
+                                <span>
+                                  {new Date(
+                                    notification.timestamp
+                                  ).toLocaleString('he-IL')}
+                                </span>
                                 <span className="flex items-center gap-1">
                                   {getTypeIcon(notification.type)}
                                   {getTypeLabel(notification.type)}
                                 </span>
-                                <span className={`px-2 py-1 rounded-full ${getPriorityColor(notification.priority)}`}>
+                                <span
+                                  className={`px-2 py-1 rounded-full ${getPriorityColor(notification.priority)}`}
+                                >
                                   {getPriorityLabel(notification.priority)}
                                 </span>
                               </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-2">
                               {!notification.read && (
                                 <Button
@@ -467,7 +535,9 @@ export default function NotificationsPage() {
                                 </Button>
                               )}
                               <Button
-                                onClick={() => deleteNotification(notification.id)}
+                                onClick={() =>
+                                  deleteNotification(notification.id)
+                                }
                                 variant="ghost"
                                 size="sm"
                               >
@@ -475,12 +545,17 @@ export default function NotificationsPage() {
                               </Button>
                             </div>
                           </div>
-                          
-                          {notification.actionUrl && notification.actionText && (
-                            <Button variant="outline" size="sm" className="mt-3">
-                              {notification.actionText}
-                            </Button>
-                          )}
+
+                          {notification.actionUrl &&
+                            notification.actionText && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="mt-3"
+                              >
+                                {notification.actionText}
+                              </Button>
+                            )}
                         </div>
                       </div>
                     </CardContent>
@@ -499,9 +574,7 @@ export default function NotificationsPage() {
                     <Smartphone className="w-5 h-5" />
                     ערוצי התראות
                   </CardTitle>
-                  <CardDescription>
-                    בחר איך תרצה לקבל התראות
-                  </CardDescription>
+                  <CardDescription>בחר איך תרצה לקבל התראות</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -535,7 +608,7 @@ export default function NotificationsPage() {
                         onCheckedChange={(checked) =>
                           updateSettings({
                             ...settings,
-                            channels: { ...settings.channels, email: checked }
+                            channels: { ...settings.channels, email: checked },
                           })
                         }
                       />
@@ -556,7 +629,7 @@ export default function NotificationsPage() {
                         onCheckedChange={(checked) =>
                           updateSettings({
                             ...settings,
-                            channels: { ...settings.channels, push: checked }
+                            channels: { ...settings.channels, push: checked },
                           })
                         }
                       />
@@ -577,7 +650,7 @@ export default function NotificationsPage() {
                         onCheckedChange={(checked) =>
                           updateSettings({
                             ...settings,
-                            channels: { ...settings.channels, sms: checked }
+                            channels: { ...settings.channels, sms: checked },
                           })
                         }
                       />
@@ -598,7 +671,7 @@ export default function NotificationsPage() {
                         onCheckedChange={(checked) =>
                           updateSettings({
                             ...settings,
-                            channels: { ...settings.channels, inApp: checked }
+                            channels: { ...settings.channels, inApp: checked },
                           })
                         }
                       />
@@ -620,16 +693,35 @@ export default function NotificationsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {Object.entries(settings.types).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between">
+                    <div
+                      key={key}
+                      className="flex items-center justify-between"
+                    >
                       <div className="flex items-center gap-3">
-                        {key === 'moodReminders' && <Heart className="w-5 h-5 text-red-500" />}
-                        {key === 'goalDeadlines' && <Target className="w-5 h-5 text-blue-500" />}
-                        {key === 'journalPrompts' && <BookOpen className="w-5 h-5 text-green-500" />}
-                        {key === 'breathingReminders' && <Activity className="w-5 h-5 text-purple-500" />}
-                        {key === 'weeklyReports' && <Calendar className="w-5 h-5 text-orange-500" />}
-                        {key === 'socialUpdates' && <Users className="w-5 h-5 text-pink-500" />}
-                        {key === 'systemAlerts' && <AlertCircle className="w-5 h-5 text-yellow-500" />}
-                        {key === 'achievements' && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                        {key === 'moodReminders' && (
+                          <Heart className="w-5 h-5 text-red-500" />
+                        )}
+                        {key === 'goalDeadlines' && (
+                          <Target className="w-5 h-5 text-blue-500" />
+                        )}
+                        {key === 'journalPrompts' && (
+                          <BookOpen className="w-5 h-5 text-green-500" />
+                        )}
+                        {key === 'breathingReminders' && (
+                          <Activity className="w-5 h-5 text-purple-500" />
+                        )}
+                        {key === 'weeklyReports' && (
+                          <Calendar className="w-5 h-5 text-orange-500" />
+                        )}
+                        {key === 'socialUpdates' && (
+                          <Users className="w-5 h-5 text-pink-500" />
+                        )}
+                        {key === 'systemAlerts' && (
+                          <AlertCircle className="w-5 h-5 text-yellow-500" />
+                        )}
+                        {key === 'achievements' && (
+                          <CheckCircle className="w-5 h-5 text-emerald-500" />
+                        )}
                         <div>
                           <h4 className="font-medium">
                             {key === 'moodReminders' && 'תזכורות מצב רוח'}
@@ -642,10 +734,13 @@ export default function NotificationsPage() {
                             {key === 'achievements' && 'הישגים'}
                           </h4>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {key === 'moodReminders' && 'תזכורת יומית לתיעוד מצב רוח'}
-                            {key === 'goalDeadlines' && 'התראות על מטרות שמתקרבות לדדליין'}
+                            {key === 'moodReminders' &&
+                              'תזכורת יומית לתיעוד מצב רוח'}
+                            {key === 'goalDeadlines' &&
+                              'התראות על מטרות שמתקרבות לדדליין'}
                             {key === 'journalPrompts' && 'הצעות לכתיבה ביומן'}
-                            {key === 'breathingReminders' && 'תזכורות לתרגילי נשימה'}
+                            {key === 'breathingReminders' &&
+                              'תזכורות לתרגילי נשימה'}
                             {key === 'weeklyReports' && 'דוח התקדמות שבועי'}
                             {key === 'socialUpdates' && 'עדכונים מקבוצות תמיכה'}
                             {key === 'systemAlerts' && 'עדכוני מערכת וגרסאות'}
@@ -658,7 +753,7 @@ export default function NotificationsPage() {
                         onCheckedChange={(checked) =>
                           updateSettings({
                             ...settings,
-                            types: { ...settings.types, [key]: checked }
+                            types: { ...settings.types, [key]: checked },
                           })
                         }
                       />
@@ -674,9 +769,7 @@ export default function NotificationsPage() {
                     <Clock className="w-5 h-5" />
                     לוח זמנים
                   </CardTitle>
-                  <CardDescription>
-                    הגדר מתי תרצה לקבל התראות
-                  </CardDescription>
+                  <CardDescription>הגדר מתי תרצה לקבל התראות</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Quiet Hours */}
@@ -698,13 +791,16 @@ export default function NotificationsPage() {
                             ...settings,
                             schedule: {
                               ...settings.schedule,
-                              quietHours: { ...settings.schedule.quietHours, enabled: checked }
-                            }
+                              quietHours: {
+                                ...settings.schedule.quietHours,
+                                enabled: checked,
+                              },
+                            },
                           })
                         }
                       />
                     </div>
-                    
+
                     {settings.schedule.quietHours.enabled && (
                       <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -717,8 +813,11 @@ export default function NotificationsPage() {
                                 ...settings,
                                 schedule: {
                                   ...settings.schedule,
-                                  quietHours: { ...settings.schedule.quietHours, start: e.target.value }
-                                }
+                                  quietHours: {
+                                    ...settings.schedule.quietHours,
+                                    start: e.target.value,
+                                  },
+                                },
                               })
                             }
                             className="mt-1"
@@ -734,8 +833,11 @@ export default function NotificationsPage() {
                                 ...settings,
                                 schedule: {
                                   ...settings.schedule,
-                                  quietHours: { ...settings.schedule.quietHours, end: e.target.value }
-                                }
+                                  quietHours: {
+                                    ...settings.schedule.quietHours,
+                                    end: e.target.value,
+                                  },
+                                },
                               })
                             }
                             className="mt-1"
@@ -753,7 +855,9 @@ export default function NotificationsPage() {
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-sm font-medium">תזכורת בוקר</label>
+                        <label className="text-sm font-medium">
+                          תזכורת בוקר
+                        </label>
                         <Input
                           type="time"
                           value={settings.schedule.customTimes.morningReminder}
@@ -762,15 +866,20 @@ export default function NotificationsPage() {
                               ...settings,
                               schedule: {
                                 ...settings.schedule,
-                                customTimes: { ...settings.schedule.customTimes, morningReminder: e.target.value }
-                              }
+                                customTimes: {
+                                  ...settings.schedule.customTimes,
+                                  morningReminder: e.target.value,
+                                },
+                              },
                             })
                           }
                           className="mt-1"
                         />
                       </div>
                       <div>
-                        <label className="text-sm font-medium">תזכורת ערב</label>
+                        <label className="text-sm font-medium">
+                          תזכורת ערב
+                        </label>
                         <Input
                           type="time"
                           value={settings.schedule.customTimes.eveningReminder}
@@ -779,8 +888,11 @@ export default function NotificationsPage() {
                               ...settings,
                               schedule: {
                                 ...settings.schedule,
-                                customTimes: { ...settings.schedule.customTimes, eveningReminder: e.target.value }
-                              }
+                                customTimes: {
+                                  ...settings.schedule.customTimes,
+                                  eveningReminder: e.target.value,
+                                },
+                              },
                             })
                           }
                           className="mt-1"
@@ -796,8 +908,11 @@ export default function NotificationsPage() {
                               ...settings,
                               schedule: {
                                 ...settings.schedule,
-                                customTimes: { ...settings.schedule.customTimes, weeklyReport: e.target.value }
-                              }
+                                customTimes: {
+                                  ...settings.schedule.customTimes,
+                                  weeklyReport: e.target.value,
+                                },
+                              },
                             })
                           }
                           className="mt-1"
@@ -815,9 +930,7 @@ export default function NotificationsPage() {
                     <Settings className="w-5 h-5" />
                     העדפות מתקדמות
                   </CardTitle>
-                  <CardDescription>
-                    התאמות נוספות להתראות
-                  </CardDescription>
+                  <CardDescription>התאמות נוספות להתראות</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -836,7 +949,10 @@ export default function NotificationsPage() {
                         onCheckedChange={(checked) =>
                           updateSettings({
                             ...settings,
-                            preferences: { ...settings.preferences, sound: checked }
+                            preferences: {
+                              ...settings.preferences,
+                              sound: checked,
+                            },
                           })
                         }
                       />
@@ -857,7 +973,10 @@ export default function NotificationsPage() {
                         onCheckedChange={(checked) =>
                           updateSettings({
                             ...settings,
-                            preferences: { ...settings.preferences, vibration: checked }
+                            preferences: {
+                              ...settings.preferences,
+                              vibration: checked,
+                            },
                           })
                         }
                       />
@@ -878,7 +997,10 @@ export default function NotificationsPage() {
                         onCheckedChange={(checked) =>
                           updateSettings({
                             ...settings,
-                            preferences: { ...settings.preferences, preview: checked }
+                            preferences: {
+                              ...settings.preferences,
+                              preview: checked,
+                            },
                           })
                         }
                       />
@@ -899,7 +1021,10 @@ export default function NotificationsPage() {
                         onCheckedChange={(checked) =>
                           updateSettings({
                             ...settings,
-                            preferences: { ...settings.preferences, autoMarkRead: checked }
+                            preferences: {
+                              ...settings.preferences,
+                              autoMarkRead: checked,
+                            },
                           })
                         }
                       />
@@ -907,7 +1032,9 @@ export default function NotificationsPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium">מספר התראות מקסימלי ליום</label>
+                    <label className="text-sm font-medium">
+                      מספר התראות מקסימלי ליום
+                    </label>
                     <Input
                       type="number"
                       min="1"
@@ -916,7 +1043,10 @@ export default function NotificationsPage() {
                       onChange={(e) =>
                         updateSettings({
                           ...settings,
-                          preferences: { ...settings.preferences, maxPerDay: parseInt(e.target.value) }
+                          preferences: {
+                            ...settings.preferences,
+                            maxPerDay: parseInt(e.target.value),
+                          },
                         })
                       }
                       className="mt-1"

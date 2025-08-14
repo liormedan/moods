@@ -66,7 +66,8 @@ export function ForgotPasswordForm() {
                 {email}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                בדוק את תיבת הדואר שלך (כולל תיקיית הספאם) ולחץ על הקישור כדי לאפס את הסיסמה.
+                בדוק את תיבת הדואר שלך (כולל תיקיית הספאם) ולחץ על הקישור כדי
+                לאפס את הסיסמה.
               </p>
             </div>
             <Button
@@ -98,7 +99,10 @@ export function ForgotPasswordForm() {
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               כתובת אימייל
             </Label>
             <div className="relative">
@@ -119,13 +123,15 @@ export function ForgotPasswordForm() {
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center">
               <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mr-2" />
-              <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
+              <span className="text-sm text-red-700 dark:text-red-300">
+                {error}
+              </span>
             </div>
           )}
 
-          <Button 
-            type="submit" 
-            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors" 
+          <Button
+            type="submit"
+            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
             disabled={isLoading || !email}
           >
             {isLoading ? (
@@ -144,7 +150,8 @@ export function ForgotPasswordForm() {
 
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
           <p className="text-xs text-yellow-700 dark:text-yellow-300">
-            💡 <strong>טיפ:</strong> אם לא קיבלת את האימייל תוך כמה דקות, בדוק את תיקיית הספאם או נסה שוב.
+            💡 <strong>טיפ:</strong> אם לא קיבלת את האימייל תוך כמה דקות, בדוק
+            את תיקיית הספאם או נסה שוב.
           </p>
         </div>
       </CardContent>

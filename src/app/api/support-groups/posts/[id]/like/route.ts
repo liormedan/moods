@@ -3,17 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 // POST /api/support-groups/posts/[id]/like - Like/unlike a post
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         {
           success: false,
           error: 'Post ID is required',
-          message: 'Missing post ID'
+          message: 'Missing post ID',
         },
         { status: 400 }
       );
@@ -28,11 +28,11 @@ export async function POST(
       timestamp: new Date().toISOString(),
       postId: id,
       action: newLikeStatus ? 'like' : 'unlike',
-      likeChange
+      likeChange,
     });
 
     // Simulate like delay
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     return NextResponse.json({
       success: true,
@@ -40,9 +40,9 @@ export async function POST(
         postId: id,
         isLiked: newLikeStatus,
         likeChange,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      message: `Post ${newLikeStatus ? 'liked' : 'unliked'} successfully`
+      message: `Post ${newLikeStatus ? 'liked' : 'unliked'} successfully`,
     });
   } catch (error) {
     console.error('Error liking post:', error);
@@ -50,7 +50,7 @@ export async function POST(
       {
         success: false,
         error: 'Failed to like post',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

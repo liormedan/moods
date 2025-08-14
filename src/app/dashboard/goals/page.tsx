@@ -145,9 +145,10 @@ export default function GoalsPage() {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (selectedCategory !== 'all') params.append('category', selectedCategory);
+      if (selectedCategory !== 'all')
+        params.append('category', selectedCategory);
       if (selectedStatus !== 'all') params.append('status', selectedStatus);
-      
+
       const response = await fetch(`/api/goals?${params}`);
       if (response.ok) {
         const result = await response.json();
@@ -184,8 +185,8 @@ export default function GoalsPage() {
 
       if (response.ok) {
         const result = await response.json();
-        setGoals(prev => [...prev, result.data]);
-        
+        setGoals((prev) => [...prev, result.data]);
+
         // Reset form
         setNewGoal({
           title: '',
@@ -214,9 +215,9 @@ export default function GoalsPage() {
 
       if (response.ok) {
         const result = await response.json();
-        setGoals(prev => prev.map(goal => 
-          goal.id === id ? result.data : goal
-        ));
+        setGoals((prev) =>
+          prev.map((goal) => (goal.id === id ? result.data : goal))
+        );
         setEditingGoal(null);
       } else {
         console.error('Failed to update goal');
@@ -235,7 +236,7 @@ export default function GoalsPage() {
       });
 
       if (response.ok) {
-        setGoals(prev => prev.filter(goal => goal.id !== id));
+        setGoals((prev) => prev.filter((goal) => goal.id !== id));
       } else {
         console.error('Failed to delete goal');
       }
@@ -245,7 +246,7 @@ export default function GoalsPage() {
   };
 
   const toggleMilestone = async (goalId: string, milestoneId: string) => {
-    const goal = goals.find(g => g.id === goalId);
+    const goal = goals.find((g) => g.id === goalId);
     if (!goal) return;
 
     const updatedMilestones = goal.milestones.map((milestone) =>
@@ -258,7 +259,7 @@ export default function GoalsPage() {
   };
 
   const addMilestone = async (goalId: string, title: string) => {
-    const goal = goals.find(g => g.id === goalId);
+    const goal = goals.find((g) => g.id === goalId);
     if (!goal) return;
 
     const milestone: Milestone = {
@@ -273,21 +274,37 @@ export default function GoalsPage() {
 
   const exportGoals = () => {
     const csvContent = [
-      ['כותרת', 'תיאור', 'קטגוריה', 'סטטוס', 'עדיפות', 'התקדמות', 'תאריך יעד', 'תאריך יצירה', 'תאריך השלמה'].join(','),
-      ...goals.map(goal => [
-        `"${goal.title}"`,
-        `"${goal.description}"`,
-        getCategoryName(goal.category),
-        getStatusText(goal.status),
-        getPriorityText(goal.priority),
-        `${goal.progress}%`,
-        new Date(goal.targetDate).toLocaleDateString('he-IL'),
-        new Date(goal.createdAt).toLocaleDateString('he-IL'),
-        goal.completedAt ? new Date(goal.completedAt).toLocaleDateString('he-IL') : ''
-      ].join(','))
+      [
+        'כותרת',
+        'תיאור',
+        'קטגוריה',
+        'סטטוס',
+        'עדיפות',
+        'התקדמות',
+        'תאריך יעד',
+        'תאריך יצירה',
+        'תאריך השלמה',
+      ].join(','),
+      ...goals.map((goal) =>
+        [
+          `"${goal.title}"`,
+          `"${goal.description}"`,
+          getCategoryName(goal.category),
+          getStatusText(goal.status),
+          getPriorityText(goal.priority),
+          `${goal.progress}%`,
+          new Date(goal.targetDate).toLocaleDateString('he-IL'),
+          new Date(goal.createdAt).toLocaleDateString('he-IL'),
+          goal.completedAt
+            ? new Date(goal.completedAt).toLocaleDateString('he-IL')
+            : '',
+        ].join(',')
+      ),
     ].join('\n');
 
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `מטרות_אישיות_${new Date().toISOString().split('T')[0]}.csv`;
@@ -341,8 +358,11 @@ export default function GoalsPage() {
       return false;
     if (selectedStatus !== 'all' && goal.status !== selectedStatus)
       return false;
-    if (searchTerm && !goal.title.toLowerCase().includes(searchTerm.toLowerCase()) && 
-        !goal.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    if (
+      searchTerm &&
+      !goal.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !goal.description.toLowerCase().includes(searchTerm.toLowerCase())
+    )
       return false;
     return true;
   });
@@ -394,7 +414,11 @@ export default function GoalsPage() {
                     {completedGoals}
                   </div>
                   <p className="text-sm text-green-700 dark:text-green-300">
-                    הושלמו ({goals.length > 0 ? Math.round((completedGoals / goals.length) * 100) : 0}%)
+                    הושלמו (
+                    {goals.length > 0
+                      ? Math.round((completedGoals / goals.length) * 100)
+                      : 0}
+                    %)
                   </p>
                 </div>
                 <CheckCircle2 className="w-8 h-8 text-green-500 dark:text-green-400" />
@@ -448,21 +472,38 @@ export default function GoalsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {Math.round(goals.reduce((sum, goal) => sum + goal.progress, 0) / goals.length)}%
+                    {Math.round(
+                      goals.reduce((sum, goal) => sum + goal.progress, 0) /
+                        goals.length
+                    )}
+                    %
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">ממוצע התקדמות</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    ממוצע התקדמות
+                  </p>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {goals.reduce((sum, goal) => sum + goal.milestones.length, 0)}
+                    {goals.reduce(
+                      (sum, goal) => sum + goal.milestones.length,
+                      0
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">סה"כ אבני דרך</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    סה"כ אבני דרך
+                  </p>
                 </div>
                 <div className="text-center">
                   <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                    {goals.reduce((sum, goal) => sum + goal.milestones.filter(m => m.completed).length, 0)}
+                    {goals.reduce(
+                      (sum, goal) =>
+                        sum + goal.milestones.filter((m) => m.completed).length,
+                      0
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">אבני דרך הושלמו</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    אבני דרך הושלמו
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -479,7 +520,7 @@ export default function GoalsPage() {
               <Plus className="w-4 h-4 mr-2" />
               הוסף מטרה חדשה
             </Button>
-            
+
             <Button
               onClick={exportGoals}
               variant="outline"
@@ -674,7 +715,9 @@ export default function GoalsPage() {
                   <Input
                     value={editingGoal.title}
                     onChange={(e) =>
-                      setEditingGoal(prev => prev ? { ...prev, title: e.target.value } : null)
+                      setEditingGoal((prev) =>
+                        prev ? { ...prev, title: e.target.value } : null
+                      )
                     }
                     className="w-full"
                   />
@@ -687,10 +730,14 @@ export default function GoalsPage() {
                   <select
                     value={editingGoal.category}
                     onChange={(e) =>
-                      setEditingGoal(prev => prev ? {
-                        ...prev,
-                        category: e.target.value as Goal['category'],
-                      } : null)
+                      setEditingGoal((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              category: e.target.value as Goal['category'],
+                            }
+                          : null
+                      )
                     }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
@@ -710,10 +757,14 @@ export default function GoalsPage() {
                 <Textarea
                   value={editingGoal.description}
                   onChange={(e) =>
-                    setEditingGoal(prev => prev ? {
-                      ...prev,
-                      description: e.target.value,
-                    } : null)
+                    setEditingGoal((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            description: e.target.value,
+                          }
+                        : null
+                    )
                   }
                   rows={3}
                   className="w-full"
@@ -729,10 +780,14 @@ export default function GoalsPage() {
                     type="date"
                     value={editingGoal.targetDate.split('T')[0]}
                     onChange={(e) =>
-                      setEditingGoal(prev => prev ? {
-                        ...prev,
-                        targetDate: e.target.value,
-                      } : null)
+                      setEditingGoal((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              targetDate: e.target.value,
+                            }
+                          : null
+                      )
                     }
                     className="w-full"
                   />
@@ -745,10 +800,14 @@ export default function GoalsPage() {
                   <select
                     value={editingGoal.priority}
                     onChange={(e) =>
-                      setEditingGoal(prev => prev ? {
-                        ...prev,
-                        priority: e.target.value as Goal['priority'],
-                      } : null)
+                      setEditingGoal((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              priority: e.target.value as Goal['priority'],
+                            }
+                          : null
+                      )
                     }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
@@ -764,7 +823,9 @@ export default function GoalsPage() {
                   ביטול
                 </Button>
                 <Button
-                  onClick={() => editingGoal && updateGoal(editingGoal.id, editingGoal)}
+                  onClick={() =>
+                    editingGoal && updateGoal(editingGoal.id, editingGoal)
+                  }
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Save className="w-4 h-4 mr-2" />
@@ -780,7 +841,9 @@ export default function GoalsPage() {
           {loading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-gray-600 dark:text-gray-400 mt-4">טוען מטרות...</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-4">
+                טוען מטרות...
+              </p>
             </div>
           ) : filteredGoals.length === 0 ? (
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
@@ -790,19 +853,23 @@ export default function GoalsPage() {
                   אין מטרות להצגה
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  {selectedCategory !== 'all' || selectedStatus !== 'all' || searchTerm
+                  {selectedCategory !== 'all' ||
+                  selectedStatus !== 'all' ||
+                  searchTerm
                     ? 'נסה לשנות את הסינון או החיפוש'
                     : 'התחל על ידי הוספת מטרה חדשה'}
                 </p>
-                {selectedCategory === 'all' && selectedStatus === 'all' && !searchTerm && (
-                  <Button
-                    onClick={() => setShowAddForm(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    הוסף מטרה ראשונה
-                  </Button>
-                )}
+                {selectedCategory === 'all' &&
+                  selectedStatus === 'all' &&
+                  !searchTerm && (
+                    <Button
+                      onClick={() => setShowAddForm(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      הוסף מטרה ראשונה
+                    </Button>
+                  )}
               </CardContent>
             </Card>
           ) : (
@@ -900,7 +967,8 @@ export default function GoalsPage() {
                       <h4 className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
                         אבני דרך
                         <Badge variant="outline" className="text-xs">
-                          {goal.milestones.filter(m => m.completed).length}/{goal.milestones.length}
+                          {goal.milestones.filter((m) => m.completed).length}/
+                          {goal.milestones.length}
                         </Badge>
                       </h4>
                       <div className="flex items-center gap-2">
@@ -937,15 +1005,17 @@ export default function GoalsPage() {
                         <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                           <Target className="w-8 h-8 mx-auto mb-2 opacity-50" />
                           <p className="text-sm">אין אבני דרך עדיין</p>
-                          <p className="text-xs">הוסף אבן דרך ראשונה כדי להתחיל</p>
+                          <p className="text-xs">
+                            הוסף אבן דרך ראשונה כדי להתחיל
+                          </p>
                         </div>
                       ) : (
                         goal.milestones.map((milestone, index) => (
                           <div
                             key={milestone.id}
                             className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
-                              milestone.completed 
-                                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+                              milestone.completed
+                                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
                                 : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
                             }`}
                           >
@@ -964,8 +1034,8 @@ export default function GoalsPage() {
                             </div>
                             <span
                               className={`flex-1 ${
-                                milestone.completed 
-                                  ? 'line-through text-gray-500 dark:text-gray-400' 
+                                milestone.completed
+                                  ? 'line-through text-gray-500 dark:text-gray-400'
                                   : 'text-gray-900 dark:text-gray-100'
                               }`}
                             >
@@ -977,7 +1047,9 @@ export default function GoalsPage() {
                             {milestone.dueDate && (
                               <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
-                                {new Date(milestone.dueDate).toLocaleDateString('he-IL')}
+                                {new Date(milestone.dueDate).toLocaleDateString(
+                                  'he-IL'
+                                )}
                               </div>
                             )}
                           </div>
@@ -1105,7 +1177,12 @@ export default function GoalsPage() {
 
                   <div className="text-center pt-2">
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      ממוצע ההתקדמות שלך: {Math.round(goals.reduce((sum, goal) => sum + goal.progress, 0) / goals.length)}%
+                      ממוצע ההתקדמות שלך:{' '}
+                      {Math.round(
+                        goals.reduce((sum, goal) => sum + goal.progress, 0) /
+                          goals.length
+                      )}
+                      %
                     </p>
                   </div>
                 </>

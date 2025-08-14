@@ -22,11 +22,11 @@ const moodUpdateSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = (session as any).user.id;
 
     const { searchParams } = new URL(request.url);
 
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Format the data to match the expected interface
-    const formattedEntries = moodEntries.map(entry => ({
+    const formattedEntries = moodEntries.map((entry) => ({
       id: entry.id,
       moodValue: entry.moodValue,
       notes: entry.notes,
@@ -152,11 +152,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = (session as any).user.id;
 
     const body = await request.json();
 
@@ -235,3 +235,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

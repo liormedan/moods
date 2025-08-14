@@ -158,7 +158,7 @@ export default function BreathingPage() {
           completedAt: session.createdAt,
         }));
         setSessionHistory(sessions);
-        
+
         // Also save to localStorage as backup
         localStorage.setItem('breathing-sessions', JSON.stringify(sessions));
       } else {
@@ -261,15 +261,24 @@ export default function BreathingPage() {
                 completed: true,
               };
 
-              try {
-                const response = await fetch('/api/breathing', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(sessionData),
-                });
-
-                if (response.ok) {
-                  const result = await response.json();
+              // Save session to API
+              fetch('/api/breathing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sessionData),
+              })
+                .then((response) => {
+                  if (response.ok) {
+                    return response.json();
+                  } else {
+                    console.error(
+                      'Failed to save breathing session:',
+                      response.status
+                    );
+                    throw new Error('Failed to save session');
+                  }
+                })
+                .then((result) => {
                   const session = {
                     id: result.data.id,
                     exerciseName: result.data.exerciseName,
@@ -278,18 +287,16 @@ export default function BreathingPage() {
                   };
                   const newHistory = [session, ...sessionHistory];
                   setSessionHistory(newHistory);
-                  
+
                   // Also save to localStorage as backup
                   localStorage.setItem(
                     'breathing-sessions',
                     JSON.stringify(newHistory)
                   );
-                } else {
-                  console.error('Failed to save breathing session:', response.status);
-                }
-              } catch (error) {
-                console.error('Error saving breathing session:', error);
-              }
+                })
+                .catch((error) => {
+                  console.error('Error saving breathing session:', error);
+                });
 
               return 0;
             }
@@ -416,9 +423,11 @@ export default function BreathingPage() {
                 <div className="relative">
                   <div
                     className={`p-8 rounded-full mx-auto w-48 h-48 flex items-center justify-center ${getPhaseBackground()} border-4 border-gray-200 dark:border-gray-700 transition-all duration-1000 ${
-                      currentPhase === 'inhale' ? 'scale-110' : 
-                      currentPhase === 'hold' ? 'scale-105' : 
-                      'scale-95'
+                      currentPhase === 'inhale'
+                        ? 'scale-110'
+                        : currentPhase === 'hold'
+                          ? 'scale-105'
+                          : 'scale-95'
                     }`}
                   >
                     <div className="text-center">
@@ -427,34 +436,44 @@ export default function BreathingPage() {
                       >
                         {timeLeft}
                       </div>
-                      <div className={`text-xl font-semibold ${getPhaseColor()} transition-colors duration-500`}>
+                      <div
+                        className={`text-xl font-semibold ${getPhaseColor()} transition-colors duration-500`}
+                      >
                         {getPhaseText()}
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Breathing Animation Rings */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div 
+                    <div
                       className={`absolute rounded-full border-2 ${
-                        currentPhase === 'inhale' ? 'border-blue-300 dark:border-blue-600' :
-                        currentPhase === 'hold' ? 'border-yellow-300 dark:border-yellow-600' :
-                        'border-green-300 dark:border-green-600'
+                        currentPhase === 'inhale'
+                          ? 'border-blue-300 dark:border-blue-600'
+                          : currentPhase === 'hold'
+                            ? 'border-yellow-300 dark:border-yellow-600'
+                            : 'border-green-300 dark:border-green-600'
                       } transition-all duration-1000 ${
-                        currentPhase === 'inhale' ? 'w-56 h-56 opacity-70' :
-                        currentPhase === 'hold' ? 'w-52 h-52 opacity-50' :
-                        'w-44 h-44 opacity-30'
+                        currentPhase === 'inhale'
+                          ? 'w-56 h-56 opacity-70'
+                          : currentPhase === 'hold'
+                            ? 'w-52 h-52 opacity-50'
+                            : 'w-44 h-44 opacity-30'
                       }`}
                     />
-                    <div 
+                    <div
                       className={`absolute rounded-full border-2 ${
-                        currentPhase === 'inhale' ? 'border-blue-200 dark:border-blue-700' :
-                        currentPhase === 'hold' ? 'border-yellow-200 dark:border-yellow-700' :
-                        'border-green-200 dark:border-green-700'
+                        currentPhase === 'inhale'
+                          ? 'border-blue-200 dark:border-blue-700'
+                          : currentPhase === 'hold'
+                            ? 'border-yellow-200 dark:border-yellow-700'
+                            : 'border-green-200 dark:border-green-700'
                       } transition-all duration-1000 delay-200 ${
-                        currentPhase === 'inhale' ? 'w-64 h-64 opacity-40' :
-                        currentPhase === 'hold' ? 'w-60 h-60 opacity-30' :
-                        'w-40 h-40 opacity-20'
+                        currentPhase === 'inhale'
+                          ? 'w-64 h-64 opacity-40'
+                          : currentPhase === 'hold'
+                            ? 'w-60 h-60 opacity-30'
+                            : 'w-40 h-40 opacity-20'
                       }`}
                     />
                   </div>
@@ -462,13 +481,16 @@ export default function BreathingPage() {
 
                 {/* Guidance Text */}
                 <div className="text-center mb-6">
-                  <div className={`text-lg font-medium ${getPhaseColor()} transition-colors duration-500`}>
+                  <div
+                    className={`text-lg font-medium ${getPhaseColor()} transition-colors duration-500`}
+                  >
                     {currentPhase === 'inhale' && 'שאף לאט ועמוק דרך האף...'}
                     {currentPhase === 'hold' && 'החזק את הנשימה בעדינות...'}
                     {currentPhase === 'exhale' && 'נשוף לאט ורגוע דרך הפה...'}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                    {currentPhase === 'inhale' && 'הרגש איך הריאות שלך מתמלאות באוויר'}
+                    {currentPhase === 'inhale' &&
+                      'הרגש איך הריאות שלך מתמלאות באוויר'}
                     {currentPhase === 'hold' && 'שמור על רגיעה ואל תתאמץ'}
                     {currentPhase === 'exhale' && 'שחרר את כל המתח והדאגות'}
                   </div>
@@ -751,9 +773,16 @@ export default function BreathingPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {Math.round(sessionHistory.reduce((sum, session) => sum + session.duration, 0) / 60)}
+                  {Math.round(
+                    sessionHistory.reduce(
+                      (sum, session) => sum + session.duration,
+                      0
+                    ) / 60
+                  )}
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">דקות</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  דקות
+                </div>
               </CardContent>
             </Card>
 
@@ -766,14 +795,18 @@ export default function BreathingPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {sessionHistory.filter(session => {
-                    const sessionDate = new Date(session.completedAt);
-                    const weekAgo = new Date();
-                    weekAgo.setDate(weekAgo.getDate() - 7);
-                    return sessionDate >= weekAgo;
-                  }).length}
+                  {
+                    sessionHistory.filter((session) => {
+                      const sessionDate = new Date(session.completedAt);
+                      const weekAgo = new Date();
+                      weekAgo.setDate(weekAgo.getDate() - 7);
+                      return sessionDate >= weekAgo;
+                    }).length
+                  }
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">תרגילים</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  תרגילים
+                </div>
               </CardContent>
             </Card>
 
@@ -786,12 +819,31 @@ export default function BreathingPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {sessionHistory.length > 0 
-                    ? Math.round((sessionHistory.reduce((sum, session) => sum + session.duration, 0) / 60) / Math.max(1, Math.ceil((new Date().getTime() - new Date(sessionHistory[sessionHistory.length - 1].completedAt).getTime()) / (1000 * 60 * 60 * 24))))
-                    : 0
-                  }
+                  {sessionHistory.length > 0
+                    ? Math.round(
+                        sessionHistory.reduce(
+                          (sum, session) => sum + session.duration,
+                          0
+                        ) /
+                          60 /
+                          Math.max(
+                            1,
+                            Math.ceil(
+                              (new Date().getTime() -
+                                new Date(
+                                  sessionHistory[
+                                    sessionHistory.length - 1
+                                  ].completedAt
+                                ).getTime()) /
+                                (1000 * 60 * 60 * 24)
+                            )
+                          )
+                      )
+                    : 0}
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">דקות</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  דקות
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -829,26 +881,33 @@ export default function BreathingPage() {
                         [''],
                         ['תרגילים'],
                         ['תאריך', 'שם התרגיל', 'משך (שניות)', 'משך (דקות)'],
-                        ...sessionHistory.map(session => [
-                          new Date(session.completedAt).toLocaleDateString('he-IL'),
+                        ...sessionHistory.map((session) => [
+                          new Date(session.completedAt).toLocaleDateString(
+                            'he-IL'
+                          ),
                           session.exerciseName,
                           session.duration.toString(),
-                          Math.round(session.duration / 60).toString()
-                        ])
+                          Math.round(session.duration / 60).toString(),
+                        ]),
                       ];
 
                       const BOM = '\uFEFF';
                       const csvContent = exportData
-                        .map(row => row.map(cell => `"${cell}"`).join(','))
+                        .map((row) => row.map((cell) => `"${cell}"`).join(','))
                         .join('\n');
 
-                      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+                      const blob = new Blob([BOM + csvContent], {
+                        type: 'text/csv;charset=utf-8;',
+                      });
                       const link = document.createElement('a');
                       link.href = URL.createObjectURL(blob);
                       link.download = `breathing-sessions-${new Date().toISOString().split('T')[0]}.csv`;
                       link.click();
                     } catch (error) {
-                      console.error('Error exporting breathing sessions:', error);
+                      console.error(
+                        'Error exporting breathing sessions:',
+                        error
+                      );
                       alert('שגיאה בייצוא הנתונים. נסה שוב.');
                     }
                   }}

@@ -127,10 +127,12 @@ export default function MoodEntryPage() {
         format(new Date(record.createdAt), 'dd/MM/yyyy HH:mm', { locale: he }),
       ]),
     ]
-      .map((row) => row.map(cell => `"${cell}"`).join(','))
+      .map((row) => row.map((cell) => `"${cell}"`).join(','))
       .join('\n');
 
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([BOM + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `mood-records-${format(new Date(), 'yyyy-MM-dd')}.csv`;
@@ -165,43 +167,47 @@ export default function MoodEntryPage() {
     return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
   };
 
-  const filteredRecords = records.filter((record) => {
-    const matchesSearch =
-      !searchTerm ||
-      record.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.date.includes(searchTerm);
+  const filteredRecords = records
+    .filter((record) => {
+      const matchesSearch =
+        !searchTerm ||
+        record.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.date.includes(searchTerm);
 
-    const recordDate = new Date(record.date);
-    const now = new Date();
+      const recordDate = new Date(record.date);
+      const now = new Date();
 
-    let matchesPeriod = true;
-    if (filterPeriod === 'week') {
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      matchesPeriod = recordDate >= weekAgo;
-    } else if (filterPeriod === 'month') {
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      matchesPeriod = recordDate >= monthAgo;
-    }
+      let matchesPeriod = true;
+      if (filterPeriod === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        matchesPeriod = recordDate >= weekAgo;
+      } else if (filterPeriod === 'month') {
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        matchesPeriod = recordDate >= monthAgo;
+      }
 
-    let matchesMoodRange = true;
-    if (filterMoodRange === 'high') {
-      matchesMoodRange = record.moodValue >= 7;
-    } else if (filterMoodRange === 'medium') {
-      matchesMoodRange = record.moodValue >= 4 && record.moodValue <= 6;
-    } else if (filterMoodRange === 'low') {
-      matchesMoodRange = record.moodValue <= 3;
-    }
+      let matchesMoodRange = true;
+      if (filterMoodRange === 'high') {
+        matchesMoodRange = record.moodValue >= 7;
+      } else if (filterMoodRange === 'medium') {
+        matchesMoodRange = record.moodValue >= 4 && record.moodValue <= 6;
+      } else if (filterMoodRange === 'low') {
+        matchesMoodRange = record.moodValue <= 3;
+      }
 
-    return matchesSearch && matchesPeriod && matchesMoodRange;
-  }).sort((a, b) => {
-    if (sortBy === 'date') {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-    } else {
-      return sortOrder === 'desc' ? b.moodValue - a.moodValue : a.moodValue - b.moodValue;
-    }
-  });
+      return matchesSearch && matchesPeriod && matchesMoodRange;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'date') {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+      } else {
+        return sortOrder === 'desc'
+          ? b.moodValue - a.moodValue
+          : a.moodValue - b.moodValue;
+      }
+    });
 
   const averageMood =
     filteredRecords.length > 0
@@ -209,13 +215,15 @@ export default function MoodEntryPage() {
         filteredRecords.length
       : 0;
 
-  const highestMood = filteredRecords.length > 0 
-    ? Math.max(...filteredRecords.map(r => r.moodValue))
-    : 0;
+  const highestMood =
+    filteredRecords.length > 0
+      ? Math.max(...filteredRecords.map((r) => r.moodValue))
+      : 0;
 
-  const lowestMood = filteredRecords.length > 0 
-    ? Math.min(...filteredRecords.map(r => r.moodValue))
-    : 0;
+  const lowestMood =
+    filteredRecords.length > 0
+      ? Math.min(...filteredRecords.map((r) => r.moodValue))
+      : 0;
 
   return (
     <DashboardLayout>
@@ -239,8 +247,6 @@ export default function MoodEntryPage() {
               </div>
             )}
           </div>
-
-
         </div>
 
         {/* Quick Actions */}
@@ -254,7 +260,7 @@ export default function MoodEntryPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => window.location.href = '/dashboard/analytics'}
+            onClick={() => (window.location.href = '/dashboard/analytics')}
             className="border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/20"
           >
             <BarChart3 className="w-4 h-4 mr-2" />
@@ -330,9 +336,13 @@ export default function MoodEntryPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold flex items-center gap-2 ${getMoodColor(highestMood)}`}>
+              <div
+                className={`text-2xl font-bold flex items-center gap-2 ${getMoodColor(highestMood)}`}
+              >
                 {highestMood > 0 ? highestMood : '-'}
-                {highestMood > 0 && <span className="text-xl">{getMoodEmoji(highestMood)}</span>}
+                {highestMood > 0 && (
+                  <span className="text-xl">{getMoodEmoji(highestMood)}</span>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -345,9 +355,13 @@ export default function MoodEntryPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold flex items-center gap-2 ${getMoodColor(lowestMood)}`}>
+              <div
+                className={`text-2xl font-bold flex items-center gap-2 ${getMoodColor(lowestMood)}`}
+              >
                 {lowestMood > 0 ? lowestMood : '-'}
-                {lowestMood > 0 && <span className="text-xl">{getMoodEmoji(lowestMood)}</span>}
+                {lowestMood > 0 && (
+                  <span className="text-xl">{getMoodEmoji(lowestMood)}</span>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -474,7 +488,9 @@ export default function MoodEntryPage() {
                   <select
                     id="sortBy"
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'date' | 'mood')}
+                    onChange={(e) =>
+                      setSortBy(e.target.value as 'date' | 'mood')
+                    }
                     className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="date">תאריך</option>
@@ -482,7 +498,9 @@ export default function MoodEntryPage() {
                   </select>
                   <select
                     value={sortOrder}
-                    onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+                    onChange={(e) =>
+                      setSortOrder(e.target.value as 'asc' | 'desc')
+                    }
                     className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="desc">יורד</option>
@@ -491,7 +509,9 @@ export default function MoodEntryPage() {
                 </div>
               </div>
 
-              {(searchTerm || filterPeriod !== 'all' || filterMoodRange !== 'all') && (
+              {(searchTerm ||
+                filterPeriod !== 'all' ||
+                filterMoodRange !== 'all') && (
                 <div>
                   <Button
                     variant="outline"
@@ -533,7 +553,9 @@ export default function MoodEntryPage() {
               <div className="text-center py-8">
                 <Heart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 dark:text-gray-400">
-                  {searchTerm || filterPeriod !== 'all' || filterMoodRange !== 'all'
+                  {searchTerm ||
+                  filterPeriod !== 'all' ||
+                  filterMoodRange !== 'all'
                     ? 'לא נמצאו רשומות התואמות לחיפוש'
                     : 'עדיין לא הוספת רשומות מצב רוח'}
                 </p>

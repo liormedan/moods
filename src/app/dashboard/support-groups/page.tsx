@@ -56,7 +56,15 @@ interface SupportGroup {
   id: string;
   name: string;
   description: string;
-  category: 'anxiety' | 'depression' | 'general' | 'addiction' | 'trauma' | 'relationships' | 'grief' | 'stress';
+  category:
+    | 'anxiety'
+    | 'depression'
+    | 'general'
+    | 'addiction'
+    | 'trauma'
+    | 'relationships'
+    | 'grief'
+    | 'stress';
   type: 'public' | 'private' | 'closed';
   memberCount: number;
   isJoined: boolean;
@@ -110,7 +118,9 @@ export default function SupportGroupsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'groups' | 'posts' | 'events' | 'my-groups'>('groups');
+  const [activeTab, setActiveTab] = useState<
+    'groups' | 'posts' | 'events' | 'my-groups'
+  >('groups');
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -154,9 +164,9 @@ export default function SupportGroupsPage() {
   const joinGroup = async (groupId: string) => {
     try {
       await fetch(`/api/support-groups/${groupId}/join`, { method: 'POST' });
-      setGroups(prev => 
-        prev.map(group => 
-          group.id === groupId 
+      setGroups((prev) =>
+        prev.map((group) =>
+          group.id === groupId
             ? { ...group, isJoined: true, memberCount: group.memberCount + 1 }
             : group
         )
@@ -169,9 +179,9 @@ export default function SupportGroupsPage() {
   const leaveGroup = async (groupId: string) => {
     try {
       await fetch(`/api/support-groups/${groupId}/leave`, { method: 'POST' });
-      setGroups(prev => 
-        prev.map(group => 
-          group.id === groupId 
+      setGroups((prev) =>
+        prev.map((group) =>
+          group.id === groupId
             ? { ...group, isJoined: false, memberCount: group.memberCount - 1 }
             : group
         )
@@ -183,14 +193,16 @@ export default function SupportGroupsPage() {
 
   const likePost = async (postId: string) => {
     try {
-      await fetch(`/api/support-groups/posts/${postId}/like`, { method: 'POST' });
-      setPosts(prev => 
-        prev.map(post => 
-          post.id === postId 
-            ? { 
-                ...post, 
+      await fetch(`/api/support-groups/posts/${postId}/like`, {
+        method: 'POST',
+      });
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
                 isLiked: !post.isLiked,
-                likes: post.isLiked ? post.likes - 1 : post.likes + 1
+                likes: post.isLiked ? post.likes - 1 : post.likes + 1,
               }
             : post
         )
@@ -202,14 +214,16 @@ export default function SupportGroupsPage() {
 
   const registerForEvent = async (eventId: string) => {
     try {
-      await fetch(`/api/support-groups/events/${eventId}/register`, { method: 'POST' });
-      setEvents(prev => 
-        prev.map(event => 
-          event.id === eventId 
-            ? { 
-                ...event, 
+      await fetch(`/api/support-groups/events/${eventId}/register`, {
+        method: 'POST',
+      });
+      setEvents((prev) =>
+        prev.map((event) =>
+          event.id === eventId
+            ? {
+                ...event,
                 isRegistered: true,
-                currentParticipants: event.currentParticipants + 1
+                currentParticipants: event.currentParticipants + 1,
               }
             : event
         )
@@ -221,67 +235,99 @@ export default function SupportGroupsPage() {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'anxiety': return <Zap className="w-4 h-4" />;
-      case 'depression': return <Heart className="w-4 h-4" />;
-      case 'general': return <Users className="w-4 h-4" />;
-      case 'addiction': return <Shield className="w-4 h-4" />;
-      case 'trauma': return <BookOpen className="w-4 h-4" />;
-      case 'relationships': return <Heart className="w-4 h-4" />;
-      case 'grief': return <Heart className="w-4 h-4" />;
-      case 'stress': return <Zap className="w-4 h-4" />;
-      default: return <Users className="w-4 h-4" />;
+      case 'anxiety':
+        return <Zap className="w-4 h-4" />;
+      case 'depression':
+        return <Heart className="w-4 h-4" />;
+      case 'general':
+        return <Users className="w-4 h-4" />;
+      case 'addiction':
+        return <Shield className="w-4 h-4" />;
+      case 'trauma':
+        return <BookOpen className="w-4 h-4" />;
+      case 'relationships':
+        return <Heart className="w-4 h-4" />;
+      case 'grief':
+        return <Heart className="w-4 h-4" />;
+      case 'stress':
+        return <Zap className="w-4 h-4" />;
+      default:
+        return <Users className="w-4 h-4" />;
     }
   };
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
-      case 'anxiety': return 'חרדה';
-      case 'depression': return 'דיכאון';
-      case 'general': return 'כללי';
-      case 'addiction': return 'התמכרויות';
-      case 'trauma': return 'טראומה';
-      case 'relationships': return 'מערכות יחסים';
-      case 'grief': return 'אבל';
-      case 'stress': return 'מתח';
-      default: return 'כללי';
+      case 'anxiety':
+        return 'חרדה';
+      case 'depression':
+        return 'דיכאון';
+      case 'general':
+        return 'כללי';
+      case 'addiction':
+        return 'התמכרויות';
+      case 'trauma':
+        return 'טראומה';
+      case 'relationships':
+        return 'מערכות יחסים';
+      case 'grief':
+        return 'אבל';
+      case 'stress':
+        return 'מתח';
+      default:
+        return 'כללי';
     }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'public': return <Globe className="w-4 h-4" />;
-      case 'private': return <Lock className="w-4 h-4" />;
-      case 'closed': return <Shield className="w-4 h-4" />;
-      default: return <Globe className="w-4 h-4" />;
+      case 'public':
+        return <Globe className="w-4 h-4" />;
+      case 'private':
+        return <Lock className="w-4 h-4" />;
+      case 'closed':
+        return <Shield className="w-4 h-4" />;
+      default:
+        return <Globe className="w-4 h-4" />;
     }
   };
 
   const getPostTypeColor = (type: string) => {
     switch (type) {
-      case 'discussion': return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'question': return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'support': return 'bg-green-50 text-green-700 border-green-200';
-      case 'resource': return 'bg-orange-50 text-orange-700 border-orange-200';
-      case 'announcement': return 'bg-red-50 text-red-700 border-red-200';
-      default: return 'bg-gray-50 text-gray-700 border-gray-200';
+      case 'discussion':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'question':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'support':
+        return 'bg-green-50 text-green-700 border-green-200';
+      case 'resource':
+        return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'announcement':
+        return 'bg-red-50 text-red-700 border-red-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
 
-  const filteredGroups = groups.filter(group => {
-    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || group.category === categoryFilter;
+  const filteredGroups = groups.filter((group) => {
+    const matchesSearch =
+      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      group.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      categoryFilter === 'all' || group.category === categoryFilter;
     const matchesType = typeFilter === 'all' || group.type === typeFilter;
-    
+
     if (activeTab === 'my-groups') {
       return group.isJoined && matchesSearch && matchesCategory && matchesType;
     }
-    
+
     return matchesSearch && matchesCategory && matchesType;
   });
 
-  const myGroups = groups.filter(group => group.isJoined);
-  const upcomingEvents = events.filter(event => new Date(event.date) > new Date()).slice(0, 3);
+  const myGroups = groups.filter((group) => group.isJoined);
+  const upcomingEvents = events
+    .filter((event) => new Date(event.date) > new Date())
+    .slice(0, 3);
 
   if (loading) {
     return (
@@ -311,7 +357,10 @@ export default function SupportGroupsPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button onClick={() => setShowCreateGroup(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              onClick={() => setShowCreateGroup(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
               <Plus className="w-4 h-4 mr-2" />
               צור קבוצה
             </Button>
@@ -332,7 +381,9 @@ export default function SupportGroupsPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{groups.length}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">קבוצות זמינות</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    קבוצות זמינות
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -346,7 +397,9 @@ export default function SupportGroupsPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{myGroups.length}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">הקבוצות שלי</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    הקבוצות שלי
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -360,7 +413,9 @@ export default function SupportGroupsPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{posts.length}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">פוסטים פעילים</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    פוסטים פעילים
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -373,8 +428,12 @@ export default function SupportGroupsPage() {
                   <Calendar className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{upcomingEvents.length}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">אירועים קרובים</div>
+                  <div className="text-2xl font-bold">
+                    {upcomingEvents.length}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    אירועים קרובים
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -421,7 +480,10 @@ export default function SupportGroupsPage() {
                   </div>
                 </div>
 
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select
+                  value={categoryFilter}
+                  onValueChange={setCategoryFilter}
+                >
                   <SelectTrigger className="w-40">
                     <SelectValue />
                   </SelectTrigger>
@@ -458,7 +520,10 @@ export default function SupportGroupsPage() {
         {(activeTab === 'groups' || activeTab === 'my-groups') && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredGroups.map((group) => (
-              <Card key={group.id} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={group.id}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
@@ -467,7 +532,9 @@ export default function SupportGroupsPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       {getTypeIcon(group.type)}
-                      {group.isModerator && <Crown className="w-4 h-4 text-yellow-500" />}
+                      {group.isModerator && (
+                        <Crown className="w-4 h-4 text-yellow-500" />
+                      )}
                     </div>
                   </div>
                   <CardDescription className="line-clamp-2">
@@ -487,11 +554,16 @@ export default function SupportGroupsPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-1">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getPostTypeColor('discussion')}`}>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${getPostTypeColor('discussion')}`}
+                    >
                       {getCategoryLabel(group.category)}
                     </span>
                     {group.tags.slice(0, 2).map((tag, index) => (
-                      <span key={index} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded-full">
+                      <span
+                        key={index}
+                        className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded-full"
+                      >
                         {tag}
                       </span>
                     ))}
@@ -511,8 +583,8 @@ export default function SupportGroupsPage() {
                           <MessageCircle className="w-4 h-4 mr-2" />
                           צפה בקבוצה
                         </Button>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => leaveGroup(group.id)}
                         >
@@ -520,7 +592,7 @@ export default function SupportGroupsPage() {
                         </Button>
                       </>
                     ) : (
-                      <Button 
+                      <Button
                         onClick={() => joinGroup(group.id)}
                         className="flex-1"
                         size="sm"
@@ -545,35 +617,47 @@ export default function SupportGroupsPage() {
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
                       {post.authorName.charAt(0)}
                     </div>
-                    
+
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h3 className="font-semibold">{post.authorName}</h3>
                         <span className="text-sm text-gray-500">
                           {new Date(post.timestamp).toLocaleDateString('he-IL')}
                         </span>
-                        {post.isPinned && <Star className="w-4 h-4 text-yellow-500 fill-current" />}
-                        <span className={`px-2 py-1 text-xs rounded-full ${getPostTypeColor(post.type)}`}>
-                          {post.type === 'discussion' ? 'דיון' :
-                           post.type === 'question' ? 'שאלה' :
-                           post.type === 'support' ? 'תמיכה' :
-                           post.type === 'resource' ? 'משאב' : 'הודעה'}
+                        {post.isPinned && (
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                        )}
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${getPostTypeColor(post.type)}`}
+                        >
+                          {post.type === 'discussion'
+                            ? 'דיון'
+                            : post.type === 'question'
+                              ? 'שאלה'
+                              : post.type === 'support'
+                                ? 'תמיכה'
+                                : post.type === 'resource'
+                                  ? 'משאב'
+                                  : 'הודעה'}
                         </span>
                       </div>
-                      
+
                       <h4 className="font-medium mb-2">{post.title}</h4>
                       <p className="text-gray-700 dark:text-gray-300 mb-3 line-clamp-3">
                         {post.content}
                       </p>
-                      
+
                       <div className="flex flex-wrap gap-1 mb-3">
                         {post.tags.map((tag, index) => (
-                          <span key={index} className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded-full">
+                          <span
+                            key={index}
+                            className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded-full"
+                          >
                             #{tag}
                           </span>
                         ))}
                       </div>
-                      
+
                       <div className="flex items-center gap-4">
                         <Button
                           variant="ghost"
@@ -581,20 +665,22 @@ export default function SupportGroupsPage() {
                           onClick={() => likePost(post.id)}
                           className={post.isLiked ? 'text-red-500' : ''}
                         >
-                          <ThumbsUp className={`w-4 h-4 mr-1 ${post.isLiked ? 'fill-current' : ''}`} />
+                          <ThumbsUp
+                            className={`w-4 h-4 mr-1 ${post.isLiked ? 'fill-current' : ''}`}
+                          />
                           {post.likes}
                         </Button>
-                        
+
                         <Button variant="ghost" size="sm">
                           <MessageCircle className="w-4 h-4 mr-1" />
                           {post.replies}
                         </Button>
-                        
+
                         <Button variant="ghost" size="sm">
                           <Share2 className="w-4 h-4 mr-1" />
                           שתף
                         </Button>
-                        
+
                         <Button variant="ghost" size="sm" className="mr-auto">
                           <Flag className="w-4 h-4" />
                         </Button>
@@ -614,15 +700,24 @@ export default function SupportGroupsPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-lg">{event.title}</CardTitle>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      event.type === 'meeting' ? 'bg-blue-100 text-blue-700' :
-                      event.type === 'workshop' ? 'bg-green-100 text-green-700' :
-                      event.type === 'webinar' ? 'bg-purple-100 text-purple-700' :
-                      'bg-orange-100 text-orange-700'
-                    }`}>
-                      {event.type === 'meeting' ? 'פגישה' :
-                       event.type === 'workshop' ? 'סדנה' :
-                       event.type === 'webinar' ? 'וובינר' : 'חברתי'}
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        event.type === 'meeting'
+                          ? 'bg-blue-100 text-blue-700'
+                          : event.type === 'workshop'
+                            ? 'bg-green-100 text-green-700'
+                            : event.type === 'webinar'
+                              ? 'bg-purple-100 text-purple-700'
+                              : 'bg-orange-100 text-orange-700'
+                      }`}
+                    >
+                      {event.type === 'meeting'
+                        ? 'פגישה'
+                        : event.type === 'workshop'
+                          ? 'סדנה'
+                          : event.type === 'webinar'
+                            ? 'וובינר'
+                            : 'חברתי'}
                     </span>
                   </div>
                   <CardDescription>{event.description}</CardDescription>
@@ -631,7 +726,9 @@ export default function SupportGroupsPage() {
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      {new Date(event.date).toLocaleDateString('he-IL')} בשעה {event.time}
+                      {new Date(event.date).toLocaleDateString(
+                        'he-IL'
+                      )} בשעה {event.time}
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4" />
@@ -651,13 +748,19 @@ export default function SupportGroupsPage() {
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4" />
                       {event.currentParticipants}
-                      {event.maxParticipants && `/${event.maxParticipants}`} משתתפים
+                      {event.maxParticipants &&
+                        `/${event.maxParticipants}`}{' '}
+                      משתתפים
                     </div>
                   </div>
 
                   <Button
                     onClick={() => registerForEvent(event.id)}
-                    disabled={event.isRegistered || (event.maxParticipants && event.currentParticipants >= event.maxParticipants)}
+                    disabled={
+                      event.isRegistered ||
+                      !!(event.maxParticipants &&
+                        event.currentParticipants >= event.maxParticipants)
+                    }
                     className="w-full"
                   >
                     {event.isRegistered ? 'רשום' : 'הירשם לאירוע'}
@@ -680,11 +783,15 @@ export default function SupportGroupsPage() {
             <CardContent>
               <div className="space-y-3">
                 {upcomingEvents.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div
+                    key={event.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <div>
                       <h4 className="font-medium">{event.title}</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {new Date(event.date).toLocaleDateString('he-IL')} • {event.time}
+                        {new Date(event.date).toLocaleDateString('he-IL')} •{' '}
+                        {event.time}
                       </p>
                     </div>
                     <Button size="sm" variant="outline">

@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
@@ -8,21 +6,31 @@ import { z } from 'zod';
 const goalSchema = z.object({
   title: z.string().min(1, 'כותרת נדרשת').max(200, 'כותרת ארוכה מדי'),
   description: z.string().max(1000, 'תיאור ארוך מדי').optional(),
-  category: z.enum(['mental-health', 'physical', 'social', 'personal', 'professional']),
+  category: z.enum([
+    'mental-health',
+    'physical',
+    'social',
+    'personal',
+    'professional',
+  ]),
   targetDate: z.string().min(1, 'תאריך יעד נדרש'),
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
-  milestones: z.array(z.object({
-    title: z.string().min(1, 'כותרת אבן דרך נדרשת'),
-    completed: z.boolean().default(false),
-    dueDate: z.string().optional(),
-  })).default([]),
+  milestones: z
+    .array(
+      z.object({
+        title: z.string().min(1, 'כותרת אבן דרך נדרשת'),
+        completed: z.boolean().default(false),
+        dueDate: z.string().optional(),
+      })
+    )
+    .default([]),
 });
 
 // GET /api/goals - Get goals for the authenticated user
 export async function GET(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -69,7 +77,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Parse milestones from JSON
-    const formattedGoals = goals.map(goal => ({
+    const formattedGoals = goals.map((goal) => ({
       ...goal,
       milestones: goal.milestones ? JSON.parse(goal.milestones) : [],
     }));
@@ -99,7 +107,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -121,13 +129,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, description, category, targetDate, priority, milestones } = validationResult.data;
+    const { title, description, category, targetDate, priority, milestones } =
+      validationResult.data;
 
     // Calculate initial progress and status
-    const completedMilestones = milestones.filter(m => m.completed).length;
-    const progress = milestones.length > 0 ? Math.round((completedMilestones / milestones.length) * 100) : 0;
-    
-    let status: 'not-started' | 'in-progress' | 'completed' | 'overdue' = 'not-started';
+    const completedMilestones = milestones.filter((m) => m.completed).length;
+    const progress =
+      milestones.length > 0
+        ? Math.round((completedMilestones / milestones.length) * 100)
+        : 0;
+
+    let status: 'not-started' | 'in-progress' | 'completed' | 'overdue' =
+      'not-started';
     if (progress === 100) {
       status = 'completed';
     } else if (progress > 0) {
@@ -203,7 +216,10 @@ export async function PUT(request: NextRequest) {
     const { id, ...updateData } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Goal ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Goal ID is required' },
+        { status: 400 }
+      );
     }
 
     // Validate update data
@@ -222,13 +238,20 @@ export async function PUT(request: NextRequest) {
 
     // Calculate progress and status if milestones are updated
     let calculatedData: any = { ...validatedData };
-    
+
     if (validatedData.milestones) {
-      const completedMilestones = validatedData.milestones.filter(m => m.completed).length;
-      const progress = validatedData.milestones.length > 0 ? 
-        Math.round((completedMilestones / validatedData.milestones.length) * 100) : 0;
-      
-      let status: 'not-started' | 'in-progress' | 'completed' | 'overdue' = 'not-started';
+      const completedMilestones = validatedData.milestones.filter(
+        (m) => m.completed
+      ).length;
+      const progress =
+        validatedData.milestones.length > 0
+          ? Math.round(
+              (completedMilestones / validatedData.milestones.length) * 100
+            )
+          : 0;
+
+      let status: 'not-started' | 'in-progress' | 'completed' | 'overdue' =
+        'not-started';
       if (progress === 100) {
         status = 'completed';
       } else if (progress > 0) {
@@ -236,11 +259,15 @@ export async function PUT(request: NextRequest) {
       }
 
       // Check if overdue
-      const targetDate = validatedData.targetDate || (await prisma.goal.findUnique({
-        where: { id },
-        select: { targetDate: true }
-      }))?.targetDate;
-      
+      const targetDate =
+        validatedData.targetDate ||
+        (
+          await prisma.goal.findUnique({
+            where: { id },
+            select: { targetDate: true },
+          })
+        )?.targetDate;
+
       if (targetDate) {
         const target = new Date(targetDate);
         const now = new Date();
@@ -262,9 +289,9 @@ export async function PUT(request: NextRequest) {
 
     // Update goal
     const goal = await prisma.goal.update({
-      where: { 
+      where: {
         id: id,
-        userId: userId // Ensure user can only update their own goals
+        userId: userId, // Ensure user can only update their own goals
       },
       data: calculatedData,
       select: {
@@ -295,7 +322,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error updating goal:', error);
-    if (error.code === 'P2025') {
+    if ((error as any).code === 'P2025') {
       return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
     }
     return NextResponse.json(
@@ -315,14 +342,17 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ error: 'Goal ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Goal ID is required' },
+        { status: 400 }
+      );
     }
 
     // Delete goal
     await prisma.goal.delete({
-      where: { 
+      where: {
         id: id,
-        userId: userId // Ensure user can only delete their own goals
+        userId: userId, // Ensure user can only delete their own goals
       },
     });
 
@@ -331,7 +361,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error deleting goal:', error);
-    if (error.code === 'P2025') {
+    if ((error as any).code === 'P2025') {
       return NextResponse.json({ error: 'Goal not found' }, { status: 404 });
     }
     return NextResponse.json(
@@ -340,3 +370,4 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+

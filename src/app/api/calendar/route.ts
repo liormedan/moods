@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 // GET /api/calendar - Get calendar events and mood data
@@ -96,11 +94,11 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform data to calendar events format
-    const events = [];
+    const events: any[] = [];
 
     // Add mood entries
     if (!type || type === 'mood') {
-      moodEntries.forEach(entry => {
+      moodEntries.forEach((entry) => {
         events.push({
           id: `mood-${entry.id}`,
           date: entry.date.toISOString().split('T')[0],
@@ -116,7 +114,7 @@ export async function GET(request: NextRequest) {
 
     // Add journal entries as activities
     if (!type || type === 'activity') {
-      journalEntries.forEach(entry => {
+      journalEntries.forEach((entry) => {
         events.push({
           id: `journal-${entry.id}`,
           date: entry.createdAt.toISOString().split('T')[0],
@@ -131,7 +129,7 @@ export async function GET(request: NextRequest) {
       });
 
       // Add breathing sessions as activities
-      breathingSessions.forEach(session => {
+      breathingSessions.forEach((session) => {
         events.push({
           id: `breathing-${session.id}`,
           date: session.createdAt.toISOString().split('T')[0],
@@ -148,7 +146,7 @@ export async function GET(request: NextRequest) {
 
     // Add goals
     if (!type || type === 'goal') {
-      goals.forEach(goal => {
+      goals.forEach((goal) => {
         events.push({
           id: `goal-${goal.id}`,
           date: goal.createdAt.toISOString().split('T')[0],
@@ -185,16 +183,24 @@ export async function GET(request: NextRequest) {
       moodEntries: moodEntries.length,
       activities: journalEntries.length + breathingSessions.length,
       goals: goals.length,
-      completedGoals: goals.filter(g => g.status === 'completed').length,
-      averageMood: moodEntries.length > 0 
-        ? Math.round(moodEntries.reduce((sum, entry) => sum + entry.moodValue, 0) / moodEntries.length * 10) / 10
-        : 0,
+      completedGoals: goals.filter((g) => g.status === 'completed').length,
+      averageMood:
+        moodEntries.length > 0
+          ? Math.round(
+              (moodEntries.reduce((sum, entry) => sum + entry.moodValue, 0) /
+                moodEntries.length) *
+                10
+            ) / 10
+          : 0,
       moodTrend: calculateMoodTrend(moodEntries),
-      activeDays: [...new Set(events.map(e => e.date))].length,
+      activeDays: [...new Set(events.map((e) => e.date))].length,
     };
 
     return NextResponse.json({
-      data: events.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+      data: events.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ),
       stats,
     });
   } catch (error) {
@@ -213,7 +219,16 @@ export async function POST(request: NextRequest) {
     const userId = 'demo-user';
 
     const body = await request.json();
-    const { type, date, title, description, moodValue, activityType, duration, priority } = body;
+    const {
+      type,
+      date,
+      title,
+      description,
+      moodValue,
+      activityType,
+      duration,
+      priority,
+    } = body;
 
     if (!type || !date || !title) {
       return NextResponse.json(
@@ -336,10 +351,13 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    return NextResponse.json({
-      message: 'Event created successfully',
-      data: createdEvent,
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: 'Event created successfully',
+        data: createdEvent,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error creating calendar event:', error);
     return NextResponse.json(
@@ -363,12 +381,15 @@ function calculateMoodTrend(moodEntries: any[]): 'up' | 'down' | 'stable' {
 
   if (recent.length === 0 || older.length === 0) return 'stable';
 
-  const recentAvg = recent.reduce((sum, entry) => sum + entry.moodValue, 0) / recent.length;
-  const olderAvg = older.reduce((sum, entry) => sum + entry.moodValue, 0) / older.length;
+  const recentAvg =
+    recent.reduce((sum, entry) => sum + entry.moodValue, 0) / recent.length;
+  const olderAvg =
+    older.reduce((sum, entry) => sum + entry.moodValue, 0) / older.length;
 
   const diff = recentAvg - olderAvg;
-  
+
   if (diff > 0.5) return 'up';
   if (diff < -0.5) return 'down';
   return 'stable';
 }
+

@@ -2,18 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { subDays, subWeeks, subMonths, format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import {
+  subDays,
+  subWeeks,
+  subMonths,
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+} from 'date-fns';
 import { he } from 'date-fns/locale';
+import type { Session } from 'next-auth';
 
 // GET /api/analytics - Get analytics data for the authenticated user
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = (session as any).user.id;
 
     const { searchParams } = new URL(request.url);
     const timeRange = searchParams.get('timeRange') || 'month';
@@ -21,7 +31,7 @@ export async function GET(request: NextRequest) {
     // Calculate date range based on timeRange
     const now = new Date();
     let startDate: Date;
-    
+
     switch (timeRange) {
       case 'week':
         startDate = subDays(now, 7);
@@ -59,7 +69,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate daily moods
-    const dailyMoods = moodEntries.map(entry => ({
+    const dailyMoods = moodEntries.map((entry) => ({
       date: format(entry.date, 'yyyy-MM-dd'),
       mood: entry.moodValue,
       notes: entry.notes || '',
@@ -67,40 +77,45 @@ export async function GET(request: NextRequest) {
 
     // Calculate weekly averages
     const weeklyData = new Map<string, { total: number; count: number }>();
-    moodEntries.forEach(entry => {
+    moodEntries.forEach((entry) => {
       const weekStart = startOfWeek(entry.date, { locale: he });
       const weekKey = format(weekStart, 'yyyy-MM-dd');
-      
+
       if (!weeklyData.has(weekKey)) {
         weeklyData.set(weekKey, { total: 0, count: 0 });
       }
-      
+
       const week = weeklyData.get(weekKey)!;
       week.total += entry.moodValue;
       week.count += 1;
     });
 
-    const weeklyAverages = Array.from(weeklyData.entries()).map(([weekStart, data]) => ({
-      week: format(new Date(weekStart), 'dd/MM', { locale: he }),
-      average: Math.round((data.total / data.count) * 10) / 10,
-      count: data.count,
-    }));
+    const weeklyAverages = Array.from(weeklyData.entries()).map(
+      ([weekStart, data]) => ({
+        week: format(new Date(weekStart), 'dd/MM', { locale: he }),
+        average: Math.round((data.total / data.count) * 10) / 10,
+        count: data.count,
+      })
+    );
 
     // Calculate monthly trends
-    const monthlyData = new Map<string, { total: number; count: number; high: number; low: number }>();
-    moodEntries.forEach(entry => {
+    const monthlyData = new Map<
+      string,
+      { total: number; count: number; high: number; low: number }
+    >();
+    moodEntries.forEach((entry) => {
       const monthStart = startOfMonth(entry.date);
       const monthKey = format(monthStart, 'yyyy-MM');
-      
+
       if (!monthlyData.has(monthKey)) {
-        monthlyData.set(monthKey, { 
-          total: 0, 
-          count: 0, 
-          high: entry.moodValue, 
-          low: entry.moodValue 
+        monthlyData.set(monthKey, {
+          total: 0,
+          count: 0,
+          high: entry.moodValue,
+          low: entry.moodValue,
         });
       }
-      
+
       const month = monthlyData.get(monthKey)!;
       month.total += entry.moodValue;
       month.count += 1;
@@ -108,16 +123,18 @@ export async function GET(request: NextRequest) {
       month.low = Math.min(month.low, entry.moodValue);
     });
 
-    const monthlyTrends = Array.from(monthlyData.entries()).map(([monthStart, data]) => ({
-      month: format(new Date(monthStart), 'MMMM', { locale: he }),
-      average: Math.round((data.total / data.count) * 10) / 10,
-      high: data.high,
-      low: data.low,
-    }));
+    const monthlyTrends = Array.from(monthlyData.entries()).map(
+      ([monthStart, data]) => ({
+        month: format(new Date(monthStart), 'MMMM', { locale: he }),
+        average: Math.round((data.total / data.count) * 10) / 10,
+        high: data.high,
+        low: data.low,
+      })
+    );
 
     // Calculate mood distribution
     const moodCounts = { low: 0, medium: 0, high: 0, veryHigh: 0, veryLow: 0 };
-    moodEntries.forEach(entry => {
+    moodEntries.forEach((entry) => {
       if (entry.moodValue <= 2) moodCounts.veryLow++;
       else if (entry.moodValue <= 4) moodCounts.low++;
       else if (entry.moodValue <= 6) moodCounts.medium++;
@@ -127,63 +144,84 @@ export async function GET(request: NextRequest) {
 
     const totalEntries = moodEntries.length;
     const moodDistribution = [
-      { 
-        mood: '1-2 (רע מאוד)', 
-        count: moodCounts.veryLow, 
-        percentage: totalEntries > 0 ? Math.round((moodCounts.veryLow / totalEntries) * 100) : 0 
+      {
+        mood: '1-2 (רע מאוד)',
+        count: moodCounts.veryLow,
+        percentage:
+          totalEntries > 0
+            ? Math.round((moodCounts.veryLow / totalEntries) * 100)
+            : 0,
       },
-      { 
-        mood: '3-4 (לא טוב)', 
-        count: moodCounts.low, 
-        percentage: totalEntries > 0 ? Math.round((moodCounts.low / totalEntries) * 100) : 0 
+      {
+        mood: '3-4 (לא טוב)',
+        count: moodCounts.low,
+        percentage:
+          totalEntries > 0
+            ? Math.round((moodCounts.low / totalEntries) * 100)
+            : 0,
       },
-      { 
-        mood: '5-6 (בסדר)', 
-        count: moodCounts.medium, 
-        percentage: totalEntries > 0 ? Math.round((moodCounts.medium / totalEntries) * 100) : 0 
+      {
+        mood: '5-6 (בסדר)',
+        count: moodCounts.medium,
+        percentage:
+          totalEntries > 0
+            ? Math.round((moodCounts.medium / totalEntries) * 100)
+            : 0,
       },
-      { 
-        mood: '7-8 (טוב)', 
-        count: moodCounts.high, 
-        percentage: totalEntries > 0 ? Math.round((moodCounts.high / totalEntries) * 100) : 0 
+      {
+        mood: '7-8 (טוב)',
+        count: moodCounts.high,
+        percentage:
+          totalEntries > 0
+            ? Math.round((moodCounts.high / totalEntries) * 100)
+            : 0,
       },
-      { 
-        mood: '9-10 (מצוין)', 
-        count: moodCounts.veryHigh, 
-        percentage: totalEntries > 0 ? Math.round((moodCounts.veryHigh / totalEntries) * 100) : 0 
+      {
+        mood: '9-10 (מצוין)',
+        count: moodCounts.veryHigh,
+        percentage:
+          totalEntries > 0
+            ? Math.round((moodCounts.veryHigh / totalEntries) * 100)
+            : 0,
       },
     ];
 
     // Calculate time patterns (hour of day analysis)
     const hourlyData = new Map<number, { total: number; count: number }>();
-    moodEntries.forEach(entry => {
+    moodEntries.forEach((entry) => {
       const hour = entry.createdAt.getHours();
-      
+
       if (!hourlyData.has(hour)) {
         hourlyData.set(hour, { total: 0, count: 0 });
       }
-      
+
       const hourData = hourlyData.get(hour)!;
       hourData.total += entry.moodValue;
       hourData.count += 1;
     });
 
-    const timePatterns = Array.from(hourlyData.entries()).map(([hour, data]) => ({
-      hour,
-      averageMood: Math.round((data.total / data.count) * 10) / 10,
-      count: data.count,
-    })).sort((a, b) => a.hour - b.hour);
+    const timePatterns = Array.from(hourlyData.entries())
+      .map(([hour, data]) => ({
+        hour,
+        averageMood: Math.round((data.total / data.count) * 10) / 10,
+        count: data.count,
+      }))
+      .sort((a, b) => a.hour - b.hour);
 
     // Calculate streak data
-    const sortedEntries = [...moodEntries].sort((a, b) => a.date.getTime() - b.date.getTime());
+    const sortedEntries = [...moodEntries].sort(
+      (a, b) => a.date.getTime() - b.date.getTime()
+    );
     let currentStreak = 0;
     let longestStreak = 0;
     let tempStreak = 0;
     let lastDate: Date | null = null;
 
-    sortedEntries.forEach(entry => {
+    sortedEntries.forEach((entry) => {
       if (lastDate) {
-        const daysDiff = Math.floor((entry.date.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysDiff = Math.floor(
+          (entry.date.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
         if (daysDiff === 1) {
           tempStreak++;
         } else {
@@ -197,13 +235,15 @@ export async function GET(request: NextRequest) {
     });
 
     longestStreak = Math.max(longestStreak, tempStreak);
-    
+
     // Calculate current streak from today backwards
     const today = new Date();
     const recentEntries = sortedEntries.reverse();
     for (let i = 0; i < recentEntries.length; i++) {
       const entry = recentEntries[i];
-      const daysDiff = Math.floor((today.getTime() - entry.date.getTime()) / (1000 * 60 * 60 * 24));
+      const daysDiff = Math.floor(
+        (today.getTime() - entry.date.getTime()) / (1000 * 60 * 60 * 24)
+      );
       if (daysDiff === i) {
         currentStreak++;
       } else {
@@ -219,13 +259,13 @@ export async function GET(request: NextRequest) {
 
     // Generate insights
     const insights = [];
-    
+
     // Trend analysis
     if (monthlyTrends.length >= 2) {
       const lastMonth = monthlyTrends[monthlyTrends.length - 1];
       const previousMonth = monthlyTrends[monthlyTrends.length - 2];
       const trend = lastMonth.average - previousMonth.average;
-      
+
       if (trend > 0.5) {
         insights.push({
           type: 'trend',
@@ -252,10 +292,10 @@ export async function GET(request: NextRequest) {
 
     // Time pattern insights
     if (timePatterns.length > 0) {
-      const bestHour = timePatterns.reduce((best, current) => 
+      const bestHour = timePatterns.reduce((best, current) =>
         current.averageMood > best.averageMood ? current : best
       );
-      
+
       if (bestHour.hour >= 18) {
         insights.push({
           type: 'pattern',
@@ -290,9 +330,22 @@ export async function GET(request: NextRequest) {
       insights,
       summary: {
         totalEntries,
-        averageMood: totalEntries > 0 ? Math.round((moodEntries.reduce((sum, entry) => sum + entry.moodValue, 0) / totalEntries) * 10) / 10 : 0,
-        highestMood: totalEntries > 0 ? Math.max(...moodEntries.map(e => e.moodValue)) : 0,
-        lowestMood: totalEntries > 0 ? Math.min(...moodEntries.map(e => e.moodValue)) : 0,
+        averageMood:
+          totalEntries > 0
+            ? Math.round(
+                (moodEntries.reduce((sum, entry) => sum + entry.moodValue, 0) /
+                  totalEntries) *
+                  10
+              ) / 10
+            : 0,
+        highestMood:
+          totalEntries > 0
+            ? Math.max(...moodEntries.map((e) => e.moodValue))
+            : 0,
+        lowestMood:
+          totalEntries > 0
+            ? Math.min(...moodEntries.map((e) => e.moodValue))
+            : 0,
       },
     };
 

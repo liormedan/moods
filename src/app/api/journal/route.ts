@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
@@ -18,7 +16,7 @@ const journalEntrySchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -75,7 +73,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Parse tags from JSON string
-    const formattedEntries = journalEntries.map(entry => ({
+    const formattedEntries = journalEntries.map((entry) => ({
       ...entry,
       tags: entry.tags ? JSON.parse(entry.tags) : [],
     }));
@@ -105,7 +103,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -127,7 +125,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { title, content, mood, tags, template, isFavorite } = validationResult.data;
+    const { title, content, mood, tags, template, isFavorite } =
+      validationResult.data;
 
     // Create new journal entry
     const journalEntry = await prisma.journalEntry.create({
@@ -174,3 +173,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
@@ -17,9 +15,9 @@ const journalUpdateSchema = z.object({
 // GET /api/journal/[id] - Get a specific journal entry
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     // Temporarily disabled authentication for demo
     // const session = await getServerSession(authOptions);
@@ -86,9 +84,9 @@ export async function GET(
 // PUT /api/journal/[id] - Update a specific journal entry
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     // Temporarily disabled authentication for demo
     // const session = await getServerSession(authOptions);
@@ -183,9 +181,9 @@ export async function PUT(
 // DELETE /api/journal/[id] - Delete a specific journal entry
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     // Temporarily disabled authentication for demo
     // const session = await getServerSession(authOptions);

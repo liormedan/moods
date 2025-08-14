@@ -115,7 +115,9 @@ export default function InsightsPage() {
   const loadInsights = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/insights?range=${timeRange}&category=${category}&depth=${analysisDepth}`);
+      const response = await fetch(
+        `/api/insights?range=${timeRange}&category=${category}&depth=${analysisDepth}`
+      );
       if (response.ok) {
         const result = await response.json();
         setInsights(result.data.insights);
@@ -137,18 +139,22 @@ export default function InsightsPage() {
   const exportInsights = () => {
     const csvContent = [
       ['סוג', 'קטגוריה', 'כותרת', 'תיאור', 'רמת ביטחון', 'עדיפות', 'תאריך'],
-      ...insights.map(insight => [
+      ...insights.map((insight) => [
         getTypeLabel(insight.type),
         getCategoryLabel(insight.category),
         insight.title,
         insight.description,
         `${insight.confidence}%`,
         getPriorityLabel(insight.priority),
-        new Date(insight.timestamp).toLocaleDateString('he-IL')
-      ])
-    ].map(row => row.join(',')).join('\n');
+        new Date(insight.timestamp).toLocaleDateString('he-IL'),
+      ]),
+    ]
+      .map((row) => row.join(','))
+      .join('\n');
 
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvContent], {
+      type: 'text/csv;charset=utf-8;',
+    });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `תובנות_AI_${new Date().toISOString().split('T')[0]}.csv`;
@@ -157,97 +163,145 @@ export default function InsightsPage() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'positive': return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'warning': return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-      case 'neutral': return <Info className="w-5 h-5 text-blue-500" />;
-      case 'achievement': return <Award className="w-5 h-5 text-purple-500" />;
-      default: return <Lightbulb className="w-5 h-5 text-gray-500" />;
+      case 'positive':
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'warning':
+        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+      case 'neutral':
+        return <Info className="w-5 h-5 text-blue-500" />;
+      case 'achievement':
+        return <Award className="w-5 h-5 text-purple-500" />;
+      default:
+        return <Lightbulb className="w-5 h-5 text-gray-500" />;
     }
   };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'positive': return 'חיובי';
-      case 'warning': return 'אזהרה';
-      case 'neutral': return 'נייטרלי';
-      case 'achievement': return 'הישג';
-      default: return 'כללי';
+      case 'positive':
+        return 'חיובי';
+      case 'warning':
+        return 'אזהרה';
+      case 'neutral':
+        return 'נייטרלי';
+      case 'achievement':
+        return 'הישג';
+      default:
+        return 'כללי';
     }
   };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'mood': return <Heart className="w-4 h-4" />;
-      case 'goals': return <Target className="w-4 h-4" />;
-      case 'habits': return <RefreshCw className="w-4 h-4" />;
-      case 'social': return <Users className="w-4 h-4" />;
-      case 'health': return <Activity className="w-4 h-4" />;
-      case 'patterns': return <BarChart3 className="w-4 h-4" />;
-      default: return <Brain className="w-4 h-4" />;
+      case 'mood':
+        return <Heart className="w-4 h-4" />;
+      case 'goals':
+        return <Target className="w-4 h-4" />;
+      case 'habits':
+        return <RefreshCw className="w-4 h-4" />;
+      case 'social':
+        return <Users className="w-4 h-4" />;
+      case 'health':
+        return <Activity className="w-4 h-4" />;
+      case 'patterns':
+        return <BarChart3 className="w-4 h-4" />;
+      default:
+        return <Brain className="w-4 h-4" />;
     }
   };
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
-      case 'mood': return 'מצב רוח';
-      case 'goals': return 'מטרות';
-      case 'habits': return 'הרגלים';
-      case 'social': return 'חברתי';
-      case 'health': return 'בריאות';
-      case 'patterns': return 'דפוסים';
-      default: return 'כללי';
+      case 'mood':
+        return 'מצב רוח';
+      case 'goals':
+        return 'מטרות';
+      case 'habits':
+        return 'הרגלים';
+      case 'social':
+        return 'חברתי';
+      case 'health':
+        return 'בריאות';
+      case 'patterns':
+        return 'דפוסים';
+      default:
+        return 'כללי';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'border-l-red-500 bg-red-50 dark:bg-red-900/10';
-      case 'high': return 'border-l-orange-500 bg-orange-50 dark:bg-orange-900/10';
-      case 'medium': return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/10';
-      case 'low': return 'border-l-gray-500 bg-gray-50 dark:bg-gray-900/10';
-      default: return 'border-l-gray-500 bg-gray-50 dark:bg-gray-900/10';
+      case 'critical':
+        return 'border-l-red-500 bg-red-50 dark:bg-red-900/10';
+      case 'high':
+        return 'border-l-orange-500 bg-orange-50 dark:bg-orange-900/10';
+      case 'medium':
+        return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/10';
+      case 'low':
+        return 'border-l-gray-500 bg-gray-50 dark:bg-gray-900/10';
+      default:
+        return 'border-l-gray-500 bg-gray-50 dark:bg-gray-900/10';
     }
   };
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'קריטי';
-      case 'high': return 'גבוה';
-      case 'medium': return 'בינוני';
-      case 'low': return 'נמוך';
-      default: return 'רגיל';
+      case 'critical':
+        return 'קריטי';
+      case 'high':
+        return 'גבוה';
+      case 'medium':
+        return 'בינוני';
+      case 'low':
+        return 'נמוך';
+      default:
+        return 'רגיל';
     }
   };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'improving': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'declining': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      case 'stable': return <Minus className="w-4 h-4 text-gray-500" />;
-      default: return <Minus className="w-4 h-4 text-gray-500" />;
+      case 'improving':
+        return <TrendingUp className="w-4 h-4 text-green-500" />;
+      case 'declining':
+        return <TrendingDown className="w-4 h-4 text-red-500" />;
+      case 'stable':
+        return <Minus className="w-4 h-4 text-gray-500" />;
+      default:
+        return <Minus className="w-4 h-4 text-gray-500" />;
     }
   };
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
-      case 'legendary': return 'from-yellow-400 to-orange-500';
-      case 'epic': return 'from-purple-400 to-pink-500';
-      case 'rare': return 'from-blue-400 to-cyan-500';
-      case 'common': return 'from-gray-400 to-gray-500';
-      default: return 'from-gray-400 to-gray-500';
+      case 'legendary':
+        return 'from-yellow-400 to-orange-500';
+      case 'epic':
+        return 'from-purple-400 to-pink-500';
+      case 'rare':
+        return 'from-blue-400 to-cyan-500';
+      case 'common':
+        return 'from-gray-400 to-gray-500';
+      default:
+        return 'from-gray-400 to-gray-500';
     }
   };
 
-  const filteredInsights = insights.filter(insight => {
+  const filteredInsights = insights.filter((insight) => {
     if (category === 'all') return true;
     return insight.category === category;
   });
 
-  const criticalInsights = insights.filter(i => i.priority === 'critical').length;
-  const positiveInsights = insights.filter(i => i.type === 'positive').length;
-  const averageConfidence = insights.length > 0 
-    ? Math.round(insights.reduce((sum, i) => sum + i.confidence, 0) / insights.length)
-    : 0;
+  const criticalInsights = insights.filter(
+    (i) => i.priority === 'critical'
+  ).length;
+  const positiveInsights = insights.filter((i) => i.type === 'positive').length;
+  const averageConfidence =
+    insights.length > 0
+      ? Math.round(
+          insights.reduce((sum, i) => sum + i.confidence, 0) / insights.length
+        )
+      : 0;
 
   if (loading) {
     return (
@@ -344,7 +398,9 @@ export default function InsightsPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{insights.length}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">תובנות כולל</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    תובנות כולל
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -358,7 +414,9 @@ export default function InsightsPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{criticalInsights}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">תובנות קריטיות</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    תובנות קריטיות
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -372,7 +430,9 @@ export default function InsightsPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{positiveInsights}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">תובנות חיוביות</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    תובנות חיוביות
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -386,7 +446,9 @@ export default function InsightsPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{averageConfidence}%</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">ביטחון ממוצע</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    ביטחון ממוצע
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -407,7 +469,10 @@ export default function InsightsPage() {
           <CardContent>
             <div className="space-y-4">
               {filteredInsights.map((insight) => (
-                <div key={insight.id} className={`p-4 border-l-4 rounded-lg ${getPriorityColor(insight.priority)}`}>
+                <div
+                  key={insight.id}
+                  className={`p-4 border-l-4 rounded-lg ${getPriorityColor(insight.priority)}`}
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">
                       {getTypeIcon(insight.type)}
@@ -425,13 +490,18 @@ export default function InsightsPage() {
                         <p className="text-gray-700 dark:text-gray-300 mb-3">
                           {insight.description}
                         </p>
-                        
+
                         {insight.recommendations.length > 0 && (
                           <div>
-                            <h5 className="font-medium text-sm mb-2">המלצות לפעולה:</h5>
+                            <h5 className="font-medium text-sm mb-2">
+                              המלצות לפעולה:
+                            </h5>
                             <ul className="space-y-1">
                               {insight.recommendations.map((rec, index) => (
-                                <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                                <li
+                                  key={index}
+                                  className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2"
+                                >
                                   <Plus className="w-3 h-3 mt-0.5 text-green-500" />
                                   {rec}
                                 </li>
@@ -441,11 +511,15 @@ export default function InsightsPage() {
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="text-right text-xs text-gray-500">
                       <div>{getPriorityLabel(insight.priority)}</div>
                       <div>{insight.dataPoints} נקודות נתונים</div>
-                      <div>{new Date(insight.timestamp).toLocaleDateString('he-IL')}</div>
+                      <div>
+                        {new Date(insight.timestamp).toLocaleDateString(
+                          'he-IL'
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -473,19 +547,21 @@ export default function InsightsPage() {
                     <h4 className="font-semibold">{pattern.name}</h4>
                     <div className="flex items-center gap-2">
                       {getTrendIcon(pattern.trend)}
-                      <span className="text-sm text-gray-500">{pattern.frequency}</span>
+                      <span className="text-sm text-gray-500">
+                        {pattern.frequency}
+                      </span>
                     </div>
                   </div>
-                  
+
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                     {pattern.description}
                   </p>
-                  
+
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium">חוזק הדפוס:</span>
                     <div className="flex items-center gap-2">
                       <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div 
+                        <div
                           className="h-full bg-blue-500 rounded-full"
                           style={{ width: `${pattern.strength}%` }}
                         />
@@ -493,11 +569,14 @@ export default function InsightsPage() {
                       <span className="text-sm">{pattern.strength}%</span>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-1">
                     <h5 className="text-sm font-medium">דוגמאות:</h5>
                     {pattern.examples.map((example, index) => (
-                      <div key={index} className="text-xs text-gray-500 flex items-center gap-1">
+                      <div
+                        key={index}
+                        className="text-xs text-gray-500 flex items-center gap-1"
+                      >
                         <div className="w-1 h-1 bg-gray-400 rounded-full" />
                         {example}
                       </div>
@@ -530,19 +609,24 @@ export default function InsightsPage() {
                       {prediction.confidence}% ביטחון
                     </span>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4 mb-3">
                     <div>
                       <span className="text-sm text-gray-500">ערך נוכחי:</span>
-                      <div className="text-lg font-semibold">{prediction.currentValue}</div>
+                      <div className="text-lg font-semibold">
+                        {prediction.currentValue}
+                      </div>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">חיזוי ל{prediction.timeframe}:</span>
+                      <span className="text-sm text-gray-500">
+                        חיזוי ל{prediction.timeframe}:
+                      </span>
                       <div className="text-lg font-semibold flex items-center gap-2">
                         {prediction.predictedValue}
                         {prediction.predictedValue > prediction.currentValue ? (
                           <ArrowUp className="w-4 h-4 text-green-500" />
-                        ) : prediction.predictedValue < prediction.currentValue ? (
+                        ) : prediction.predictedValue <
+                          prediction.currentValue ? (
                           <ArrowDown className="w-4 h-4 text-red-500" />
                         ) : (
                           <Minus className="w-4 h-4 text-gray-500" />
@@ -550,18 +634,23 @@ export default function InsightsPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mb-3">
-                    <h5 className="text-sm font-medium mb-2">גורמים משפיעים:</h5>
+                    <h5 className="text-sm font-medium mb-2">
+                      גורמים משפיעים:
+                    </h5>
                     <div className="flex flex-wrap gap-1">
                       {prediction.factors.map((factor, index) => (
-                        <span key={index} className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                        <span
+                          key={index}
+                          className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full"
+                        >
                           {factor}
                         </span>
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                     <h5 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
                       המלצה:
@@ -583,41 +672,50 @@ export default function InsightsPage() {
               <Award className="w-5 h-5" />
               הישגים אחרונים
             </CardTitle>
-            <CardDescription>
-              הישגים שזכית בהם לאחרונה
-            </CardDescription>
+            <CardDescription>הישגים שזכית בהם לאחרונה</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {achievements.map((achievement) => (
                 <div key={achievement.id} className="p-4 border rounded-lg">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getRarityColor(achievement.rarity)} flex items-center justify-center mb-3`}>
+                  <div
+                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${getRarityColor(achievement.rarity)} flex items-center justify-center mb-3`}
+                  >
                     <Award className="w-6 h-6 text-white" />
                   </div>
-                  
+
                   <h4 className="font-semibold mb-2">{achievement.title}</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                     {achievement.description}
                   </p>
-                  
-                  {achievement.progress !== undefined && achievement.maxProgress && (
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>התקדמות</span>
-                        <span>{achievement.progress}/{achievement.maxProgress}</span>
+
+                  {achievement.progress !== undefined &&
+                    achievement.maxProgress && (
+                      <div className="mb-3">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>התקדמות</span>
+                          <span>
+                            {achievement.progress}/{achievement.maxProgress}
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                          <div
+                            className="h-full bg-gradient-to-r from-purple-400 to-pink-500 rounded-full"
+                            style={{
+                              width: `${(achievement.progress / achievement.maxProgress) * 100}%`,
+                            }}
+                          />
+                        </div>
                       </div>
-                      <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div 
-                          className="h-full bg-gradient-to-r from-purple-400 to-pink-500 rounded-full"
-                          style={{ width: `${(achievement.progress / achievement.maxProgress) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
+                    )}
+
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <span className="capitalize">{achievement.rarity}</span>
-                    <span>{new Date(achievement.earnedAt).toLocaleDateString('he-IL')}</span>
+                    <span>
+                      {new Date(achievement.earnedAt).toLocaleDateString(
+                        'he-IL'
+                      )}
+                    </span>
                   </div>
                 </div>
               ))}

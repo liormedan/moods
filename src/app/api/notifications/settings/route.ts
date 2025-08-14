@@ -117,7 +117,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: settings,
-      message: 'Notification settings loaded successfully'
+      message: 'Notification settings loaded successfully',
     });
   } catch (error) {
     console.error('Error loading notification settings:', error);
@@ -125,7 +125,7 @@ export async function GET() {
       {
         success: false,
         error: 'Failed to load notification settings',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );
@@ -143,7 +143,7 @@ export async function PUT(request: NextRequest) {
         {
           success: false,
           error: 'Invalid settings data',
-          message: 'Settings must be a valid object'
+          message: 'Settings must be a valid object',
         },
         { status: 400 }
       );
@@ -158,9 +158,18 @@ export async function PUT(request: NextRequest) {
       schedule: {
         ...defaultSettings.schedule,
         ...body.schedule,
-        quietHours: { ...defaultSettings.schedule.quietHours, ...body.schedule?.quietHours },
-        frequency: { ...defaultSettings.schedule.frequency, ...body.schedule?.frequency },
-        customTimes: { ...defaultSettings.schedule.customTimes, ...body.schedule?.customTimes },
+        quietHours: {
+          ...defaultSettings.schedule.quietHours,
+          ...body.schedule?.quietHours,
+        },
+        frequency: {
+          ...defaultSettings.schedule.frequency,
+          ...body.schedule?.frequency,
+        },
+        customTimes: {
+          ...defaultSettings.schedule.customTimes,
+          ...body.schedule?.customTimes,
+        },
       },
       preferences: { ...defaultSettings.preferences, ...body.preferences },
     };
@@ -172,12 +181,12 @@ export async function PUT(request: NextRequest) {
     });
 
     // Simulate save delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     return NextResponse.json({
       success: true,
       data: updatedSettings,
-      message: 'Notification settings updated successfully'
+      message: 'Notification settings updated successfully',
     });
   } catch (error) {
     console.error('Error updating notification settings:', error);
@@ -185,7 +194,7 @@ export async function PUT(request: NextRequest) {
       {
         success: false,
         error: 'Failed to update notification settings',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

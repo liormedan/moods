@@ -1,40 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
 
 // Validation schema for profile updates
 const profileUpdateSchema = z.object({
-  firstName: z.string().min(1, 'שם פרטי נדרש').max(50, 'שם פרטי ארוך מדי').optional(),
-  lastName: z.string().min(1, 'שם משפחה נדרש').max(50, 'שם משפחה ארוך מדי').optional(),
-  phone: z.string().regex(/^[0-9\-\+\s\(\)]*$/, 'מספר טלפון לא תקין').optional(),
+  firstName: z
+    .string()
+    .min(1, 'שם פרטי נדרש')
+    .max(50, 'שם פרטי ארוך מדי')
+    .optional(),
+  lastName: z
+    .string()
+    .min(1, 'שם משפחה נדרש')
+    .max(50, 'שם משפחה ארוך מדי')
+    .optional(),
+  phone: z
+    .string()
+    .regex(/^[0-9\-\+\s\(\)]*$/, 'מספר טלפון לא תקין')
+    .optional(),
   dateOfBirth: z.string().optional(),
   gender: z.enum(['male', 'female', 'other', 'prefer-not-to-say']).optional(),
   location: z.string().max(100, 'מיקום ארוך מדי').optional(),
   bio: z.string().max(500, 'תיאור ארוך מדי').optional(),
   language: z.enum(['hebrew', 'english', 'arabic']).optional(),
   timezone: z.string().optional(),
-  preferences: z.object({
-    theme: z.enum(['light', 'dark', 'auto']).optional(),
-    notifications: z.object({
-      email: z.boolean().optional(),
-      push: z.boolean().optional(),
-      sms: z.boolean().optional(),
-    }).optional(),
-    privacy: z.object({
-      shareData: z.boolean().optional(),
-      anonymousMode: z.boolean().optional(),
-      dataRetention: z.number().min(30).max(3650).optional(), // 30 days to 10 years
-    }).optional(),
-  }).optional(),
+  preferences: z
+    .object({
+      theme: z.enum(['light', 'dark', 'auto']).optional(),
+      notifications: z
+        .object({
+          email: z.boolean().optional(),
+          push: z.boolean().optional(),
+          sms: z.boolean().optional(),
+        })
+        .optional(),
+      privacy: z
+        .object({
+          shareData: z.boolean().optional(),
+          anonymousMode: z.boolean().optional(),
+          dataRetention: z.number().min(30).max(3650).optional(), // 30 days to 10 years
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 // GET /api/profile - Get user profile
 export async function GET(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -106,7 +121,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -163,7 +178,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
+    // const session = await auth();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
@@ -247,7 +262,11 @@ async function getActivityStats(userId: string) {
 }
 
 // Helper function to log user activity
-async function logActivity(userId: string, action: string, description: string) {
+async function logActivity(
+  userId: string,
+  action: string,
+  description: string
+) {
   try {
     // In a real app, save to database
     // await prisma.activityLog.create({
@@ -261,8 +280,11 @@ async function logActivity(userId: string, action: string, description: string) 
     //   },
     // });
 
-    console.log(`Activity logged: ${action} - ${description} for user ${userId}`);
+    console.log(
+      `Activity logged: ${action} - ${description} for user ${userId}`
+    );
   } catch (error) {
     console.error('Error logging activity:', error);
   }
 }
+

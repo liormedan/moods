@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 interface ReportMetrics {
@@ -108,17 +106,32 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate metrics
-    const metrics = calculateMetrics(moodEntries, journalEntries, breathingSessions, goals, periodStart, periodEnd);
+    const metrics = calculateMetrics(
+      moodEntries,
+      journalEntries,
+      breathingSessions,
+      goals,
+      periodStart,
+      periodEnd
+    );
 
     // Generate trend data
-    const trendData = generateTrendData(moodEntries, journalEntries, goals, periodStart, periodEnd);
+    const trendData = generateTrendData(
+      moodEntries,
+      journalEntries,
+      goals,
+      periodStart,
+      periodEnd
+    );
 
     // Generate insights and recommendations
     const insights = generateInsights(metrics, moodEntries, goals);
     const recommendations = generateRecommendations(metrics, insights);
 
     // Calculate comparison with previous period
-    const previousPeriodStart = new Date(periodStart.getTime() - (periodEnd.getTime() - periodStart.getTime()));
+    const previousPeriodStart = new Date(
+      periodStart.getTime() - (periodEnd.getTime() - periodStart.getTime())
+    );
     const previousPeriodEnd = periodStart;
 
     const previousMoodEntries = await prisma.moodEntry.findMany({
@@ -131,7 +144,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const previousMetrics = calculateMetrics(previousMoodEntries, [], [], [], previousPeriodStart, previousPeriodEnd);
+    const previousMetrics = calculateMetrics(
+      previousMoodEntries,
+      [],
+      [],
+      [],
+      previousPeriodStart,
+      previousPeriodEnd
+    );
     const comparison = calculateComparison(metrics, previousMetrics);
 
     // Generate report
@@ -148,13 +168,21 @@ export async function GET(request: NextRequest) {
       recommendations,
       comparison,
       summary: {
-        totalDays: Math.ceil((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24)),
-        activeDays: [...new Set([
-          ...moodEntries.map(e => e.date.toISOString().split('T')[0]),
-          ...journalEntries.map(e => e.createdAt.toISOString().split('T')[0]),
-          ...breathingSessions.map(e => e.createdAt.toISOString().split('T')[0])
-        ])].length,
-        completedGoals: goals.filter(g => g.status === 'completed').length,
+        totalDays: Math.ceil(
+          (periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24)
+        ),
+        activeDays: [
+          ...new Set([
+            ...moodEntries.map((e) => e.date.toISOString().split('T')[0]),
+            ...journalEntries.map(
+              (e) => e.createdAt.toISOString().split('T')[0]
+            ),
+            ...breathingSessions.map(
+              (e) => e.createdAt.toISOString().split('T')[0]
+            ),
+          ]),
+        ].length,
+        completedGoals: goals.filter((g) => g.status === 'completed').length,
         totalActivities: journalEntries.length + breathingSessions.length,
       },
     };
@@ -187,10 +215,13 @@ export async function POST(request: NextRequest) {
 
     // In a real app, you would save the report to database
     // For now, just return success
-    return NextResponse.json({
-      message: 'Report generated successfully',
-      reportId: `report-${Date.now()}`,
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        message: 'Report generated successfully',
+        reportId: `report-${Date.now()}`,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error creating report:', error);
     return NextResponse.json(
@@ -210,40 +241,68 @@ function calculateMetrics(
   endDate: Date
 ): ReportMetrics {
   // Calculate mood improvement
-  const moodValues = moodEntries.map(e => e.moodValue);
+  const moodValues = moodEntries.map((e) => e.moodValue);
   const firstHalf = moodValues.slice(0, Math.floor(moodValues.length / 2));
   const secondHalf = moodValues.slice(Math.floor(moodValues.length / 2));
-  
-  const firstHalfAvg = firstHalf.length > 0 ? firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length : 0;
-  const secondHalfAvg = secondHalf.length > 0 ? secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length : 0;
-  
-  const moodImprovement = secondHalfAvg > 0 && firstHalfAvg > 0 
-    ? Math.round(((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100)
-    : 0;
+
+  const firstHalfAvg =
+    firstHalf.length > 0
+      ? firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length
+      : 0;
+  const secondHalfAvg =
+    secondHalf.length > 0
+      ? secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length
+      : 0;
+
+  const moodImprovement =
+    secondHalfAvg > 0 && firstHalfAvg > 0
+      ? Math.round(((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100)
+      : 0;
 
   // Calculate goal completion
-  const completedGoals = goals.filter(g => g.status === 'completed').length;
-  const goalCompletion = goals.length > 0 ? Math.round((completedGoals / goals.length) * 100) : 0;
+  const completedGoals = goals.filter((g) => g.status === 'completed').length;
+  const goalCompletion =
+    goals.length > 0 ? Math.round((completedGoals / goals.length) * 100) : 0;
 
   // Calculate activity consistency
-  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const activeDays = [...new Set([
-    ...moodEntries.map(e => e.date.toISOString().split('T')[0]),
-    ...journalEntries.map(e => e.createdAt.toISOString().split('T')[0]),
-    ...breathingSessions.map(e => e.createdAt.toISOString().split('T')[0])
-  ])].length;
-  
-  const activityConsistency = totalDays > 0 ? Math.round((activeDays / totalDays) * 100) : 0;
+  const totalDays = Math.ceil(
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const activeDays = [
+    ...new Set([
+      ...moodEntries.map((e) => e.date.toISOString().split('T')[0]),
+      ...journalEntries.map((e) => e.createdAt.toISOString().split('T')[0]),
+      ...breathingSessions.map((e) => e.createdAt.toISOString().split('T')[0]),
+    ]),
+  ].length;
+
+  const activityConsistency =
+    totalDays > 0 ? Math.round((activeDays / totalDays) * 100) : 0;
 
   // Estimate sleep quality based on mood and activity patterns
-  const avgMood = moodValues.length > 0 ? moodValues.reduce((a, b) => a + b, 0) / moodValues.length : 0;
-  const sleepQuality = Math.min(Math.round(avgMood * 10 + Math.random() * 20), 100);
+  const avgMood =
+    moodValues.length > 0
+      ? moodValues.reduce((a, b) => a + b, 0) / moodValues.length
+      : 0;
+  const sleepQuality = Math.min(
+    Math.round(avgMood * 10 + Math.random() * 20),
+    100
+  );
 
   // Calculate social engagement (estimated from journal entries and activities)
-  const socialActivities = journalEntries.filter(e => 
-    e.content.includes('חבר') || e.content.includes('משפחה') || e.content.includes('חברתי')
+  const socialActivities = journalEntries.filter(
+    (e) =>
+      e.content.includes('חבר') ||
+      e.content.includes('משפחה') ||
+      e.content.includes('חברתי')
   ).length;
-  const socialEngagement = Math.min(Math.round((socialActivities / Math.max(journalEntries.length, 1)) * 100 + Math.random() * 30), 100);
+  const socialEngagement = Math.min(
+    Math.round(
+      (socialActivities / Math.max(journalEntries.length, 1)) * 100 +
+        Math.random() * 30
+    ),
+    100
+  );
 
   return {
     moodImprovement,
@@ -253,7 +312,11 @@ function calculateMetrics(
     socialEngagement,
     journalEntries: journalEntries.length,
     breathingSessions: breathingSessions.length,
-    streakDays: calculateStreakDays(moodEntries, journalEntries, breathingSessions),
+    streakDays: calculateStreakDays(
+      moodEntries,
+      journalEntries,
+      breathingSessions
+    ),
   };
 }
 
@@ -269,24 +332,27 @@ function generateTrendData(
 
   while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split('T')[0];
-    
+
     // Get mood average for this date
-    const dayMoodEntries = moodEntries.filter(e => 
-      e.date.toISOString().split('T')[0] === dateStr
+    const dayMoodEntries = moodEntries.filter(
+      (e) => e.date.toISOString().split('T')[0] === dateStr
     );
-    const moodAverage = dayMoodEntries.length > 0 
-      ? dayMoodEntries.reduce((sum, e) => sum + e.moodValue, 0) / dayMoodEntries.length
-      : 0;
+    const moodAverage =
+      dayMoodEntries.length > 0
+        ? dayMoodEntries.reduce((sum, e) => sum + e.moodValue, 0) /
+          dayMoodEntries.length
+        : 0;
 
     // Count activities for this date
-    const activitiesCount = journalEntries.filter(e => 
-      e.createdAt.toISOString().split('T')[0] === dateStr
+    const activitiesCount = journalEntries.filter(
+      (e) => e.createdAt.toISOString().split('T')[0] === dateStr
     ).length;
 
     // Calculate goals progress (simplified)
-    const goalsProgress = goals.length > 0 
-      ? goals.reduce((sum, g) => sum + g.progress, 0) / goals.length
-      : 0;
+    const goalsProgress =
+      goals.length > 0
+        ? goals.reduce((sum, g) => sum + g.progress, 0) / goals.length
+        : 0;
 
     trendData.push({
       date: dateStr,
@@ -301,13 +367,19 @@ function generateTrendData(
   return trendData;
 }
 
-function generateInsights(metrics: ReportMetrics, moodEntries: any[], goals: any[]): string[] {
+function generateInsights(
+  metrics: ReportMetrics,
+  moodEntries: any[],
+  goals: any[]
+): string[] {
   const insights: string[] = [];
 
   if (metrics.moodImprovement > 10) {
     insights.push(`מצב הרוח השתפר ב-${metrics.moodImprovement}% - מגמה מעולה!`);
   } else if (metrics.moodImprovement < -10) {
-    insights.push(`מצב הרוח ירד ב-${Math.abs(metrics.moodImprovement)}% - כדאי לשים לב`);
+    insights.push(
+      `מצב הרוח ירד ב-${Math.abs(metrics.moodImprovement)}% - כדאי לשים לב`
+    );
   } else {
     insights.push('מצב הרוח יציב ללא שינויים משמעותיים');
   }
@@ -333,11 +405,16 @@ function generateInsights(metrics: ReportMetrics, moodEntries: any[], goals: any
   return insights;
 }
 
-function generateRecommendations(metrics: ReportMetrics, insights: string[]): string[] {
+function generateRecommendations(
+  metrics: ReportMetrics,
+  insights: string[]
+): string[] {
   const recommendations: string[] = [];
 
   if (metrics.moodImprovement < 0) {
-    recommendations.push('שקול לנסות פעילויות מרגיעות נוספות כמו מדיטציה או יוגה');
+    recommendations.push(
+      'שקול לנסות פעילויות מרגיעות נוספות כמו מדיטציה או יוגה'
+    );
     recommendations.push('פנה לעזרה מקצועית אם מצב הרוח ממשיך להיות נמוך');
   }
 
@@ -367,45 +444,56 @@ function calculateComparison(current: ReportMetrics, previous: ReportMetrics) {
   return {
     moodImprovement: current.moodImprovement - previous.moodImprovement,
     goalCompletion: current.goalCompletion - previous.goalCompletion,
-    activityConsistency: current.activityConsistency - previous.activityConsistency,
+    activityConsistency:
+      current.activityConsistency - previous.activityConsistency,
     sleepQuality: current.sleepQuality - previous.sleepQuality,
     socialEngagement: current.socialEngagement - previous.socialEngagement,
   };
 }
 
-function calculateStreakDays(moodEntries: any[], journalEntries: any[], breathingSessions: any[]): number {
+function calculateStreakDays(
+  moodEntries: any[],
+  journalEntries: any[],
+  breathingSessions: any[]
+): number {
   const allDates = [
-    ...moodEntries.map(e => e.date.toISOString().split('T')[0]),
-    ...journalEntries.map(e => e.createdAt.toISOString().split('T')[0]),
-    ...breathingSessions.map(e => e.createdAt.toISOString().split('T')[0])
+    ...moodEntries.map((e) => e.date.toISOString().split('T')[0]),
+    ...journalEntries.map((e) => e.createdAt.toISOString().split('T')[0]),
+    ...breathingSessions.map((e) => e.createdAt.toISOString().split('T')[0]),
   ];
 
   const uniqueDates = [...new Set(allDates)].sort();
-  
+
   let streak = 0;
   let currentStreak = 0;
-  
+
   for (let i = uniqueDates.length - 1; i >= 0; i--) {
     const currentDate = new Date(uniqueDates[i]);
     const expectedDate = new Date();
     expectedDate.setDate(expectedDate.getDate() - (uniqueDates.length - 1 - i));
-    
+
     if (currentDate.toDateString() === expectedDate.toDateString()) {
       currentStreak++;
     } else {
       break;
     }
   }
-  
+
   return currentStreak;
 }
 
 function getPeriodName(period: string): string {
   switch (period) {
-    case 'week': return 'שבועי';
-    case 'month': return 'חודשי';
-    case 'quarter': return 'רבעוני';
-    case 'year': return 'שנתי';
-    default: return 'תקופתי';
+    case 'week':
+      return 'שבועי';
+    case 'month':
+      return 'חודשי';
+    case 'quarter':
+      return 'רבעוני';
+    case 'year':
+      return 'שנתי';
+    default:
+      return 'תקופתי';
   }
 }
+

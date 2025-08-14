@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Invalid export type',
-          message: 'Export type must be "full" or "partial"'
+          message: 'Export type must be "full" or "partial"',
         },
         { status: 400 }
       );
@@ -22,25 +22,34 @@ export async function POST(request: NextRequest) {
       type,
       status: 'pending' as const,
       requestedAt: new Date().toISOString(),
-      categories: type === 'full' 
-        ? ['mood', 'journal', 'goals', 'breathing', 'profile', 'settings', 'activity']
-        : categories || ['mood', 'journal']
+      categories:
+        type === 'full'
+          ? [
+              'mood',
+              'journal',
+              'goals',
+              'breathing',
+              'profile',
+              'settings',
+              'activity',
+            ]
+          : categories || ['mood', 'journal'],
     };
 
     console.log('Data export requested:', {
       timestamp: new Date().toISOString(),
       exportId: exportRequest.id,
       type: exportRequest.type,
-      categories: exportRequest.categories
+      categories: exportRequest.categories,
     });
 
     // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     return NextResponse.json({
       success: true,
       data: exportRequest,
-      message: 'Data export request submitted successfully'
+      message: 'Data export request submitted successfully',
     });
   } catch (error) {
     console.error('Error requesting data export:', error);
@@ -48,7 +57,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to request data export',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

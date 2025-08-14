@@ -3,17 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 // DELETE /api/notifications/[id] - Delete notification
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         {
           success: false,
           error: 'Notification ID is required',
-          message: 'Missing notification ID'
+          message: 'Missing notification ID',
         },
         { status: 400 }
       );
@@ -23,20 +23,20 @@ export async function DELETE(
     console.log(`Deleting notification ${id}:`, {
       timestamp: new Date().toISOString(),
       notificationId: id,
-      action: 'delete'
+      action: 'delete',
     });
 
     // Simulate database delete delay
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     return NextResponse.json({
       success: true,
       data: {
         id,
         deleted: true,
-        deletedAt: new Date().toISOString()
+        deletedAt: new Date().toISOString(),
       },
-      message: 'Notification deleted successfully'
+      message: 'Notification deleted successfully',
     });
   } catch (error) {
     console.error('Error deleting notification:', error);
@@ -44,7 +44,7 @@ export async function DELETE(
       {
         success: false,
         error: 'Failed to delete notification',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

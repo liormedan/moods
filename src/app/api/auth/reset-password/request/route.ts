@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Invalid email address',
-          message: 'כתובת אימייל לא תקינה'
+          message: 'כתובת אימייל לא תקינה',
         },
         { status: 400 }
       );
@@ -25,17 +25,19 @@ export async function POST(request: NextRequest) {
     // 5. Log the request for security
 
     // Generate demo verification code
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
     console.log('Password reset requested:', {
       timestamp: new Date().toISOString(),
       email,
       verificationCode, // In real app, this would be hashed
-      action: 'password_reset_request'
+      action: 'password_reset_request',
     });
 
     // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
     return NextResponse.json({
       success: true,
@@ -44,7 +46,7 @@ export async function POST(request: NextRequest) {
         codeSent: true,
         expiresIn: 600, // 10 minutes
       },
-      message: 'קוד אימות נשלח לאימייל שלך'
+      message: 'קוד אימות נשלח לאימייל שלך',
     });
   } catch (error) {
     console.error('Error requesting password reset:', error);
@@ -52,7 +54,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to request password reset',
-        message: 'שגיאה בשליחת קוד האימות'
+        message: 'שגיאה בשליחת קוד האימות',
       },
       { status: 500 }
     );

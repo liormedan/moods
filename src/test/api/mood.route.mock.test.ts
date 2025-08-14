@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { GET, POST } from '@/app/api/mood/route';
 import { prisma } from '@/lib/db';
-import { getServerSession } from 'next-auth/next';
+import { getServerSession } from '@/lib/auth';
 
 jest.mock('next-auth/next', () => ({
   getServerSession: jest.fn(),
@@ -67,7 +67,9 @@ describe('Mood API route', () => {
 
     it('returns 500 on server error', async () => {
       (getServerSession as jest.Mock).mockResolvedValue(mockSession);
-      (prisma.moodEntry.findMany as jest.Mock).mockRejectedValue(new Error('db error'));
+      (prisma.moodEntry.findMany as jest.Mock).mockRejectedValue(
+        new Error('db error')
+      );
       const req = { url: 'http://localhost/api/mood' } as NextRequest;
       const res = await GET(req);
       expect(res.status).toBe(500);
@@ -121,7 +123,9 @@ describe('Mood API route', () => {
 
     it('returns 500 when prisma throws an error', async () => {
       (getServerSession as jest.Mock).mockResolvedValue(mockSession);
-      (prisma.moodEntry.findUnique as jest.Mock).mockRejectedValue(new Error('db error'));
+      (prisma.moodEntry.findUnique as jest.Mock).mockRejectedValue(
+        new Error('db error')
+      );
       const req = {
         url: 'http://localhost/api/mood',
         json: async () => ({ moodValue: 5 }),

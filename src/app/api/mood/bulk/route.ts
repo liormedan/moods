@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Check for existing entries for these dates
     const existingEntries = await prisma.moodEntry.findMany({
       where: {
-        userId: session.user.id,
+        userId: (session as any).user.id,
         date: {
           in: dates.map((date) => new Date(date)),
         },
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       entries.map((entry) =>
         prisma.moodEntry.create({
           data: {
-            userId: session.user.id,
+            userId: (session as any).user.id,
             moodValue: entry.moodValue,
             notes: entry.notes,
             date: new Date(entry.date),
@@ -120,7 +120,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -136,7 +136,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    let whereClause: any = { userId: session.user.id };
+    let whereClause: any = { userId: (session as any).user.id };
 
     if (ids) {
       // Delete by specific IDs
@@ -199,3 +199,4 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+

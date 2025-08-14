@@ -25,7 +25,7 @@ function generateMessages(): Message[] {
     content: 'שלום! איך אתה מרגיש אחרי התרגילים שתרגלנו בפגישה הקודמת?',
     timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
     isRead: false,
-    type: 'text'
+    type: 'text',
   });
 
   messages.push({
@@ -33,10 +33,11 @@ function generateMessages(): Message[] {
     therapistId: 'therapist-1',
     senderId: 'user',
     senderName: 'אתה',
-    content: 'שלום ד"ר כהן, תרגלתי את תרגילי הנשימה כמו שהסכמנו. אני מרגיש שיפור קל, אבל עדיין יש לי רגעים קשים.',
+    content:
+      'שלום ד"ר כהן, תרגלתי את תרגילי הנשימה כמו שהסכמנו. אני מרגיש שיפור קל, אבל עדיין יש לי רגעים קשים.',
     timestamp: new Date(now.getTime() - 1.5 * 60 * 60 * 1000).toISOString(),
     isRead: true,
-    type: 'text'
+    type: 'text',
   });
 
   messages.push({
@@ -44,10 +45,11 @@ function generateMessages(): Message[] {
     therapistId: 'therapist-1',
     senderId: 'therapist-1',
     senderName: 'ד"ר שרה כהן',
-    content: 'זה נהדר לשמוע על השיפור! זה תהליך הדרגתי. בפגישה הבאה נעבוד על טכניקות נוספות להתמודדות עם הרגעים הקשים.',
+    content:
+      'זה נהדר לשמוע על השיפור! זה תהליך הדרגתי. בפגישה הבאה נעבוד על טכניקות נוספות להתמודדות עם הרגעים הקשים.',
     timestamp: new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString(),
     isRead: true,
-    type: 'text'
+    type: 'text',
   });
 
   messages.push({
@@ -58,7 +60,7 @@ function generateMessages(): Message[] {
     content: 'תודה רבה! אני מצרף את הדוח השבועי שלי כמו שביקשת.',
     timestamp: new Date(now.getTime() - 45 * 60 * 1000).toISOString(),
     isRead: true,
-    type: 'text'
+    type: 'text',
   });
 
   messages.push({
@@ -66,10 +68,11 @@ function generateMessages(): Message[] {
     therapistId: 'therapist-1',
     senderId: 'therapist-1',
     senderName: 'ד"ר שרה כהן',
-    content: 'קיבלתי את הדוח, תודה! אני רואה התקדמות יפה בנתונים. נדבר על זה בפגישה ביום רביעי.',
+    content:
+      'קיבלתי את הדוח, תודה! אני רואה התקדמות יפה בנתונים. נדבר על זה בפגישה ביום רביעי.',
     timestamp: new Date(now.getTime() - 30 * 60 * 1000).toISOString(),
     isRead: false,
-    type: 'text'
+    type: 'text',
   });
 
   // Older messages
@@ -78,10 +81,11 @@ function generateMessages(): Message[] {
     therapistId: 'therapist-1',
     senderId: 'therapist-1',
     senderName: 'ד"ר שרה כהן',
-    content: 'שלום! רק רציתי לוודא שהקישור לפגישה המקוונת עובד אצלך. נתראה מחר ב-16:00.',
+    content:
+      'שלום! רק רציתי לוודא שהקישור לפגישה המקוונת עובד אצלך. נתראה מחר ב-16:00.',
     timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
     isRead: true,
-    type: 'appointment'
+    type: 'appointment',
   });
 
   messages.push({
@@ -92,7 +96,7 @@ function generateMessages(): Message[] {
     content: 'הכל עובד מצוין, תודה! אני מצפה לפגישה.',
     timestamp: new Date(now.getTime() - 23.5 * 60 * 60 * 1000).toISOString(),
     isRead: true,
-    type: 'text'
+    type: 'text',
   });
 
   messages.push({
@@ -100,13 +104,16 @@ function generateMessages(): Message[] {
     therapistId: 'therapist-1',
     senderId: 'therapist-1',
     senderName: 'ד"ר שרה כהן',
-    content: 'שלום! שלחתי לך חומר קריאה על טכניקות התמודדות עם חרדה. אשמח אם תעיין בו לפני הפגישה הבאה.',
+    content:
+      'שלום! שלחתי לך חומר קריאה על טכניקות התמודדות עם חרדה. אשמח אם תעיין בו לפני הפגישה הבאה.',
     timestamp: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     isRead: true,
-    type: 'file'
+    type: 'file',
   });
 
-  return messages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  return messages.sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
 }
 
 // GET /api/therapists/messages - Get messages with therapists
@@ -115,22 +122,26 @@ export async function GET() {
     const messages = generateMessages();
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     return NextResponse.json({
       success: true,
       data: messages,
       metadata: {
         total: messages.length,
-        unread: messages.filter(m => !m.isRead && m.senderId !== 'user').length,
-        byType: messages.reduce((acc, m) => {
-          acc[m.type] = (acc[m.type] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>),
-        conversations: [...new Set(messages.map(m => m.therapistId))].length,
+        unread: messages.filter((m) => !m.isRead && m.senderId !== 'user')
+          .length,
+        byType: messages.reduce(
+          (acc, m) => {
+            acc[m.type] = (acc[m.type] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
+        conversations: [...new Set(messages.map((m) => m.therapistId))].length,
         lastMessage: messages[messages.length - 1]?.timestamp,
       },
-      message: 'Messages loaded successfully'
+      message: 'Messages loaded successfully',
     });
   } catch (error) {
     console.error('Error loading messages:', error);
@@ -138,7 +149,7 @@ export async function GET() {
       {
         success: false,
         error: 'Failed to load messages',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );
@@ -149,7 +160,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const newMessage: Message = {
       id: `msg-${Date.now()}`,
       therapistId: body.therapistId || 'therapist-1',
@@ -158,7 +169,7 @@ export async function POST(request: NextRequest) {
       content: body.content || '',
       timestamp: new Date().toISOString(),
       isRead: true, // User's own message is automatically read
-      type: body.type || 'text'
+      type: body.type || 'text',
     };
 
     console.log('New message sent:', newMessage);
@@ -166,7 +177,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: newMessage,
-      message: 'Message sent successfully'
+      message: 'Message sent successfully',
     });
   } catch (error) {
     console.error('Error sending message:', error);
@@ -174,7 +185,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to send message',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

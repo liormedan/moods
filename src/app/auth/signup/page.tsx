@@ -75,13 +75,13 @@ export default function SignUpPage() {
               <Heart className="w-12 h-12 text-pink-300 mr-4" />
               <h1 className="text-3xl font-bold">Mental Health Tracker</h1>
             </div>
-            
+
             <h2 className="text-4xl font-bold mb-6 leading-tight">
               התחל את המסע שלך
               <br />
               <span className="text-purple-200">לבריאות נפשית טובה יותר</span>
             </h2>
-            
+
             <p className="text-xl text-purple-100 mb-8 leading-relaxed">
               הצטרף לאלפי משתמשים שכבר משפרים את איכות החיים שלהם
             </p>
@@ -93,14 +93,14 @@ export default function SignUpPage() {
                   תעד את מצב הרוח שלך בכל יום וראה את ההתקדמות
                 </p>
               </div>
-              
+
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <h3 className="font-semibold mb-2">תובנות חכמות</h3>
                 <p className="text-sm text-purple-100">
                   קבל המלצות מותאמות אישית על בסיס הנתונים שלך
                 </p>
               </div>
-              
+
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <h3 className="font-semibold mb-2">פרטיות מלאה</h3>
                 <p className="text-sm text-purple-100">

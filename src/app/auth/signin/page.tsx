@@ -13,15 +13,16 @@ export default function SignInPage() {
               <Heart className="w-12 h-12 text-pink-300 mr-4" />
               <h1 className="text-3xl font-bold">Mental Health Tracker</h1>
             </div>
-            
+
             <h2 className="text-4xl font-bold mb-6 leading-tight">
               עקוב אחר מצב הרוח שלך
               <br />
               <span className="text-blue-200">בצורה חכמה ופשוטה</span>
             </h2>
-            
+
             <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-              כלי מתקדם לניהול ומעקב אחר הבריאות הנפשית שלך עם תובנות מותאמות אישית
+              כלי מתקדם לניהול ומעקב אחר הבריאות הנפשית שלך עם תובנות מותאמות
+              אישית
             </p>
 
             <div className="space-y-4">

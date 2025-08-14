@@ -126,7 +126,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: settings,
-      message: 'Privacy settings loaded successfully'
+      message: 'Privacy settings loaded successfully',
     });
   } catch (error) {
     console.error('Error loading privacy settings:', error);
@@ -134,7 +134,7 @@ export async function GET() {
       {
         success: false,
         error: 'Failed to load privacy settings',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );
@@ -152,7 +152,7 @@ export async function PUT(request: NextRequest) {
         {
           success: false,
           error: 'Invalid settings data',
-          message: 'Settings must be a valid object'
+          message: 'Settings must be a valid object',
         },
         { status: 400 }
       );
@@ -162,12 +162,21 @@ export async function PUT(request: NextRequest) {
     const updatedSettings = {
       ...defaultSettings,
       ...body,
-      dataCollection: { ...defaultSettings.dataCollection, ...body.dataCollection },
+      dataCollection: {
+        ...defaultSettings.dataCollection,
+        ...body.dataCollection,
+      },
       dataSharing: { ...defaultSettings.dataSharing, ...body.dataSharing },
       visibility: { ...defaultSettings.visibility, ...body.visibility },
-      communications: { ...defaultSettings.communications, ...body.communications },
+      communications: {
+        ...defaultSettings.communications,
+        ...body.communications,
+      },
       security: { ...defaultSettings.security, ...body.security },
-      dataRetention: { ...defaultSettings.dataRetention, ...body.dataRetention },
+      dataRetention: {
+        ...defaultSettings.dataRetention,
+        ...body.dataRetention,
+      },
     };
 
     // Log the settings change for demo
@@ -177,12 +186,12 @@ export async function PUT(request: NextRequest) {
     });
 
     // Simulate save delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     return NextResponse.json({
       success: true,
       data: updatedSettings,
-      message: 'Privacy settings updated successfully'
+      message: 'Privacy settings updated successfully',
     });
   } catch (error) {
     console.error('Error updating privacy settings:', error);
@@ -190,7 +199,7 @@ export async function PUT(request: NextRequest) {
       {
         success: false,
         error: 'Failed to update privacy settings',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

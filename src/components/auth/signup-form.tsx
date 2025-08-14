@@ -12,7 +12,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, CheckCircle, Check, X } from 'lucide-react';
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  AlertCircle,
+  CheckCircle,
+  Check,
+  X,
+} from 'lucide-react';
 
 export function SignUpForm() {
   const [name, setName] = useState('');
@@ -32,10 +42,11 @@ export function SignUpForm() {
     match: password === confirmPassword && password.length > 0,
   };
 
-  const isFormValid = name.length >= 2 && 
-                     email.includes('@') && 
-                     passwordValidation.length && 
-                     passwordValidation.match;
+  const isFormValid =
+    name.length >= 2 &&
+    email.includes('@') &&
+    passwordValidation.length &&
+    passwordValidation.match;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +99,10 @@ export function SignUpForm() {
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="name"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               שם מלא
             </Label>
             <div className="relative">
@@ -107,7 +121,10 @@ export function SignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               כתובת אימייל
             </Label>
             <div className="relative">
@@ -126,7 +143,10 @@ export function SignUpForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="password"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               סיסמה
             </Label>
             <div className="relative">
@@ -148,13 +168,20 @@ export function SignUpForm() {
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 disabled={isLoading}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="confirmPassword"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               אישור סיסמה
             </Label>
             <div className="relative">
@@ -176,7 +203,11 @@ export function SignUpForm() {
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 disabled={isLoading}
               >
-                {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showConfirmPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
@@ -184,14 +215,22 @@ export function SignUpForm() {
           {/* Password validation indicators */}
           {password.length > 0 && (
             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2">
-              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">דרישות סיסמה:</p>
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                דרישות סיסמה:
+              </p>
               <div className="flex items-center text-xs">
                 {passwordValidation.length ? (
                   <Check className="w-4 h-4 text-green-500 mr-2" />
                 ) : (
                   <X className="w-4 h-4 text-red-500 mr-2" />
                 )}
-                <span className={passwordValidation.length ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                <span
+                  className={
+                    passwordValidation.length
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                  }
+                >
                   לפחות 6 תווים
                 </span>
               </div>
@@ -202,7 +241,13 @@ export function SignUpForm() {
                   ) : (
                     <X className="w-4 h-4 text-red-500 mr-2" />
                   )}
-                  <span className={passwordValidation.match ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                  <span
+                    className={
+                      passwordValidation.match
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }
+                  >
                     הסיסמאות תואמות
                   </span>
                 </div>
@@ -213,20 +258,24 @@ export function SignUpForm() {
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center">
               <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mr-2" />
-              <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
+              <span className="text-sm text-red-700 dark:text-red-300">
+                {error}
+              </span>
             </div>
           )}
 
           {success && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 flex items-center">
               <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
-              <span className="text-sm text-green-700 dark:text-green-300">{success}</span>
+              <span className="text-sm text-green-700 dark:text-green-300">
+                {success}
+              </span>
             </div>
           )}
 
-          <Button 
-            type="submit" 
-            className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white font-medium transition-colors" 
+          <Button
+            type="submit"
+            className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white font-medium transition-colors"
             disabled={isLoading || !isFormValid}
           >
             {isLoading ? (

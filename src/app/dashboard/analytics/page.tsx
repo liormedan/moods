@@ -128,39 +128,41 @@ export default function AnalyticsPage() {
         [''],
         ['נתונים יומיים'],
         ['תאריך', 'מצב רוח', 'הערות'],
-        ...analyticsData.dailyMoods.map(day => [
+        ...analyticsData.dailyMoods.map((day) => [
           day.date,
           day.mood.toString(),
-          day.notes || ''
+          day.notes || '',
         ]),
         [''],
         ['ממוצעים שבועיים'],
         ['שבוע', 'ממוצע', 'מספר רשומות'],
-        ...analyticsData.weeklyAverages.map(week => [
+        ...analyticsData.weeklyAverages.map((week) => [
           week.week,
           week.average.toString(),
-          week.count.toString()
+          week.count.toString(),
         ]),
         [''],
         ['התפלגות מצב רוח'],
         ['טווח', 'כמות', 'אחוז'],
-        ...analyticsData.moodDistribution.map(dist => [
+        ...analyticsData.moodDistribution.map((dist) => [
           dist.mood,
           dist.count.toString(),
-          `${dist.percentage}%`
+          `${dist.percentage}%`,
         ]),
         [''],
         ['תובנות'],
-        ...analyticsData.insights.map(insight => [insight.message])
+        ...analyticsData.insights.map((insight) => [insight.message]),
       ];
 
       // Add BOM for Hebrew support
       const BOM = '\uFEFF';
       const csvContent = reportData
-        .map(row => row.map(cell => `"${cell}"`).join(','))
+        .map((row) => row.map((cell) => `"${cell}"`).join(','))
         .join('\n');
 
-      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([BOM + csvContent], {
+        type: 'text/csv;charset=utf-8;',
+      });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `analytics-report-${new Date().toISOString().split('T')[0]}.csv`;
@@ -245,7 +247,9 @@ export default function AnalyticsPage() {
               onClick={handleExport}
               variant="outline"
               className="border-gray-300 dark:border-gray-600"
-              disabled={!analyticsData || analyticsData.summary.totalEntries === 0}
+              disabled={
+                !analyticsData || analyticsData.summary.totalEntries === 0
+              }
             >
               <Download className="w-4 h-4 mr-2" />
               ייצוא דוח
@@ -365,27 +369,47 @@ export default function AnalyticsPage() {
               <div className="flex items-center mt-2">
                 {analyticsData.monthlyTrends.length >= 2 ? (
                   <>
-                    {analyticsData.monthlyTrends[analyticsData.monthlyTrends.length - 1].average > 
-                     analyticsData.monthlyTrends[analyticsData.monthlyTrends.length - 2].average ? (
+                    {analyticsData.monthlyTrends[
+                      analyticsData.monthlyTrends.length - 1
+                    ].average >
+                    analyticsData.monthlyTrends[
+                      analyticsData.monthlyTrends.length - 2
+                    ].average ? (
                       <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
                     ) : (
                       <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
                     )}
-                    <span className={`text-sm ${
-                      analyticsData.monthlyTrends[analyticsData.monthlyTrends.length - 1].average > 
-                      analyticsData.monthlyTrends[analyticsData.monthlyTrends.length - 2].average 
-                        ? 'text-green-600 dark:text-green-400' 
-                        : 'text-red-600 dark:text-red-400'
-                    }`}>
+                    <span
+                      className={`text-sm ${
+                        analyticsData.monthlyTrends[
+                          analyticsData.monthlyTrends.length - 1
+                        ].average >
+                        analyticsData.monthlyTrends[
+                          analyticsData.monthlyTrends.length - 2
+                        ].average
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}
+                    >
                       {Math.abs(
-                        analyticsData.monthlyTrends[analyticsData.monthlyTrends.length - 1].average - 
-                        analyticsData.monthlyTrends[analyticsData.monthlyTrends.length - 2].average
-                      ).toFixed(1)} מהתקופה הקודמת
+                        analyticsData.monthlyTrends[
+                          analyticsData.monthlyTrends.length - 1
+                        ].average -
+                          analyticsData.monthlyTrends[
+                            analyticsData.monthlyTrends.length - 2
+                          ].average
+                      ).toFixed(1)}{' '}
+                      מהתקופה הקודמת
                     </span>
                   </>
                 ) : (
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    בטווח {timeRange === 'week' ? 'השבוע' : timeRange === 'month' ? 'החודש' : 'התקופה'}
+                    בטווח{' '}
+                    {timeRange === 'week'
+                      ? 'השבוע'
+                      : timeRange === 'month'
+                        ? 'החודש'
+                        : 'התקופה'}
                   </span>
                 )}
               </div>
@@ -422,10 +446,9 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                {analyticsData.summary.highestMood > 0 
+                {analyticsData.summary.highestMood > 0
                   ? `${analyticsData.summary.lowestMood}-${analyticsData.summary.highestMood}`
-                  : '-'
-                }
+                  : '-'}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 מנמוך לגבוה
@@ -446,7 +469,11 @@ export default function AnalyticsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer key="analytics-chart" width="100%" height={400}>
+            <ResponsiveContainer
+              key="analytics-chart"
+              width="100%"
+              height={400}
+            >
               <div>
                 {chartType === 'line' && (
                   <LineChart data={analyticsData.dailyMoods}>
@@ -627,7 +654,11 @@ export default function AnalyticsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer key="monthly-chart" width="100%" height={250}>
+                <ResponsiveContainer
+                  key="monthly-chart"
+                  width="100%"
+                  height={250}
+                >
                   <LineChart data={analyticsData.monthlyTrends}>
                     <CartesianGrid
                       strokeDasharray="3 3"
@@ -699,11 +730,15 @@ export default function AnalyticsPage() {
                       tick={{ fontSize: 12, fill: 'currentColor' }}
                       className="text-gray-600 dark:text-gray-400"
                     />
-                    <Tooltip 
+                    <Tooltip
                       content={<CustomTooltip />}
                       labelFormatter={(hour) => `שעה ${hour}:00`}
                     />
-                    <Bar dataKey="averageMood" fill="#f59e0b" name="ממוצע מצב רוח" />
+                    <Bar
+                      dataKey="averageMood"
+                      fill="#f59e0b"
+                      name="ממוצע מצב רוח"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -776,7 +811,7 @@ export default function AnalyticsPage() {
                     </p>
                   </div>
                 )}
-                
+
                 {analyticsData.streakData.current === 0 && (
                   <div className="p-3 rounded-lg border bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
                     <p className="text-sm text-yellow-700 dark:text-yellow-300">

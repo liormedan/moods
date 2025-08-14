@@ -6,20 +6,20 @@ export async function DELETE() {
     // In a real app, delete all notifications from the database
     console.log('Clearing all notifications:', {
       timestamp: new Date().toISOString(),
-      action: 'clear_all'
+      action: 'clear_all',
     });
 
     // Simulate database delete delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     return NextResponse.json({
       success: true,
       data: {
         cleared: true,
         timestamp: new Date().toISOString(),
-        deletedCount: 'all' // In real app, return actual count
+        deletedCount: 'all', // In real app, return actual count
       },
-      message: 'All notifications cleared successfully'
+      message: 'All notifications cleared successfully',
     });
   } catch (error) {
     console.error('Error clearing all notifications:', error);
@@ -27,7 +27,7 @@ export async function DELETE() {
       {
         success: false,
         error: 'Failed to clear all notifications',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

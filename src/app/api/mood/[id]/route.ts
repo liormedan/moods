@@ -13,16 +13,16 @@ const moodUpdateSchema = z.object({
 // GET /api/mood/[id] - Get a specific mood entry
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = (session as any).user.id;
 
     // Validate ID format
     if (!id || typeof id !== 'string') {
@@ -73,16 +73,16 @@ export async function GET(
 // PUT /api/mood/[id] - Update a specific mood entry
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = (session as any).user.id;
 
     // Validate ID format
     if (!id || typeof id !== 'string') {
@@ -153,16 +153,16 @@ export async function PUT(
 // DELETE /api/mood/[id] - Delete a specific mood entry
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = (session as any).user.id;
 
     // Validate ID format
     if (!id || typeof id !== 'string') {

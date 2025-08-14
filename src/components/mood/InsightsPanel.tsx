@@ -100,7 +100,7 @@ export default function InsightsPanel({
       if (response.ok) {
         const data = await response.json();
         // Handle both array and { data: array } responses
-        const insightsData = Array.isArray(data) ? data : (data.data || []);
+        const insightsData = Array.isArray(data) ? data : data.data || [];
         setInsights(insightsData);
       } else {
         throw new Error('שגיאה בטעינת תובנות מהשרת');
@@ -240,7 +240,7 @@ export default function InsightsPanel({
 
   // Ensure insights is always an array
   const insightsArray = Array.isArray(insights) ? insights : [];
-  
+
   const filteredInsights = insightsArray.filter((insight) => {
     if (showUnreadOnly && insight.isRead) return false;
     if (selectedCategory !== 'all' && insight.category !== selectedCategory)

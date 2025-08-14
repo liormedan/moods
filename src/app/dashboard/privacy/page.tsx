@@ -139,7 +139,9 @@ export default function PrivacyPage() {
   const [loginActivity, setLoginActivity] = useState<LoginActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'privacy' | 'security' | 'data' | 'activity'>('privacy');
+  const [activeTab, setActiveTab] = useState<
+    'privacy' | 'security' | 'data' | 'activity'
+  >('privacy');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -174,8 +176,9 @@ export default function PrivacyPage() {
     } finally {
       setLoading(false);
     }
-  };  cons
-t updateSettings = async (newSettings: PrivacySettings) => {
+  };
+
+  const updateSettings = async (newSettings: PrivacySettings) => {
     try {
       setSaving(true);
       const response = await fetch('/api/privacy/settings', {
@@ -194,7 +197,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
     }
   };
 
-  const requestDataExport = async (type: 'full' | 'partial', categories?: string[]) => {
+  const requestDataExport = async (
+    type: 'full' | 'partial',
+    categories?: string[]
+  ) => {
     try {
       const response = await fetch('/api/privacy/export', {
         method: 'POST',
@@ -204,7 +210,7 @@ t updateSettings = async (newSettings: PrivacySettings) => {
 
       if (response.ok) {
         const result = await response.json();
-        setExportRequests(prev => [result.data, ...prev]);
+        setExportRequests((prev) => [result.data, ...prev]);
       }
     } catch (error) {
       console.error('Error requesting data export:', error);
@@ -212,7 +218,11 @@ t updateSettings = async (newSettings: PrivacySettings) => {
   };
 
   const deleteAccount = async () => {
-    if (!confirm('האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו לא ניתנת לביטול!')) {
+    if (
+      !confirm(
+        'האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו לא ניתנת לביטול!'
+      )
+    ) {
       return;
     }
 
@@ -288,7 +298,6 @@ t updateSettings = async (newSettings: PrivacySettings) => {
             {saving ? 'שומר...' : 'שמור הגדרות'}
           </Button>
         </div>
-
         {/* Privacy Status Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
@@ -299,7 +308,9 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-green-600">גבוהה</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">רמת אבטחה</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    רמת אבטחה
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -312,8 +323,12 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                   <Database className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{settings.dataRetention.moodData}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">ימי שמירה</div>
+                  <div className="text-2xl font-bold">
+                    {settings.dataRetention.moodData}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    ימי שמירה
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -326,8 +341,12 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                   <Eye className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold capitalize">{settings.visibility.profileVisibility}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">נראות פרופיל</div>
+                  <div className="text-2xl font-bold capitalize">
+                    {settings.visibility.profileVisibility}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    נראות פרופיל
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -340,14 +359,17 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                   <Activity className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{loginActivity.length}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">פעילויות אחרונות</div>
+                  <div className="text-2xl font-bold">
+                    {loginActivity.length}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    פעילויות אחרונות
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
-
         {/* Tabs */}
         <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
           {[
@@ -369,8 +391,8 @@ t updateSettings = async (newSettings: PrivacySettings) => {
               {tab.label}
             </button>
           ))}
-        </div>  
-      {/* Privacy Settings Tab */}
+        </div>
+        {/* Privacy Settings Tab */}
         {activeTab === 'privacy' && (
           <div className="space-y-6">
             {/* Data Collection */}
@@ -402,7 +424,8 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                         {key === 'usageStatistics' && 'דפוסי שימוש כלליים'}
                         {key === 'locationData' && 'מיקום גיאוגרפי כללי'}
                         {key === 'deviceInfo' && 'סוג מכשיר ומערכת הפעלה'}
-                        {key === 'performanceMetrics' && 'מהירות וביצועי האפליקציה'}
+                        {key === 'performanceMetrics' &&
+                          'מהירות וביצועי האפליקציה'}
                       </p>
                     </div>
                     <Switch
@@ -410,7 +433,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                       onCheckedChange={(checked) =>
                         setSettings({
                           ...settings,
-                          dataCollection: { ...settings.dataCollection, [key]: checked }
+                          dataCollection: {
+                            ...settings.dataCollection,
+                            [key]: checked,
+                          },
                         })
                       }
                     />
@@ -437,17 +463,23 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                       <h4 className="font-medium">
                         {key === 'anonymizedResearch' && 'מחקר אנונימי'}
                         {key === 'aggregatedStatistics' && 'סטטיסטיקות מצטברות'}
-                        {key === 'thirdPartyIntegrations' && 'אינטגרציות צד שלישי'}
+                        {key === 'thirdPartyIntegrations' &&
+                          'אינטגרציות צד שלישי'}
                         {key === 'marketingPartners' && 'שותפי שיווק'}
                         {key === 'healthcareProviders' && 'ספקי שירותי בריאות'}
                         {key === 'emergencyContacts' && 'אנשי קשר חירום'}
                       </h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {key === 'anonymizedResearch' && 'מחקר בבריאות נפשית ללא זיהוי אישי'}
-                        {key === 'aggregatedStatistics' && 'נתונים כלליים לשיפור השירות'}
-                        {key === 'thirdPartyIntegrations' && 'אפליקציות מחוברות כמו Google Fit'}
-                        {key === 'marketingPartners' && 'חברות שיווק לתוכן רלוונטי'}
-                        {key === 'healthcareProviders' && 'רופאים ומטפלים מורשים'}
+                        {key === 'anonymizedResearch' &&
+                          'מחקר בבריאות נפשית ללא זיהוי אישי'}
+                        {key === 'aggregatedStatistics' &&
+                          'נתונים כלליים לשיפור השירות'}
+                        {key === 'thirdPartyIntegrations' &&
+                          'אפליקציות מחוברות כמו Google Fit'}
+                        {key === 'marketingPartners' &&
+                          'חברות שיווק לתוכן רלוונטי'}
+                        {key === 'healthcareProviders' &&
+                          'רופאים ומטפלים מורשים'}
                         {key === 'emergencyContacts' && 'במקרה חירום בלבד'}
                       </p>
                     </div>
@@ -456,7 +488,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                       onCheckedChange={(checked) =>
                         setSettings({
                           ...settings,
-                          dataSharing: { ...settings.dataSharing, [key]: checked }
+                          dataSharing: {
+                            ...settings.dataSharing,
+                            [key]: checked,
+                          },
                         })
                       }
                     />
@@ -484,7 +519,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                     onValueChange={(value: any) =>
                       setSettings({
                         ...settings,
-                        visibility: { ...settings.visibility, profileVisibility: value }
+                        visibility: {
+                          ...settings.visibility,
+                          profileVisibility: value,
+                        },
                       })
                     }
                   >
@@ -493,46 +531,58 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="private">פרטי - רק אני</SelectItem>
-                      <SelectItem value="friends">חברים - אנשי קשר מאושרים</SelectItem>
-                      <SelectItem value="public">פומבי - כל המשתמשים</SelectItem>
+                      <SelectItem value="friends">
+                        חברים - אנשי קשר מאושרים
+                      </SelectItem>
+                      <SelectItem value="public">
+                        פומבי - כל המשתמשים
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                {Object.entries(settings.visibility).filter(([key]) => key !== 'profileVisibility').map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">
-                        {key === 'activityStatus' && 'סטטוס פעילות'}
-                        {key === 'lastSeen' && 'נראה לאחרונה'}
-                        {key === 'moodHistory' && 'היסטוריית מצב רוח'}
-                        {key === 'goalProgress' && 'התקדמות במטרות'}
-                        {key === 'journalEntries' && 'רשומות יומן'}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {key === 'activityStatus' && 'האם אתה מקוון כרגע'}
-                        {key === 'lastSeen' && 'מתי היית פעיל לאחרונה'}
-                        {key === 'moodHistory' && 'מגמות מצב הרוח שלך'}
-                        {key === 'goalProgress' && 'איך אתה מתקדם במטרות'}
-                        {key === 'journalEntries' && 'תוכן היומן האישי שלך'}
-                      </p>
+                {Object.entries(settings.visibility)
+                  .filter(([key]) => key !== 'profileVisibility')
+                  .map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between"
+                    >
+                      <div>
+                        <h4 className="font-medium">
+                          {key === 'activityStatus' && 'סטטוס פעילות'}
+                          {key === 'lastSeen' && 'נראה לאחרונה'}
+                          {key === 'moodHistory' && 'היסטוריית מצב רוח'}
+                          {key === 'goalProgress' && 'התקדמות במטרות'}
+                          {key === 'journalEntries' && 'רשומות יומן'}
+                        </h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {key === 'activityStatus' && 'האם אתה מקוון כרגע'}
+                          {key === 'lastSeen' && 'מתי היית פעיל לאחרונה'}
+                          {key === 'moodHistory' && 'מגמות מצב הרוח שלך'}
+                          {key === 'goalProgress' && 'איך אתה מתקדם במטרות'}
+                          {key === 'journalEntries' && 'תוכן היומן האישי שלך'}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={value as boolean}
+                        onCheckedChange={(checked) =>
+                          setSettings({
+                            ...settings,
+                            visibility: {
+                              ...settings.visibility,
+                              [key]: checked,
+                            },
+                          })
+                        }
+                      />
                     </div>
-                    <Switch
-                      checked={value as boolean}
-                      onCheckedChange={(checked) =>
-                        setSettings({
-                          ...settings,
-                          visibility: { ...settings.visibility, [key]: checked }
-                        })
-                      }
-                    />
-                  </div>
-                ))}
+                  ))}
               </CardContent>
             </Card>
           </div>
-        )}        {
-/* Security Settings Tab */}
+        )}{' '}
+        {/* Security Settings Tab */}
         {activeTab === 'security' && (
           <div className="space-y-6">
             {/* Authentication Security */}
@@ -542,9 +592,7 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                   <Key className="w-5 h-5" />
                   אבטחת חשבון
                 </CardTitle>
-                <CardDescription>
-                  הגדרות אבטחה לחשבון שלך
-                </CardDescription>
+                <CardDescription>הגדרות אבטחה לחשבון שלך</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -559,7 +607,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                     onCheckedChange={(checked) =>
                       setSettings({
                         ...settings,
-                        security: { ...settings.security, twoFactorAuth: checked }
+                        security: {
+                          ...settings.security,
+                          twoFactorAuth: checked,
+                        },
                       })
                     }
                   />
@@ -577,7 +628,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                     onCheckedChange={(checked) =>
                       setSettings({
                         ...settings,
-                        security: { ...settings.security, loginAlerts: checked }
+                        security: {
+                          ...settings.security,
+                          loginAlerts: checked,
+                        },
                       })
                     }
                   />
@@ -595,7 +649,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                     onCheckedChange={(checked) =>
                       setSettings({
                         ...settings,
-                        security: { ...settings.security, deviceTracking: checked }
+                        security: {
+                          ...settings.security,
+                          deviceTracking: checked,
+                        },
                       })
                     }
                   />
@@ -613,7 +670,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                     onCheckedChange={(checked) =>
                       setSettings({
                         ...settings,
-                        security: { ...settings.security, biometricAuth: checked }
+                        security: {
+                          ...settings.security,
+                          biometricAuth: checked,
+                        },
                       })
                     }
                   />
@@ -621,7 +681,9 @@ t updateSettings = async (newSettings: PrivacySettings) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium">זמן קצוב לסשן (דקות)</label>
+                    <label className="text-sm font-medium">
+                      זמן קצוב לסשן (דקות)
+                    </label>
                     <Input
                       type="number"
                       min="5"
@@ -630,14 +692,19 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                       onChange={(e) =>
                         setSettings({
                           ...settings,
-                          security: { ...settings.security, sessionTimeout: parseInt(e.target.value) }
+                          security: {
+                            ...settings.security,
+                            sessionTimeout: parseInt(e.target.value),
+                          },
                         })
                       }
                       className="mt-1"
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium">תפוגת סיסמה (ימים)</label>
+                    <label className="text-sm font-medium">
+                      תפוגת סיסמה (ימים)
+                    </label>
                     <Input
                       type="number"
                       min="30"
@@ -646,7 +713,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                       onChange={(e) =>
                         setSettings({
                           ...settings,
-                          security: { ...settings.security, passwordExpiry: parseInt(e.target.value) }
+                          security: {
+                            ...settings.security,
+                            passwordExpiry: parseInt(e.target.value),
+                          },
                         })
                       }
                       className="mt-1"
@@ -663,21 +733,19 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                   <Lock className="w-5 h-5" />
                   סיסמה וגישה
                 </CardTitle>
-                <CardDescription>
-                  נהל את הסיסמה והגישה לחשבון
-                </CardDescription>
+                <CardDescription>נהל את הסיסמה והגישה לחשבון</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button variant="outline" className="w-full">
                   <Key className="w-4 h-4 mr-2" />
                   שנה סיסמה
                 </Button>
-                
+
                 <Button variant="outline" className="w-full">
                   <Smartphone className="w-4 h-4 mr-2" />
                   נהל מכשירים מחוברים
                 </Button>
-                
+
                 <Button variant="outline" className="w-full">
                   <RefreshCw className="w-4 h-4 mr-2" />
                   התנתק מכל המכשירים
@@ -706,7 +774,7 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                     <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5" />
                     <div>
@@ -722,8 +790,8 @@ t updateSettings = async (newSettings: PrivacySettings) => {
               </CardContent>
             </Card>
           </div>
-        )} 
-       {/* Data Management Tab */}
+        )}
+        {/* Data Management Tab */}
         {activeTab === 'data' && (
           <div className="space-y-6">
             {/* Data Retention */}
@@ -738,38 +806,46 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {Object.entries(settings.dataRetention).filter(([key]) => key !== 'autoDelete').map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">
-                        {key === 'moodData' && 'נתוני מצב רוח'}
-                        {key === 'journalEntries' && 'רשומות יומן'}
-                        {key === 'goalHistory' && 'היסטוריית מטרות'}
-                        {key === 'activityLogs' && 'לוגי פעילות'}
-                        {key === 'communicationHistory' && 'היסטוריית תקשורת'}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        נתונים ימחקו אוטומטית לאחר התקופה הזו
-                      </p>
+                {Object.entries(settings.dataRetention)
+                  .filter(([key]) => key !== 'autoDelete')
+                  .map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between"
+                    >
+                      <div>
+                        <h4 className="font-medium">
+                          {key === 'moodData' && 'נתוני מצב רוח'}
+                          {key === 'journalEntries' && 'רשומות יומן'}
+                          {key === 'goalHistory' && 'היסטוריית מטרות'}
+                          {key === 'activityLogs' && 'לוגי פעילות'}
+                          {key === 'communicationHistory' && 'היסטוריית תקשורת'}
+                        </h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          נתונים ימחקו אוטומטית לאחר התקופה הזו
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="30"
+                          max="3650"
+                          value={value as number}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              dataRetention: {
+                                ...settings.dataRetention,
+                                [key]: parseInt(e.target.value),
+                              },
+                            })
+                          }
+                          className="w-20"
+                        />
+                        <span className="text-sm text-gray-500">ימים</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min="30"
-                        max="3650"
-                        value={value as number}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            dataRetention: { ...settings.dataRetention, [key]: parseInt(e.target.value) }
-                          })
-                        }
-                        className="w-20"
-                      />
-                      <span className="text-sm text-gray-500">ימים</span>
-                    </div>
-                  </div>
-                ))}
+                  ))}
 
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div>
@@ -783,7 +859,10 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                     onCheckedChange={(checked) =>
                       setSettings({
                         ...settings,
-                        dataRetention: { ...settings.dataRetention, autoDelete: checked }
+                        dataRetention: {
+                          ...settings.dataRetention,
+                          autoDelete: checked,
+                        },
                       })
                     }
                   />
@@ -798,21 +877,21 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                   <Download className="w-5 h-5" />
                   ייצוא נתונים
                 </CardTitle>
-                <CardDescription>
-                  הורד עותק של כל הנתונים שלך
-                </CardDescription>
+                <CardDescription>הורד עותק של כל הנתונים שלך</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button 
+                  <Button
                     onClick={() => requestDataExport('full')}
                     className="w-full"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     ייצוא מלא
                   </Button>
-                  <Button 
-                    onClick={() => requestDataExport('partial', ['mood', 'journal'])}
+                  <Button
+                    onClick={() =>
+                      requestDataExport('partial', ['mood', 'journal'])
+                    }
                     variant="outline"
                     className="w-full"
                   >
@@ -825,31 +904,46 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                   <div className="space-y-3">
                     <h4 className="font-medium">בקשות ייצוא אחרונות</h4>
                     {exportRequests.map((request) => (
-                      <div key={request.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={request.id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div>
                           <div className="font-medium">
                             ייצוא {request.type === 'full' ? 'מלא' : 'חלקי'}
                           </div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">
-                            {new Date(request.requestedAt).toLocaleDateString('he-IL')}
+                            {new Date(request.requestedAt).toLocaleDateString(
+                              'he-IL'
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            request.status === 'ready' ? 'bg-green-100 text-green-700' :
-                            request.status === 'processing' ? 'bg-blue-100 text-blue-700' :
-                            request.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {request.status === 'ready' ? 'מוכן' :
-                             request.status === 'processing' ? 'מעבד' :
-                             request.status === 'pending' ? 'ממתין' : 'פג תוקף'}
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              request.status === 'ready'
+                                ? 'bg-green-100 text-green-700'
+                                : request.status === 'processing'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : request.status === 'pending'
+                                    ? 'bg-yellow-100 text-yellow-700'
+                                    : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {request.status === 'ready'
+                              ? 'מוכן'
+                              : request.status === 'processing'
+                                ? 'מעבד'
+                                : request.status === 'pending'
+                                  ? 'ממתין'
+                                  : 'פג תוקף'}
                           </span>
-                          {request.status === 'ready' && request.downloadUrl && (
-                            <Button size="sm" variant="outline">
-                              <Download className="w-4 h-4" />
-                            </Button>
-                          )}
+                          {request.status === 'ready' &&
+                            request.downloadUrl && (
+                              <Button size="sm" variant="outline">
+                                <Download className="w-4 h-4" />
+                              </Button>
+                            )}
                         </div>
                       </div>
                     ))}
@@ -888,8 +982,8 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                   <p className="text-sm text-red-700 dark:text-red-300 mb-3">
                     פעולה זו תמחק את כל הנתונים שלך ולא ניתנת לביטול
                   </p>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     onClick={deleteAccount}
                     className="w-full"
                   >
@@ -900,8 +994,8 @@ t updateSettings = async (newSettings: PrivacySettings) => {
               </CardContent>
             </Card>
           </div>
-        )}       
- {/* Activity Log Tab */}
+        )}
+        {/* Activity Log Tab */}
         {activeTab === 'activity' && (
           <div className="space-y-6">
             {/* Recent Login Activity */}
@@ -918,13 +1012,18 @@ t updateSettings = async (newSettings: PrivacySettings) => {
               <CardContent>
                 <div className="space-y-3">
                   {loginActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={activity.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          activity.success 
-                            ? 'bg-green-100 dark:bg-green-900/20' 
-                            : 'bg-red-100 dark:bg-red-900/20'
-                        }`}>
+                        <div
+                          className={`p-2 rounded-lg ${
+                            activity.success
+                              ? 'bg-green-100 dark:bg-green-900/20'
+                              : 'bg-red-100 dark:bg-red-900/20'
+                          }`}
+                        >
                           {activity.success ? (
                             <CheckCircle className="w-4 h-4 text-green-600" />
                           ) : (
@@ -937,21 +1036,25 @@ t updateSettings = async (newSettings: PrivacySettings) => {
                             {activity.location} • {activity.ipAddress}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {new Date(activity.timestamp).toLocaleString('he-IL')}
+                            {new Date(activity.timestamp).toLocaleString(
+                              'he-IL'
+                            )}
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          activity.success 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-red-100 text-red-700'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            activity.success
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}
+                        >
                           {activity.success ? 'הצליח' : 'נכשל'}
                         </span>
                         {activity.success && (
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="ghost"
                             onClick={() => revokeDeviceAccess(activity.id)}
                           >
@@ -1071,7 +1174,6 @@ t updateSettings = async (newSettings: PrivacySettings) => {
             </Card>
           </div>
         )}
-
         {/* Privacy Policy & Legal */}
         <Card>
           <CardHeader>

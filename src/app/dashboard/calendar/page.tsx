@@ -33,6 +33,7 @@ import {
   FileText,
   BookOpen,
   Music,
+  Download,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
@@ -109,11 +110,19 @@ export default function CalendarPage() {
   const loadEvents = async () => {
     try {
       setLoading(true);
-      
+
       // Calculate date range for current month
-      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-      
+      const startDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        1
+      );
+      const endDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        0
+      );
+
       const params = new URLSearchParams({
         startDate: startDate.toISOString().split('T')[0],
         endDate: endDate.toISOString().split('T')[0],
@@ -173,7 +182,7 @@ export default function CalendarPage() {
       if (response.ok) {
         // Reload events to get updated data
         await loadEvents();
-        
+
         // Reset form
         setNewEvent({
           type: 'mood',
@@ -434,90 +443,94 @@ export default function CalendarPage() {
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="py-12 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-gray-600 dark:text-gray-400 mt-4">טוען נתוני לוח שנה...</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-4">
+                טוען נתוני לוח שנה...
+              </p>
             </CardContent>
           </Card>
-        ) : viewMode === 'month' && (
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="p-6">
-              {/* Week Days Header */}
-              <div className="grid grid-cols-7 gap-1 mb-4">
-                {['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'].map((day, index) => (
-                  <div
-                    key={index}
-                    className="text-center font-medium text-gray-700 dark:text-gray-300 py-2"
-                  >
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              {/* Calendar Grid */}
-              <div className="grid grid-cols-7 gap-1">
-                {getDaysInMonth(currentDate).map((day, index) => {
-                  const dayEvents = getDayEvents(day.date);
-                  const moodEvent = getMoodForDate(day.date);
-
-                  return (
+        ) : (
+          viewMode === 'month' && (
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardContent className="p-6">
+                {/* Week Days Header */}
+                <div className="grid grid-cols-7 gap-1 mb-4">
+                  {['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'].map((day, index) => (
                     <div
                       key={index}
-                      className={`min-h-[120px] p-2 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer transition-colors ${
-                        !day.isCurrentMonth
-                          ? 'bg-gray-50 dark:bg-gray-800 text-gray-400'
-                          : isToday(day.date)
-                            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600'
-                            : isSelected(day.date)
-                              ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600'
-                              : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
-                      }`}
-                      onClick={() => setSelectedDate(day.date)}
+                      className="text-center font-medium text-gray-700 dark:text-gray-300 py-2"
                     >
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-                        {day.date.getDate()}
-                      </div>
+                      {day}
+                    </div>
+                  ))}
+                </div>
 
-                      {/* Mood Indicator */}
-                      {moodEvent && (
-                        <div className="mb-2">
-                          <Badge
-                            className={`text-xs ${getMoodColor(moodEvent.moodValue || 5)}`}
-                          >
-                            {moodEvent.moodEmoji} {moodEvent.moodValue}/7
-                          </Badge>
+                {/* Calendar Grid */}
+                <div className="grid grid-cols-7 gap-1">
+                  {getDaysInMonth(currentDate).map((day, index) => {
+                    const dayEvents = getDayEvents(day.date);
+                    const moodEvent = getMoodForDate(day.date);
+
+                    return (
+                      <div
+                        key={index}
+                        className={`min-h-[120px] p-2 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer transition-colors ${
+                          !day.isCurrentMonth
+                            ? 'bg-gray-50 dark:bg-gray-800 text-gray-400'
+                            : isToday(day.date)
+                              ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600'
+                              : isSelected(day.date)
+                                ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600'
+                                : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
+                        }`}
+                        onClick={() => setSelectedDate(day.date)}
+                      >
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
+                          {day.date.getDate()}
                         </div>
-                      )}
 
-                      {/* Events Preview */}
-                      <div className="space-y-1">
-                        {dayEvents.slice(0, 3).map((event) => (
-                          <div key={event.id} className="text-xs">
-                            {event.type === 'mood' && (
-                              <Heart className="w-3 h-3 inline mr-1" />
-                            )}
-                            {event.type === 'activity' && (
-                              <Activity className="w-3 h-3 inline mr-1" />
-                            )}
-                            {event.type === 'goal' && (
-                              <Target className="w-3 h-3 inline mr-1" />
-                            )}
-                            {event.type === 'reminder' && (
-                              <Clock className="w-3 h-3 inline mr-1" />
-                            )}
-                            {event.title}
-                          </div>
-                        ))}
-                        {dayEvents.length > 3 && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            +{dayEvents.length - 3} נוספים
+                        {/* Mood Indicator */}
+                        {moodEvent && (
+                          <div className="mb-2">
+                            <Badge
+                              className={`text-xs ${getMoodColor(moodEvent.moodValue || 5)}`}
+                            >
+                              {moodEvent.moodEmoji} {moodEvent.moodValue}/7
+                            </Badge>
                           </div>
                         )}
+
+                        {/* Events Preview */}
+                        <div className="space-y-1">
+                          {dayEvents.slice(0, 3).map((event) => (
+                            <div key={event.id} className="text-xs">
+                              {event.type === 'mood' && (
+                                <Heart className="w-3 h-3 inline mr-1" />
+                              )}
+                              {event.type === 'activity' && (
+                                <Activity className="w-3 h-3 inline mr-1" />
+                              )}
+                              {event.type === 'goal' && (
+                                <Target className="w-3 h-3 inline mr-1" />
+                              )}
+                              {event.type === 'reminder' && (
+                                <Clock className="w-3 h-3 inline mr-1" />
+                              )}
+                              {event.title}
+                            </div>
+                          ))}
+                          {dayEvents.length > 3 && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              +{dayEvents.length - 3} נוספים
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )
         )}
 
         {viewMode === 'week' && (
@@ -961,27 +974,41 @@ export default function CalendarPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">ממוצע מצב רוח</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        ממוצע מצב רוח
+                      </p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {stats.averageMood}/10
                       </p>
                     </div>
                     <div className="text-3xl">
-                      {stats.averageMood >= 7 ? '😊' : stats.averageMood >= 5 ? '🙂' : '😕'}
+                      {stats.averageMood >= 7
+                        ? '😊'
+                        : stats.averageMood >= 5
+                          ? '🙂'
+                          : '😕'}
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg">
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">מגמה</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        מגמה
+                      </p>
                       <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {stats.moodTrend === 'up' ? 'עולה' : 
-                         stats.moodTrend === 'down' ? 'יורדת' : 'יציבה'}
+                        {stats.moodTrend === 'up'
+                          ? 'עולה'
+                          : stats.moodTrend === 'down'
+                            ? 'יורדת'
+                            : 'יציבה'}
                       </p>
                     </div>
                     <div className="text-2xl">
-                      {stats.moodTrend === 'up' ? '📈' : 
-                       stats.moodTrend === 'down' ? '📉' : '➡️'}
+                      {stats.moodTrend === 'up'
+                        ? '📈'
+                        : stats.moodTrend === 'down'
+                          ? '📉'
+                          : '➡️'}
                     </div>
                   </div>
 
@@ -1019,21 +1046,37 @@ export default function CalendarPage() {
               <Button
                 onClick={() => {
                   const csvContent = [
-                    ['תאריך', 'סוג', 'כותרת', 'תיאור', 'מצב רוח', 'משך', 'עדיפות'].join(','),
-                    ...events.map(event => [
-                      event.date,
-                      event.type === 'mood' ? 'מצב רוח' : 
-                      event.type === 'activity' ? 'פעילות' :
-                      event.type === 'goal' ? 'מטרה' : 'תזכורת',
-                      `"${event.title}"`,
-                      `"${event.description || ''}"`,
-                      event.moodValue || '',
-                      event.duration || '',
-                      event.priority || ''
-                    ].join(','))
+                    [
+                      'תאריך',
+                      'סוג',
+                      'כותרת',
+                      'תיאור',
+                      'מצב רוח',
+                      'משך',
+                      'עדיפות',
+                    ].join(','),
+                    ...events.map((event) =>
+                      [
+                        event.date,
+                        event.type === 'mood'
+                          ? 'מצב רוח'
+                          : event.type === 'activity'
+                            ? 'פעילות'
+                            : event.type === 'goal'
+                              ? 'מטרה'
+                              : 'תזכורת',
+                        `"${event.title}"`,
+                        `"${event.description || ''}"`,
+                        event.moodValue || '',
+                        event.duration || '',
+                        event.priority || '',
+                      ].join(',')
+                    ),
                   ].join('\n');
 
-                  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                  const blob = new Blob(['\uFEFF' + csvContent], {
+                    type: 'text/csv;charset=utf-8;',
+                  });
                   const link = document.createElement('a');
                   link.href = URL.createObjectURL(blob);
                   link.download = `לוח_שנה_${currentDate.getFullYear()}_${currentDate.getMonth() + 1}.csv`;

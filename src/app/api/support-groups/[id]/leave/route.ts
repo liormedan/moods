@@ -3,17 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 // POST /api/support-groups/[id]/leave - Leave a support group
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
         {
           success: false,
           error: 'Group ID is required',
-          message: 'Missing group ID'
+          message: 'Missing group ID',
         },
         { status: 400 }
       );
@@ -23,11 +23,11 @@ export async function POST(
     console.log(`User leaving group ${id}:`, {
       timestamp: new Date().toISOString(),
       groupId: id,
-      action: 'leave_group'
+      action: 'leave_group',
     });
 
     // Simulate leave delay
-    await new Promise(resolve => setTimeout(resolve, 600));
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
     return NextResponse.json({
       success: true,
@@ -35,9 +35,9 @@ export async function POST(
         groupId: id,
         joined: false,
         leftAt: new Date().toISOString(),
-        memberStatus: 'inactive'
+        memberStatus: 'inactive',
       },
-      message: 'Successfully left the support group'
+      message: 'Successfully left the support group',
     });
   } catch (error) {
     console.error('Error leaving support group:', error);
@@ -45,7 +45,7 @@ export async function POST(
       {
         success: false,
         error: 'Failed to leave support group',
-        message: 'Internal server error'
+        message: 'Internal server error',
       },
       { status: 500 }
     );

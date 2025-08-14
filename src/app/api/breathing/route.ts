@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
     });
 
     // Get total count for pagination
-    const totalCount = await prisma.breathingSession.count({ 
-      where: { userId: userId } 
+    const totalCount = await prisma.breathingSession.count({
+      where: { userId: userId },
     });
 
     return NextResponse.json({
@@ -101,15 +101,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { 
-      exerciseId, 
-      exerciseName, 
-      duration, 
-      cycles, 
-      inhaleTime, 
-      holdTime, 
-      exhaleTime, 
-      completed 
+    const {
+      exerciseId,
+      exerciseName,
+      duration,
+      cycles,
+      inhaleTime,
+      holdTime,
+      exhaleTime,
+      completed,
     } = validationResult.data;
 
     // Create new breathing session
@@ -155,3 +155,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

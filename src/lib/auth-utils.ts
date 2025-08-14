@@ -19,18 +19,19 @@ export function getAuthConfig(): AuthConfig {
   return {
     isAdminMode: process.env.NEXT_PUBLIC_ADMIN_MODE === 'true',
     skipAuth: process.env.NEXT_PUBLIC_SKIP_AUTH === 'true',
-    useFirebaseEmulator: process.env.NEXT_PUBLIC_FIREBASE_USE_EMULATOR === 'true'
+    useFirebaseEmulator:
+      process.env.NEXT_PUBLIC_FIREBASE_USE_EMULATOR === 'true',
   };
 }
 
 // Check if user is authenticated (either admin mode or Firebase auth)
 export function isAuthenticated(user: AuthUser | null): boolean {
   const config = getAuthConfig();
-  
+
   if (config.skipAuth || config.isAdminMode) {
     return true;
   }
-  
+
   return user !== null && user.id !== undefined;
 }
 
@@ -40,7 +41,7 @@ export function getAdminUser(): AuthUser {
     id: 'admin-dev-001',
     email: 'admin@mentalhealth.local',
     name: 'Development Admin',
-    isAdmin: true
+    isAdmin: true,
   };
 }
 
@@ -62,41 +63,44 @@ export function shouldUseFirebaseEmulator(): boolean {
 // Get authentication status message
 export function getAuthStatusMessage(): string {
   const config = getAuthConfig();
-  
+
   if (config.isAdminMode) {
     return 'Running in Admin Mode - No authentication required';
   }
-  
+
   if (config.skipAuth) {
     return 'Running with Authentication Disabled';
   }
-  
+
   if (config.useFirebaseEmulator) {
     return 'Running with Firebase Emulators';
   }
-  
+
   return 'Running with Production Firebase';
 }
 
 // Validate user permissions
-export function hasPermission(user: AuthUser | null, permission: string): boolean {
+export function hasPermission(
+  user: AuthUser | null,
+  permission: string
+): boolean {
   const config = getAuthConfig();
-  
+
   // Admin mode has all permissions
   if (config.isAdminMode) {
     return true;
   }
-  
+
   // No user means no permissions
   if (!user) {
     return false;
   }
-  
+
   // Admin users have all permissions
   if (user.isAdmin) {
     return true;
   }
-  
+
   // Add specific permission checks here
   switch (permission) {
     case 'read:mood':
@@ -108,7 +112,7 @@ export function hasPermission(user: AuthUser | null, permission: string): boolea
       return true; // All authenticated users can access these
     case 'admin:users':
     case 'admin:system':
-      return user.isAdmin === true; // Only admin users
+      return !!user.isAdmin; // Only admin users
     default:
       return false;
   }
@@ -119,15 +123,15 @@ export function getUserDisplayName(user: AuthUser | null): string {
   if (!user) {
     return 'Guest';
   }
-  
+
   if (user.name) {
     return user.name;
   }
-  
+
   if (user.email) {
     return user.email.split('@')[0];
   }
-  
+
   return 'User';
 }
 
