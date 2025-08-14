@@ -1,8 +1,21 @@
 import CredentialsProvider from 'next-auth/providers/credentials';
+import type { NextAuthOptions } from 'next-auth';
 import { prisma } from './db';
 import bcrypt from 'bcryptjs';
 
-export const authOptions = {
+const nextAuthUrl = process.env.NEXTAUTH_URL;
+const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+
+if (!nextAuthUrl) {
+  console.warn('NEXTAUTH_URL is not defined');
+}
+
+if (!nextAuthSecret) {
+  console.warn('NEXTAUTH_SECRET is not defined');
+}
+
+export const authOptions: NextAuthOptions = {
+  secret: nextAuthSecret,
   providers: [
     CredentialsProvider({
       name: 'credentials',
