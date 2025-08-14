@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { PaginationSchema, DateRangeSchema } from '@/lib/validation';
 
 // Validation schema for mood entry
 const moodEntrySchema = z.object({
@@ -28,30 +29,76 @@ export async function GET(request: NextRequest) {
     const userId = session.user.id;
 
     const { searchParams } = new URL(request.url);
+
+    const paginationSchema = PaginationSchema.pick({ limit: true }).extend({
+      offset: z.coerce.number().int().min(0).default(0),
+    });
+
+    const paginationResult = paginationSchema.safeParse({
+      limit: searchParams.get('limit') ?? '30',
+      offset: searchParams.get('offset') ?? '0',
+    });
+
+    if (!paginationResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Invalid input',
+          details: paginationResult.error.issues,
+        },
+        { status: 400 }
+      );
+    }
+
+    const { limit, offset } = paginationResult.data;
+
     const date = searchParams.get('date');
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    const limit = parseInt(searchParams.get('limit') || '30');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const startDateParam = searchParams.get('startDate');
+    const endDateParam = searchParams.get('endDate');
 
     // Build where clause for demo
     const where: any = { userId: userId };
 
     if (date) {
       // Single date filter
-      const startDate = new Date(date);
-      const endDate = new Date(date);
+      const parsedDate = new Date(date);
+      if (isNaN(parsedDate.getTime())) {
+        return NextResponse.json(
+          {
+            error: 'Invalid input',
+            details: [{ path: ['date'], message: 'Invalid date' }],
+          },
+          { status: 400 }
+        );
+      }
+
+      const endDate = new Date(parsedDate);
       endDate.setDate(endDate.getDate() + 1);
 
       where.date = {
-        gte: startDate,
+        gte: parsedDate,
         lt: endDate,
       };
-    } else if (startDate && endDate) {
-      // Date range filter
+    } else if (startDateParam || endDateParam) {
+      const dateRangeResult = DateRangeSchema.safeParse({
+        startDate: startDateParam,
+        endDate: endDateParam,
+      });
+
+      if (!dateRangeResult.success) {
+        return NextResponse.json(
+          {
+            error: 'Invalid input',
+            details: dateRangeResult.error.issues,
+          },
+          { status: 400 }
+        );
+      }
+
+      const { startDate, endDate } = dateRangeResult.data;
+
       where.date = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
+        gte: startDate,
+        lte: endDate,
       };
     }
 
