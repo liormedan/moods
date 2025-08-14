@@ -678,99 +678,124 @@ export default function ProgressReportsPage() {
           </div>
         )}
 
-        {/* Progress Reports */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              דוחות התקדמות
-            </CardTitle>
-            <CardDescription>הדוחות שלך לאורך זמן</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {reports.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg mb-2">אין דוחות התקדמות</p>
-                  <p className="text-sm">צור דוח ראשון כדי להתחיל לעקוב אחר ההתקדמות שלך</p>
-                </div>
-              ) : (
-                reports.map((report) => (
-                  <div key={report.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {report.title}
-                          </h3>
-                          <Badge className={getStatusColor(report.status)}>
-                            {getStatusText(report.status)}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          {new Date(report.startDate).toLocaleDateString('he-IL')} - {new Date(report.endDate).toLocaleDateString('he-IL')}
-                        </p>
-                        
-                        {/* Metrics */}
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-600">{report.metrics.moodImprovement}%</div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">שיפור מצב רוח</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-green-600">{report.metrics.goalCompletion}%</div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">השלמת מטרות</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-purple-600">{report.metrics.activityConsistency}%</div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">עקביות פעילות</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-orange-600">{report.metrics.sleepQuality}%</div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">איכות שינה</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-indigo-600">{report.metrics.socialEngagement}%</div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">מעורבות חברתית</div>
-                          </div>
-                        </div>
-
-                        {/* Insights */}
-                        <div className="mb-4">
-                          <h4 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                            <Lightbulb className="w-4 h-4 text-yellow-600" />
-                            תובנות עיקריות
-                          </h4>
-                          <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                            {report.insights.slice(0, 2).map((insight, index) => (
-                              <li key={index}>{insight}</li>
-                            ))}
-                          </ul>
-                        </div>
+        {/* Insights and Recommendations */}
+        {currentReport && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Insights */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-yellow-600" />
+                  תובנות מהנתונים
+                </CardTitle>
+                <CardDescription>מה הנתונים מגלים על ההתקדמות שלך</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {currentReport.insights.map((insight, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                      <div className="w-6 h-6 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-yellow-700 dark:text-yellow-300">{index + 1}</span>
                       </div>
-                      
-                      <div className="flex gap-2 ml-4">
-                        <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4 mr-2" />
-                          צפה
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Download className="w-4 h-4 mr-2" />
-                          הורד
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Share2 className="w-4 h-4 mr-2" />
-                          שתף
-                        </Button>
-                      </div>
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">{insight}</p>
                     </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recommendations */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-blue-600" />
+                  המלצות לשיפור
+                </CardTitle>
+                <CardDescription>צעדים מוצעים להמשך ההתקדמות</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {currentReport.recommendations.map((recommendation, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <p className="text-sm text-blue-800 dark:text-blue-200">{recommendation}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Additional Metrics */}
+        {currentReport && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="w-5 h-5" />
+                מדדים נוספים
+              </CardTitle>
+              <CardDescription>פירוט מדדי הפעילות השונים</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
+                  <FileText className="w-8 h-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                    {currentReport.metrics.journalEntries}
                   </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                  <p className="text-sm text-green-700 dark:text-green-300">רשומות יומן</p>
+                </div>
+
+                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-lg">
+                  <Brain className="w-8 h-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                    {currentReport.metrics.breathingSessions}
+                  </div>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">תרגילי נשימה</p>
+                </div>
+
+                <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg">
+                  <Zap className="w-8 h-8 text-orange-600 dark:text-orange-400 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                    {currentReport.metrics.streakDays}
+                  </div>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">ימי רצף</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* No Report State */}
+        {!currentReport && !loading && (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                אין דוח זמין לתקופה זו
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                צור דוח חדש כדי לראות את ההתקדמות שלך עבור התקופה הנבחרת
+              </p>
+              <Button onClick={generateNewReport} disabled={generatingReport}>
+                {generatingReport ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    יוצר דוח...
+                  </>
+                ) : (
+                  <>
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    צור דוח חדש
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Goals Progress */}
         <Card>
