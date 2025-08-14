@@ -34,7 +34,7 @@
 
 - Node.js 18+
 - npm או yarn
-- מסד נתונים SQLite (כלול)
+- מסד נתונים PostgreSQL או MySQL
 
 ### התקנה
 
@@ -51,25 +51,24 @@ cd moods
 npm install
 ```
 
-3. **הגדרת מסד הנתונים**
-
-```bash
-npx prisma generate
-npx prisma db push
-```
-
-4. **הגדרת משתני סביבה**
+3. **הגדרת מסד הנתונים ומשתני הסביבה**
 
 ```bash
 cp .env.example .env
+# ערכו את DATABASE_URL בהתאם למסד הנתונים שלכם
+npx prisma migrate dev
 ```
 
+
+4. **הרצת האפליקציה**
+=======
 ערכו את הקובץ `.env` עם הערכים המתאימים והגדירו:
 
 - `NEXTAUTH_URL` - כתובת הבסיס של האפליקציה (למשל `http://localhost:3000`)
 - `NEXTAUTH_SECRET` - מחרוזת אקראית חזקה להצפנת נתוני NextAuth
 
 5. **הרצת האפליקציה**
+
 
 ```bash
 npm run dev
@@ -113,7 +112,7 @@ npm run dev
 
 - **Next.js API Routes** - API מובנה
 - **Prisma** - ORM מתקדם
-- **SQLite** - מסד נתונים מקומי
+- **PostgreSQL/MySQL** - מסד נתונים
 - **NextAuth.js** - אימות משתמשים
 
 ### כלי פיתוח
