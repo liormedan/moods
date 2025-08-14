@@ -9,588 +9,444 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
-  Lightbulb,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import {
   Brain,
+  Lightbulb,
   TrendingUp,
+  TrendingDown,
   AlertTriangle,
+  CheckCircle,
+  Target,
   Heart,
   Activity,
-  Clock,
-  Target,
-  CheckCircle,
-  RefreshCw,
-  Sparkles,
-  BarChart3,
   Calendar,
-  Star,
+  Clock,
   Zap,
+  Star,
+  Award,
+  BookOpen,
+  Users,
+  Smile,
+  Frown,
+  Meh,
+  RefreshCw,
+  Download,
+  Settings,
   Eye,
-  EyeOff,
+  BarChart3,
+  PieChart,
+  LineChart,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+  Plus,
+  Info,
 } from 'lucide-react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
 
 interface Insight {
   id: string;
-  type: 'recommendation' | 'pattern' | 'warning' | 'celebration' | 'milestone';
+  type: 'positive' | 'warning' | 'neutral' | 'achievement';
+  category: 'mood' | 'goals' | 'habits' | 'social' | 'health' | 'patterns';
   title: string;
   description: string;
-  category: 'mood' | 'activity' | 'sleep' | 'social' | 'general';
-  priority: 'low' | 'medium' | 'high';
   confidence: number;
+  priority: 'low' | 'medium' | 'high' | 'critical';
   actionable: boolean;
-  isRead: boolean;
-  createdAt: string;
-  tags: string[];
-  relatedData?: {
-    moodTrend: string;
-    sleepQuality: string;
-    activityLevel: string;
-    socialInteractions: string;
-  };
-  actionItems?: string[];
+  recommendations: string[];
+  dataPoints: number;
+  timestamp: string;
 }
 
 interface Pattern {
   id: string;
   name: string;
   description: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
   strength: number;
-  category: string;
-  frequency: string;
+  trend: 'improving' | 'declining' | 'stable';
   impact: 'positive' | 'negative' | 'neutral';
+  examples: string[];
 }
 
-const insights: Insight[] = [
-  {
-    id: '1',
-    type: 'pattern',
-    title: 'דפוס שבועי במצב הרוח',
-    description:
-      'נראה שמצב הרוח שלך טוב יותר בימי שלישי וחמישי. זה יכול להיות קשור ללוח הזמנים השבועי שלך או לפעילויות מסוימות.',
-    category: 'mood',
-    priority: 'medium',
-    confidence: 85,
-    actionable: true,
-    isRead: false,
-    createdAt: '2025-08-12',
-    tags: ['דפוס', 'מגמה', 'שבועי', 'מצב רוח'],
-    relatedData: {
-      moodTrend: 'משתפר',
-      sleepQuality: 'טובה',
-      activityLevel: 'בינונית',
-      socialInteractions: 'גבוהה',
-    },
-    actionItems: [
-      'נסה לזהות מה קורה בימי שלישי וחמישי שמשפר את מצב הרוח',
-      'תכנן פעילויות נעימות לימים אחרים בשבוע',
-      'שמור על שגרה דומה לימים הטובים',
-    ],
-  },
-  {
-    id: '2',
-    type: 'recommendation',
-    title: 'המלצה לשיפור השינה',
-    description:
-      'תבסס על הנתונים שלך, נראה שמצב הרוח טוב יותר כשיש לך שינה טובה. מומלץ לשמור על לוח זמנים קבוע לשינה.',
-    category: 'sleep',
-    priority: 'high',
-    confidence: 92,
-    actionable: true,
-    isRead: true,
-    createdAt: '2025-08-10',
-    tags: ['שינה', 'מצב רוח', 'שגרה', 'בריאות'],
-    relatedData: {
-      moodTrend: 'יציב',
-      sleepQuality: 'בינונית',
-      activityLevel: 'נמוכה',
-      socialInteractions: 'בינונית',
-    },
-    actionItems: [
-      'הגדר זמן שינה קבוע',
-      'צור שגרת ערב מרגיעה',
-      'הפחת שימוש במסכים לפני השינה',
-      'שמור על חדר השינה קריר וחשוך',
-    ],
-  },
-  {
-    id: '3',
-    type: 'celebration',
-    title: 'כל הכבוד! שבוע מעולה',
-    description:
-      'השבוע היה שבוע מעולה עם מצב רוח גבוה ויציב. המשך כך! זה מראה שאתה על הדרך הנכונה.',
-    category: 'mood',
-    priority: 'low',
-    confidence: 95,
-    actionable: false,
-    isRead: false,
-    createdAt: '2025-08-08',
-    tags: ['הישג', 'מצוינות', 'מגמה חיובית', 'שבועי'],
-    relatedData: {
-      moodTrend: 'מעולה',
-      sleepQuality: 'טובה מאוד',
-      activityLevel: 'גבוהה',
-      socialInteractions: 'גבוהה מאוד',
-    },
-  },
-  {
-    id: '4',
-    type: 'warning',
-    title: 'שימו לב: ירידה במצב הרוח',
-    description:
-      'בשבועיים האחרונים יש מגמה של ירידה קלה במצב הרוח. מומלץ לשים לב ולשקול פעילויות שמשפרות את המצב.',
-    category: 'mood',
-    priority: 'high',
-    confidence: 78,
-    actionable: true,
-    isRead: true,
-    createdAt: '2025-08-05',
-    tags: ['אזהרה', 'מגמה שלילית', 'פעולה נדרשת', 'מעקב'],
-    relatedData: {
-      moodTrend: 'יורד',
-      sleepQuality: 'בינונית',
-      activityLevel: 'נמוכה',
-      socialInteractions: 'נמוכה',
-    },
-    actionItems: [
-      'הגדל את הפעילות הגופנית',
-      'פנה לחברים ומשפחה לתמיכה',
-      'נסה פעילויות חדשות ומעניינות',
-      'שקול לפנות למטפל אם המצב נמשך',
-    ],
-  },
-  {
-    id: '5',
-    type: 'milestone',
-    title: 'הישג: 30 ימים ברצף!',
-    description:
-      'הגעת ל-30 ימים רצופים של תיעוד מצב רוח! זה הישג מדהים שמראה על מחויבות לרווחה הנפשית שלך.',
-    category: 'general',
-    priority: 'low',
-    confidence: 100,
-    actionable: false,
-    isRead: false,
-    createdAt: '2025-08-01',
-    tags: ['הישג', 'רצף', 'מחויבות', 'מעקב'],
-    relatedData: {
-      moodTrend: 'יציב',
-      sleepQuality: 'טובה',
-      activityLevel: 'בינונית',
-      socialInteractions: 'בינונית',
-    },
-  },
-];
+interface Prediction {
+  id: string;
+  metric: string;
+  currentValue: number;
+  predictedValue: number;
+  timeframe: string;
+  confidence: number;
+  factors: string[];
+  recommendation: string;
+}
 
-const patterns: Pattern[] = [
-  {
-    id: '1',
-    name: 'דפוס שבועי במצב הרוח',
-    description: 'מצב הרוח נוטה להיות טוב יותר באמצע השבוע',
-    strength: 85,
-    category: 'מצב רוח',
-    frequency: 'שבועי',
-    impact: 'positive',
-  },
-  {
-    id: '2',
-    name: 'קשר בין שינה למצב רוח',
-    description: 'שינה טובה מקושרת למצב רוח טוב יותר',
-    strength: 92,
-    category: 'שינה',
-    frequency: 'יומי',
-    impact: 'positive',
-  },
-  {
-    id: '3',
-    name: 'פעילות גופנית ומצב רוח',
-    description: 'פעילות גופנית משפרת את מצב הרוח',
-    strength: 78,
-    category: 'פעילות',
-    frequency: 'יומי',
-    impact: 'positive',
-  },
-  {
-    id: '4',
-    name: 'מגמה שלילית בשבועות האחרונים',
-    description: 'ירידה הדרגתית במצב הרוח',
-    strength: 65,
-    category: 'מצב רוח',
-    frequency: 'שבועי',
-    impact: 'negative',
-  },
-];
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  earnedAt: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  progress?: number;
+  maxProgress?: number;
+}
 
 export default function InsightsPage() {
-  const [currentInsights, setCurrentInsights] = useState<Insight[]>(insights);
-  const [currentPatterns, setCurrentPatterns] = useState<Pattern[]>(patterns);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<string>('all');
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [insightsHistory, setInsightsHistory] = useState<
-    Array<{
-      id: string;
-      action: string;
-      completedAt: string;
-    }>
-  >([]);
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [patterns, setPatterns] = useState<Pattern[]>([]);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('month');
+  const [category, setCategory] = useState('all');
+  const [analysisDepth, setAnalysisDepth] = useState('standard');
 
   useEffect(() => {
-    // Load insights history from localStorage
-    const saved = localStorage.getItem('insights-actions');
-    if (saved) {
-      setInsightsHistory(JSON.parse(saved));
+    loadInsights();
+  }, [timeRange, category, analysisDepth]);
+
+  const loadInsights = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/insights?range=${timeRange}&category=${category}&depth=${analysisDepth}`);
+      if (response.ok) {
+        const result = await response.json();
+        setInsights(result.data.insights);
+        setPatterns(result.data.patterns);
+        setPredictions(result.data.predictions);
+        setAchievements(result.data.achievements);
+      }
+    } catch (error) {
+      console.error('Error loading insights:', error);
+    } finally {
+      setLoading(false);
     }
-  }, []);
-
-  const generateNewInsights = async () => {
-    setIsGenerating(true);
-
-    // Simulate AI analysis
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    // Generate new insight based on patterns
-    const newInsight: Insight = {
-      id: Date.now().toString(),
-      type: 'recommendation',
-      title: 'המלצה חדשה מבוססת על דפוסים',
-      description:
-        'תבסס על הניתוח החדש של הנתונים שלך, זיהינו הזדמנות לשיפור נוסף במצב הרוח.',
-      category: 'mood',
-      priority: 'medium',
-      confidence: 82,
-      actionable: true,
-      isRead: false,
-      createdAt: new Date().toISOString().split('T')[0],
-      tags: ['המלצה חדשה', 'דפוסים', 'שיפור'],
-      actionItems: [
-        'נסה פעילות חדשה השבוע',
-        'עקוב אחרי ההשפעה על מצב הרוח',
-        'שתף את התוצאות עם המטפל שלך',
-      ],
-    };
-
-    setCurrentInsights((prev) => [newInsight, ...prev]);
-    setIsGenerating(false);
   };
 
-  const markInsightAsRead = (insightId: string) => {
-    setCurrentInsights((prev) =>
-      prev.map((insight) =>
-        insight.id === insightId ? { ...insight, isRead: true } : insight
-      )
-    );
+  const refreshAnalysis = async () => {
+    await loadInsights();
   };
 
-  const markActionAsCompleted = (insightId: string, actionIndex: number) => {
-    const action = currentInsights.find((i) => i.id === insightId)
-      ?.actionItems?.[actionIndex];
-    if (action) {
-      const newAction = {
-        id: Date.now().toString(),
-        action: `${action} (מתוך: ${currentInsights.find((i) => i.id === insightId)?.title})`,
-        completedAt: new Date().toISOString(),
-      };
+  const exportInsights = () => {
+    const csvContent = [
+      ['סוג', 'קטגוריה', 'כותרת', 'תיאור', 'רמת ביטחון', 'עדיפות', 'תאריך'],
+      ...insights.map(insight => [
+        getTypeLabel(insight.type),
+        getCategoryLabel(insight.category),
+        insight.title,
+        insight.description,
+        `${insight.confidence}%`,
+        getPriorityLabel(insight.priority),
+        new Date(insight.timestamp).toLocaleDateString('he-IL')
+      ])
+    ].map(row => row.join(',')).join('\n');
 
-      const newHistory = [newAction, ...insightsHistory];
-      setInsightsHistory(newHistory);
-      localStorage.setItem('insights-actions', JSON.stringify(newHistory));
-    }
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `תובנות_AI_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'recommendation':
-        return (
-          <Lightbulb className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-        );
-      case 'pattern':
-        return (
-          <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-        );
-      case 'warning':
-        return (
-          <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-        );
-      case 'celebration':
-        return <Heart className="w-5 h-5 text-pink-600 dark:text-pink-400" />;
-      case 'milestone':
-        return (
-          <Star className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-        );
-      default:
-        return <Brain className="w-5 h-5 text-gray-600 dark:text-gray-400" />;
+      case 'positive': return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'warning': return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+      case 'neutral': return <Info className="w-5 h-5 text-blue-500" />;
+      case 'achievement': return <Award className="w-5 h-5 text-purple-500" />;
+      default: return <Lightbulb className="w-5 h-5 text-gray-500" />;
     }
   };
 
-  const getTypeText = (type: string) => {
+  const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'recommendation':
-        return 'המלצה';
-      case 'pattern':
-        return 'דפוס';
-      case 'warning':
-        return 'אזהרה';
-      case 'celebration':
-        return 'חגיגה';
-      case 'milestone':
-        return 'הישג';
-      default:
-        return type;
+      case 'positive': return 'חיובי';
+      case 'warning': return 'אזהרה';
+      case 'neutral': return 'נייטרלי';
+      case 'achievement': return 'הישג';
+      default: return 'כללי';
     }
   };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'mood':
-        return <Heart className="w-4 h-4" />;
-      case 'activity':
-        return <Activity className="w-4 h-4" />;
-      case 'sleep':
-        return <Clock className="w-4 h-4" />;
-      case 'social':
-        return <Brain className="w-4 h-4" />;
-      default:
-        return <Target className="w-4 h-4" />;
+      case 'mood': return <Heart className="w-4 h-4" />;
+      case 'goals': return <Target className="w-4 h-4" />;
+      case 'habits': return <RefreshCw className="w-4 h-4" />;
+      case 'social': return <Users className="w-4 h-4" />;
+      case 'health': return <Activity className="w-4 h-4" />;
+      case 'patterns': return <BarChart3 className="w-4 h-4" />;
+      default: return <Brain className="w-4 h-4" />;
+    }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'mood': return 'מצב רוח';
+      case 'goals': return 'מטרות';
+      case 'habits': return 'הרגלים';
+      case 'social': return 'חברתי';
+      case 'health': return 'בריאות';
+      case 'patterns': return 'דפוסים';
+      default: return 'כללי';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'low':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case 'high':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+      case 'critical': return 'border-l-red-500 bg-red-50 dark:bg-red-900/10';
+      case 'high': return 'border-l-orange-500 bg-orange-50 dark:bg-orange-900/10';
+      case 'medium': return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/10';
+      case 'low': return 'border-l-gray-500 bg-gray-50 dark:bg-gray-900/10';
+      default: return 'border-l-gray-500 bg-gray-50 dark:bg-gray-900/10';
     }
   };
 
-  const getImpactColor = (impact: string) => {
-    switch (impact) {
-      case 'positive':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'negative':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'critical': return 'קריטי';
+      case 'high': return 'גבוה';
+      case 'medium': return 'בינוני';
+      case 'low': return 'נמוך';
+      default: return 'רגיל';
     }
   };
 
-  const filteredInsights = currentInsights.filter((insight) => {
-    if (selectedCategory !== 'all' && insight.category !== selectedCategory)
-      return false;
-    if (selectedType !== 'all' && insight.type !== selectedType) return false;
-    if (showUnreadOnly && insight.isRead) return false;
-    return true;
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case 'improving': return <TrendingUp className="w-4 h-4 text-green-500" />;
+      case 'declining': return <TrendingDown className="w-4 h-4 text-red-500" />;
+      case 'stable': return <Minus className="w-4 h-4 text-gray-500" />;
+      default: return <Minus className="w-4 h-4 text-gray-500" />;
+    }
+  };
+
+  const getRarityColor = (rarity: string) => {
+    switch (rarity) {
+      case 'legendary': return 'from-yellow-400 to-orange-500';
+      case 'epic': return 'from-purple-400 to-pink-500';
+      case 'rare': return 'from-blue-400 to-cyan-500';
+      case 'common': return 'from-gray-400 to-gray-500';
+      default: return 'from-gray-400 to-gray-500';
+    }
+  };
+
+  const filteredInsights = insights.filter(insight => {
+    if (category === 'all') return true;
+    return insight.category === category;
   });
 
-  const unreadCount = currentInsights.filter(
-    (insight) => !insight.isRead
-  ).length;
-  const highPriorityCount = currentInsights.filter(
-    (insight) => insight.priority === 'high'
-  ).length;
+  const criticalInsights = insights.filter(i => i.priority === 'critical').length;
+  const positiveInsights = insights.filter(i => i.type === 'positive').length;
+  const averageConfidence = insights.length > 0 
+    ? Math.round(insights.reduce((sum, i) => sum + i.confidence, 0) / insights.length)
+    : 0;
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">מנתח נתונים ויוצר תובנות...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            תובנות AI חכמות 🧠✨
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            קבל תובנות מותאמות אישית מבוססות על הנתונים שלך וזיהוי דפוסים מתקדם
-          </p>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {currentInsights.length}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  סה"כ תובנות
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {unreadCount}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  חדשות
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {highPriorityCount}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  חשובות
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {patterns.length}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  דפוסים זוהו
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Generate New Insights */}
-        <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
-              <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              <span>צור תובנות חדשות</span>
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              השתמש ב-AI כדי לנתח את הנתונים שלך ולגלות תובנות חדשות
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              onClick={generateNewInsights}
-              disabled={isGenerating}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              {isGenerating ? (
-                <div className="flex items-center space-x-2">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>מנתח נתונים...</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Brain className="w-4 h-4" />
-                  <span>צור תובנות חדשות</span>
-                </div>
-              )}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <Brain className="w-8 h-8" />
+              תובנות AI
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              ניתוח חכם של הנתונים שלך עם המלצות מותאמות אישית
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={refreshAnalysis} variant="outline">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              רענן ניתוח
             </Button>
+            <Button onClick={exportInsights} variant="outline">
+              <Download className="w-4 h-4 mr-2" />
+              ייצא תובנות
+            </Button>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <Select value={timeRange} onValueChange={setTimeRange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="week">שבוע אחרון</SelectItem>
+                  <SelectItem value="month">חודש אחרון</SelectItem>
+                  <SelectItem value="quarter">רבעון אחרון</SelectItem>
+                  <SelectItem value="year">שנה אחרונה</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הקטגוריות</SelectItem>
+                  <SelectItem value="mood">מצב רוח</SelectItem>
+                  <SelectItem value="goals">מטרות</SelectItem>
+                  <SelectItem value="habits">הרגלים</SelectItem>
+                  <SelectItem value="social">חברתי</SelectItem>
+                  <SelectItem value="health">בריאות</SelectItem>
+                  <SelectItem value="patterns">דפוסים</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={analysisDepth} onValueChange={setAnalysisDepth}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="basic">בסיסי</SelectItem>
+                  <SelectItem value="standard">סטנדרטי</SelectItem>
+                  <SelectItem value="advanced">מתקדם</SelectItem>
+                  <SelectItem value="deep">עמוק</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="all">כל הקטגוריות</option>
-            <option value="mood">מצב רוח</option>
-            <option value="activity">פעילות</option>
-            <option value="sleep">שינה</option>
-            <option value="social">חברתי</option>
-            <option value="general">כללי</option>
-          </select>
+        {/* Summary Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                  <Lightbulb className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{insights.length}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">תובנות כולל</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="all">כל הסוגים</option>
-            <option value="recommendation">המלצות</option>
-            <option value="pattern">דפוסים</option>
-            <option value="warning">אזהרות</option>
-            <option value="celebration">חגיגות</option>
-            <option value="milestone">הישגים</option>
-          </select>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{criticalInsights}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">תובנות קריטיות</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <button
-            onClick={() => setShowUnreadOnly(!showUnreadOnly)}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${
-              showUnreadOnly
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-            }`}
-          >
-            {showUnreadOnly ? (
-              <EyeOff className="w-4 h-4" />
-            ) : (
-              <Eye className="w-4 h-4" />
-            )}
-            <span>{showUnreadOnly ? 'הצג הכל' : 'רק שלא נקראו'}</span>
-          </button>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{positiveInsights}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">תובנות חיוביות</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                  <Star className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{averageConfidence}%</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">ביטחון ממוצע</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Patterns Section */}
-        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        {/* Main Insights */}
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
-              <BarChart3 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <span>דפוסים שזוהו</span>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5" />
+              תובנות מרכזיות
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              דפוסים שהמערכת זיהתה בנתונים שלך
+            <CardDescription>
+              ניתוח מתקדם של הנתונים שלך עם המלצות פעולה
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {patterns.map((pattern) => (
-                <div
-                  key={pattern.id}
-                  className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">
-                      {pattern.name}
-                    </h4>
-                    <Badge className={getImpactColor(pattern.impact)}>
-                      {pattern.impact === 'positive'
-                        ? 'חיובי'
-                        : pattern.impact === 'negative'
-                          ? 'שלילי'
-                          : 'ניטרלי'}
-                    </Badge>
-                  </div>
-
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    {pattern.description}
-                  </p>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        עוצמת הדפוס
-                      </span>
-                      <span className="font-medium text-gray-900 dark:text-gray-100">
-                        {pattern.strength}%
-                      </span>
+            <div className="space-y-4">
+              {filteredInsights.map((insight) => (
+                <div key={insight.id} className={`p-4 border-l-4 rounded-lg ${getPriorityColor(insight.priority)}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      {getTypeIcon(insight.type)}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold">{insight.title}</h4>
+                          <span className="flex items-center gap-1 text-xs text-gray-500">
+                            {getCategoryIcon(insight.category)}
+                            {getCategoryLabel(insight.category)}
+                          </span>
+                          <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                            {insight.confidence}% ביטחון
+                          </span>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300 mb-3">
+                          {insight.description}
+                        </p>
+                        
+                        {insight.recommendations.length > 0 && (
+                          <div>
+                            <h5 className="font-medium text-sm mb-2">המלצות לפעולה:</h5>
+                            <ul className="space-y-1">
+                              {insight.recommendations.map((rec, index) => (
+                                <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                                  <Plus className="w-3 h-3 mt-0.5 text-green-500" />
+                                  {rec}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <Progress value={pattern.strength} className="w-full" />
-                  </div>
-
-                  <div className="flex items-center justify-between mt-3 text-xs text-gray-500 dark:text-gray-400">
-                    <span>{pattern.category}</span>
-                    <span>{pattern.frequency}</span>
+                    
+                    <div className="text-right text-xs text-gray-500">
+                      <div>{getPriorityLabel(insight.priority)}</div>
+                      <div>{insight.dataPoints} נקודות נתונים</div>
+                      <div>{new Date(insight.timestamp).toLocaleDateString('he-IL')}</div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -598,223 +454,176 @@ export default function InsightsPage() {
           </CardContent>
         </Card>
 
-        {/* Insights List */}
-        <div className="space-y-6">
-          {filteredInsights.length === 0 ? (
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardContent className="py-12 text-center">
-                <Lightbulb className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  אין תובנות להצגה
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {selectedCategory !== 'all' ||
-                  selectedType !== 'all' ||
-                  showUnreadOnly
-                    ? 'נסה לשנות את הסינון או צור תובנות חדשות'
-                    : 'צור תובנות חדשות כדי להתחיל'}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredInsights.map((insight) => (
-              <Card
-                key={insight.id}
-                className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        {getTypeIcon(insight.type)}
-                        <CardTitle className="text-xl text-gray-900 dark:text-gray-100">
-                          {insight.title}
-                        </CardTitle>
-                        <Badge className={getPriorityColor(insight.priority)}>
-                          {insight.priority === 'high'
-                            ? 'גבוה'
-                            : insight.priority === 'medium'
-                              ? 'בינוני'
-                              : 'נמוך'}
-                        </Badge>
-                        <Badge variant="outline">
-                          {getTypeText(insight.type)}
-                        </Badge>
-                        {!insight.isRead && (
-                          <Badge variant="destructive">חדש</Badge>
-                        )}
-                      </div>
-
-                      <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 mb-2">
-                        <div className="flex items-center space-x-1">
-                          {getCategoryIcon(insight.category)}
-                          <span>
-                            {insight.category === 'mood'
-                              ? 'מצב רוח'
-                              : insight.category === 'activity'
-                                ? 'פעילות'
-                                : insight.category === 'sleep'
-                                  ? 'שינה'
-                                  : insight.category === 'social'
-                                    ? 'חברתי'
-                                    : 'כללי'}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>
-                            {new Date(insight.createdAt).toLocaleDateString(
-                              'he-IL'
-                            )}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Zap className="w-4 h-4" />
-                          <span>ביטחון: {insight.confidence}%</span>
-                        </div>
-                      </div>
-
-                      <CardDescription className="text-gray-600 dark:text-gray-400 text-base">
-                        {insight.description}
-                      </CardDescription>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      {!insight.isRead && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => markInsightAsRead(insight.id)}
-                        >
-                          סמן כנקרא
-                        </Button>
-                      )}
+        {/* Patterns Analysis */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              דפוסים שזוהו
+            </CardTitle>
+            <CardDescription>
+              דפוסים חוזרים בהתנהגות ובמצב הרוח שלך
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {patterns.map((pattern) => (
+                <div key={pattern.id} className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold">{pattern.name}</h4>
+                    <div className="flex items-center gap-2">
+                      {getTrendIcon(pattern.trend)}
+                      <span className="text-sm text-gray-500">{pattern.frequency}</span>
                     </div>
                   </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  {/* Related Data */}
-                  {insight.relatedData && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <div className="text-center">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                          מגמת מצב רוח
-                        </div>
-                        <div className="font-medium text-gray-900 dark:text-gray-100">
-                          {insight.relatedData.moodTrend}
-                        </div>
+                  
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    {pattern.description}
+                  </p>
+                  
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium">חוזק הדפוס:</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                        <div 
+                          className="h-full bg-blue-500 rounded-full"
+                          style={{ width: `${pattern.strength}%` }}
+                        />
                       </div>
-                      <div className="text-center">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                          איכות שינה
-                        </div>
-                        <div className="font-medium text-gray-900 dark:text-gray-100">
-                          {insight.relatedData.sleepQuality}
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                          רמת פעילות
-                        </div>
-                        <div className="font-medium text-gray-900 dark:text-gray-100">
-                          {insight.relatedData.activityLevel}
-                        </div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                          אינטראקציות חברתיות
-                        </div>
-                        <div className="font-medium text-gray-900 dark:text-gray-100">
-                          {insight.relatedData.socialInteractions}
-                        </div>
-                      </div>
+                      <span className="text-sm">{pattern.strength}%</span>
                     </div>
-                  )}
-
-                  {/* Action Items */}
-                  {insight.actionItems && insight.actionItems.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                        פעולות מומלצות:
-                      </h4>
-                      <div className="space-y-2">
-                        {insight.actionItems.map((action, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg"
-                          >
-                            <span className="text-sm text-gray-700 dark:text-gray-300">
-                              {action}
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                markActionAsCompleted(insight.id, index)
-                              }
-                            >
-                              <CheckCircle className="w-4 h-4 mr-1" />
-                              הושלם
-                            </Button>
-                          </div>
-                        ))}
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <h5 className="text-sm font-medium">דוגמאות:</h5>
+                    {pattern.examples.map((example, index) => (
+                      <div key={index} className="text-xs text-gray-500 flex items-center gap-1">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full" />
+                        {example}
                       </div>
-                    </div>
-                  )}
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-1">
-                    {insight.tags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {tag}
-                      </Badge>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Action History */}
-        {insightsHistory.length > 0 && (
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                <span>היסטוריית פעולות</span>
-              </CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
-                הפעולות שהשלמת מתוך התובנות
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {insightsHistory.slice(0, 10).map((action) => (
-                  <div
-                    key={action.id}
-                    className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {action.action}
-                      </span>
+        {/* Predictions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <LineChart className="w-5 h-5" />
+              תחזיות וחיזויים
+            </CardTitle>
+            <CardDescription>
+              חיזויים מבוססי נתונים למדדים שונים
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {predictions.map((prediction) => (
+                <div key={prediction.id} className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold">{prediction.metric}</h4>
+                    <span className="text-sm bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">
+                      {prediction.confidence}% ביטחון
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                      <span className="text-sm text-gray-500">ערך נוכחי:</span>
+                      <div className="text-lg font-semibold">{prediction.currentValue}</div>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {new Date(action.completedAt).toLocaleDateString('he-IL')}
+                    <div>
+                      <span className="text-sm text-gray-500">חיזוי ל{prediction.timeframe}:</span>
+                      <div className="text-lg font-semibold flex items-center gap-2">
+                        {prediction.predictedValue}
+                        {prediction.predictedValue > prediction.currentValue ? (
+                          <ArrowUp className="w-4 h-4 text-green-500" />
+                        ) : prediction.predictedValue < prediction.currentValue ? (
+                          <ArrowDown className="w-4 h-4 text-red-500" />
+                        ) : (
+                          <Minus className="w-4 h-4 text-gray-500" />
+                        )}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                  
+                  <div className="mb-3">
+                    <h5 className="text-sm font-medium mb-2">גורמים משפיעים:</h5>
+                    <div className="flex flex-wrap gap-1">
+                      {prediction.factors.map((factor, index) => (
+                        <span key={index} className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                          {factor}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <h5 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                      המלצה:
+                    </h5>
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      {prediction.recommendation}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Achievements */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="w-5 h-5" />
+              הישגים אחרונים
+            </CardTitle>
+            <CardDescription>
+              הישגים שזכית בהם לאחרונה
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {achievements.map((achievement) => (
+                <div key={achievement.id} className="p-4 border rounded-lg">
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getRarityColor(achievement.rarity)} flex items-center justify-center mb-3`}>
+                    <Award className="w-6 h-6 text-white" />
+                  </div>
+                  
+                  <h4 className="font-semibold mb-2">{achievement.title}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    {achievement.description}
+                  </p>
+                  
+                  {achievement.progress !== undefined && achievement.maxProgress && (
+                    <div className="mb-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>התקדמות</span>
+                        <span>{achievement.progress}/{achievement.maxProgress}</span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                        <div 
+                          className="h-full bg-gradient-to-r from-purple-400 to-pink-500 rounded-full"
+                          style={{ width: `${(achievement.progress / achievement.maxProgress) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span className="capitalize">{achievement.rarity}</span>
+                    <span>{new Date(achievement.earnedAt).toLocaleDateString('he-IL')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );

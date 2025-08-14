@@ -9,9 +9,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -22,98 +21,91 @@ import {
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   Bell,
+  BellRing,
   BellOff,
-  Settings,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  X,
-  Filter,
-  Search,
-  Trash2,
-  Edit3,
-  Save,
-  Volume2,
-  VolumeX,
-  Smartphone,
   Mail,
+  Smartphone,
   MessageSquare,
   Calendar,
+  Target,
   Heart,
   Brain,
-  Target,
-  BookOpen,
-  Users,
+  Clock,
+  Settings,
+  Trash2,
+  Check,
+  X,
+  Plus,
+  Filter,
+  Download,
+  Volume2,
+  VolumeX,
+  Moon,
+  Sun,
+  AlertCircle,
+  CheckCircle,
+  Info,
   Zap,
-  Eye,
-  EyeOff,
+  Users,
+  BookOpen,
+  Activity,
 } from 'lucide-react';
 
 interface Notification {
   id: string;
+  type: 'mood' | 'goal' | 'journal' | 'breathing' | 'report' | 'reminder' | 'social' | 'system';
   title: string;
   message: string;
-  type: 'reminder' | 'alert' | 'achievement' | 'system' | 'urgent';
-  category: 'mood' | 'journal' | 'breathing' | 'goal' | 'general' | 'crisis';
+  timestamp: string;
+  read: boolean;
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  isRead: boolean;
-  isDismissed: boolean;
-  createdAt: string;
-  scheduledFor?: string;
+  category: string;
   actionUrl?: string;
-  metadata?: {
-    moodValue?: number;
-    goalId?: string;
-    streakCount?: number;
-  };
+  actionText?: string;
 }
 
 interface NotificationSettings {
-  general: {
-    enabled: boolean;
-    sound: boolean;
-    vibration: boolean;
+  enabled: boolean;
+  channels: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+    inApp: boolean;
+  };
+  types: {
+    moodReminders: boolean;
+    goalDeadlines: boolean;
+    journalPrompts: boolean;
+    breathingReminders: boolean;
+    weeklyReports: boolean;
+    socialUpdates: boolean;
+    systemAlerts: boolean;
+    achievements: boolean;
+  };
+  schedule: {
     quietHours: {
       enabled: boolean;
       start: string;
       end: string;
     };
+    frequency: {
+      moodReminders: 'daily' | 'twice-daily' | 'weekly';
+      goalCheckins: 'daily' | 'weekly' | 'monthly';
+      reports: 'weekly' | 'monthly' | 'quarterly';
+    };
+    customTimes: {
+      morningReminder: string;
+      eveningReminder: string;
+      weeklyReport: string;
+    };
   };
-  channels: {
-    push: boolean;
-    email: boolean;
-    sms: boolean;
-    inApp: boolean;
-  };
-  categories: {
-    mood: boolean;
-    journal: boolean;
-    breathing: boolean;
-    goal: boolean;
-    general: boolean;
-    crisis: boolean;
-  };
-  reminders: {
-    dailyMoodCheck: boolean;
-    dailyJournal: boolean;
-    breathingExercise: boolean;
-    goalProgress: boolean;
-    weeklyReview: boolean;
-  };
-  timing: {
-    moodReminderTime: string;
-    journalReminderTime: string;
-    breathingReminderTime: string;
-    goalReminderTime: string;
-    weeklyReviewDay:
-      | 'sunday'
-      | 'monday'
-      | 'tuesday'
-      | 'wednesday'
-      | 'thursday'
-      | 'friday'
-      | 'saturday';
-    weeklyReviewTime: string;
+  preferences: {
+    sound: boolean;
+    vibration: boolean;
+    preview: boolean;
+    groupSimilar: boolean;
+    autoMarkRead: boolean;
+    maxPerDay: number;
   };
 }
 
@@ -121,201 +113,184 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<
-    'all' | 'unread' | 'urgent' | 'settings'
-  >('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [editingSettings, setEditingSettings] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'settings'>('notifications');
 
   useEffect(() => {
     loadNotifications();
     loadSettings();
   }, []);
 
-  const loadNotifications = () => {
-    // Mock data for demo
-    const mockNotifications: Notification[] = [
-      {
-        id: '1',
-        title: 'זמן לבדיקת מצב רוח יומית',
-        message:
-          'הגיע הזמן לתעד את מצב הרוח שלך היום. זה עוזר לעקוב אחר המגמות שלך.',
-        type: 'reminder',
-        category: 'mood',
-        priority: 'medium',
-        isRead: false,
-        isDismissed: false,
-        createdAt: '2025-08-12T10:00:00Z',
-        scheduledFor: '2025-08-12T10:00:00Z',
-        actionUrl: '/dashboard/mood-entry',
-      },
-      {
-        id: '2',
-        title: 'כל הכבוד! השלמת 7 ימים רצופים',
-        message: 'השלמת שבוע שלם של תרגול מדיטציה יומי. המשך כך!',
-        type: 'achievement',
-        category: 'goal',
-        priority: 'high',
-        isRead: false,
-        isDismissed: false,
-        createdAt: '2025-08-12T09:30:00Z',
-        metadata: {
-          goalId: 'meditation-goal',
-          streakCount: 7,
-        },
-      },
-      {
-        id: '3',
-        title: 'תזכורת: תרגיל נשימה',
-        message: 'זמן לתרגיל נשימה מרגיע. 5 דקות שיכולות לשנות את היום שלך.',
-        type: 'reminder',
-        category: 'breathing',
-        priority: 'medium',
-        isRead: true,
-        isDismissed: false,
-        createdAt: '2025-08-12T08:00:00Z',
-        scheduledFor: '2025-08-12T08:00:00Z',
-        actionUrl: '/dashboard/breathing',
-      },
-      {
-        id: '4',
-        title: 'התראה דחופה: זיהוי דפוס מדאיג',
-        message:
-          'זיהינו דפוס של מצב רוח נמוך בימים האחרונים. האם תרצה לדבר עם מישהו?',
-        type: 'urgent',
-        category: 'crisis',
-        priority: 'urgent',
-        isRead: false,
-        isDismissed: false,
-        createdAt: '2025-08-12T07:00:00Z',
-        metadata: {
-          moodValue: 2,
-        },
-      },
-      {
-        id: '5',
-        title: 'זמן לכתיבת יומן',
-        message: 'כתיבה יומית עוזרת לעבד רגשות ולשמור על בריאות נפשית טובה.',
-        type: 'reminder',
-        category: 'journal',
-        priority: 'low',
-        isRead: true,
-        isDismissed: false,
-        createdAt: '2025-08-11T21:00:00Z',
-        scheduledFor: '2025-08-11T21:00:00Z',
-        actionUrl: '/dashboard/journal',
-      },
-      {
-        id: '6',
-        title: 'עדכון שבועי: התקדמות מטרות',
-        message: 'השבוע התקדמת ב-3 מתוך 5 המטרות שלך. עבודה מצוינת!',
-        type: 'system',
-        category: 'goal',
-        priority: 'low',
-        isRead: true,
-        isDismissed: false,
-        createdAt: '2025-08-11T18:00:00Z',
-      },
-    ];
-
-    setNotifications(mockNotifications);
+  const loadNotifications = async () => {
+    try {
+      const response = await fetch('/api/notifications');
+      if (response.ok) {
+        const result = await response.json();
+        setNotifications(result.data);
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
   };
 
-  const loadSettings = () => {
-    const mockSettings: NotificationSettings = {
-      general: {
-        enabled: true,
-        sound: true,
-        vibration: true,
-        quietHours: {
-          enabled: true,
-          start: '22:00',
-          end: '07:00',
-        },
-      },
-      channels: {
-        push: true,
-        email: true,
-        sms: false,
-        inApp: true,
-      },
-      categories: {
-        mood: true,
-        journal: true,
-        breathing: true,
-        goal: true,
-        general: true,
-        crisis: true,
-      },
-      reminders: {
-        dailyMoodCheck: true,
-        dailyJournal: true,
-        breathingExercise: true,
-        goalProgress: true,
-        weeklyReview: true,
-      },
-      timing: {
-        moodReminderTime: '10:00',
-        journalReminderTime: '21:00',
-        breathingReminderTime: '08:00',
-        goalReminderTime: '18:00',
-        weeklyReviewDay: 'sunday',
-        weeklyReviewTime: '20:00',
-      },
-    };
-
-    setSettings(mockSettings);
-    setLoading(false);
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('/api/notifications/settings');
+      if (response.ok) {
+        const result = await response.json();
+        setSettings(result.data);
+      }
+    } catch (error) {
+      console.error('Error loading notification settings:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === id ? { ...notif, isRead: true } : notif
-      )
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === id ? { ...notif, read: true } : notif
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
 
-  const dismissNotification = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === id ? { ...notif, isDismissed: true } : notif
-      )
-    );
+  const markAllAsRead = async () => {
+    try {
+      await fetch('/api/notifications/mark-all-read', { method: 'POST' });
+      setNotifications(prev => 
+        prev.map(notif => ({ ...notif, read: true }))
+      );
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+  const deleteNotification = async (id: string) => {
+    try {
+      await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((notif) => ({ ...notif, isRead: true }))
-    );
+  const clearAllNotifications = async () => {
+    if (!confirm('האם אתה בטוח שברצונך למחוק את כל ההתראות?')) return;
+    
+    try {
+      await fetch('/api/notifications/clear-all', { method: 'DELETE' });
+      setNotifications([]);
+    } catch (error) {
+      console.error('Error clearing all notifications:', error);
+    }
   };
 
-  const clearAll = () => {
-    setNotifications([]);
+  const updateSettings = async (newSettings: NotificationSettings) => {
+    try {
+      await fetch('/api/notifications/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSettings),
+      });
+      setSettings(newSettings);
+    } catch (error) {
+      console.error('Error updating notification settings:', error);
+    }
   };
 
-  const filteredNotifications = notifications.filter((notif) => {
-    if (activeTab === 'unread' && notif.isRead) return false;
-    if (activeTab === 'urgent' && notif.priority !== 'urgent') return false;
-    if (
-      searchTerm &&
-      !notif.title.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-      return false;
-    if (filterCategory !== 'all' && notif.category !== filterCategory)
-      return false;
-    return !notif.isDismissed;
+  const testNotification = async () => {
+    try {
+      await fetch('/api/notifications/test', { method: 'POST' });
+      // Reload notifications to show the test notification
+      loadNotifications();
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+    }
+  };
+
+  const exportNotifications = () => {
+    const csvContent = [
+      ['תאריך', 'סוג', 'כותרת', 'הודעה', 'עדיפות', 'נקרא'],
+      ...notifications.map(notif => [
+        new Date(notif.timestamp).toLocaleDateString('he-IL'),
+        getTypeLabel(notif.type),
+        notif.title,
+        notif.message,
+        getPriorityLabel(notif.priority),
+        notif.read ? 'כן' : 'לא'
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `התראות_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'mood': return <Heart className="w-4 h-4" />;
+      case 'goal': return <Target className="w-4 h-4" />;
+      case 'journal': return <BookOpen className="w-4 h-4" />;
+      case 'breathing': return <Activity className="w-4 h-4" />;
+      case 'report': return <Calendar className="w-4 h-4" />;
+      case 'reminder': return <Clock className="w-4 h-4" />;
+      case 'social': return <Users className="w-4 h-4" />;
+      case 'system': return <Settings className="w-4 h-4" />;
+      default: return <Bell className="w-4 h-4" />;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'mood': return 'מצב רוח';
+      case 'goal': return 'מטרות';
+      case 'journal': return 'יומן';
+      case 'breathing': return 'נשימה';
+      case 'report': return 'דוחות';
+      case 'reminder': return 'תזכורת';
+      case 'social': return 'חברתי';
+      case 'system': return 'מערכת';
+      default: return 'כללי';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'text-red-600 bg-red-50 border-red-200';
+      case 'high': return 'text-orange-600 bg-orange-50 border-orange-200';
+      case 'medium': return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'low': return 'text-gray-600 bg-gray-50 border-gray-200';
+      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+    }
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'דחוף';
+      case 'high': return 'גבוה';
+      case 'medium': return 'בינוני';
+      case 'low': return 'נמוך';
+      default: return 'רגיל';
+    }
+  };
+
+  const filteredNotifications = notifications.filter(notif => {
+    if (filter === 'read' && !notif.read) return false;
+    if (filter === 'unread' && notif.read) return false;
+    if (typeFilter !== 'all' && notif.type !== typeFilter) return false;
+    return true;
   });
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-  const urgentCount = notifications.filter(
-    (n) => n.priority === 'urgent' && !n.isDismissed
-  ).length;
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   if (loading) {
     return (
@@ -336,847 +311,624 @@ export default function NotificationsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <Bell className="w-8 h-8" />
               התראות
+              {unreadCount > 0 && (
+                <span className="bg-red-500 text-white text-sm px-2 py-1 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              נהל את ההתראות והתזכורות שלך
+              נהל את ההתראות וההגדרות שלך
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={markAllAsRead}>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              סמן הכל כנקרא
+            <Button onClick={testNotification} variant="outline">
+              <Zap className="w-4 h-4 mr-2" />
+              בדוק התראה
             </Button>
-            <Button variant="outline" onClick={clearAll}>
-              <Trash2 className="w-4 h-4 mr-2" />
-              נקה הכל
+            <Button onClick={exportNotifications} variant="outline">
+              <Download className="w-4 h-4 mr-2" />
+              ייצא
             </Button>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                  <Bell className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {notifications.length}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    סה"כ התראות
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center">
-                  <Eye className="w-5 h-5 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {unreadCount}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    לא נקראו
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {urgentCount}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    דחופות
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {settings?.general.enabled ? 'פעיל' : 'לא פעיל'}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    מצב התראות
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Tabs */}
+        <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+          <button
+            onClick={() => setActiveTab('notifications')}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'notifications'
+                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <Bell className="w-4 h-4 inline mr-2" />
+            התראות ({notifications.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'settings'
+                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+            }`}
+          >
+            <Settings className="w-4 h-4 inline mr-2" />
+            הגדרות
+          </button>
         </div>
 
-        {/* Tabs and Filters */}
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="flex gap-2">
-                <Button
-                  variant={activeTab === 'all' ? 'default' : 'outline'}
-                  onClick={() => setActiveTab('all')}
-                  size="sm"
-                >
-                  הכל ({notifications.length})
-                </Button>
-                <Button
-                  variant={activeTab === 'unread' ? 'default' : 'outline'}
-                  onClick={() => setActiveTab('unread')}
-                  size="sm"
-                >
-                  לא נקראו ({unreadCount})
-                </Button>
-                <Button
-                  variant={activeTab === 'urgent' ? 'default' : 'outline'}
-                  onClick={() => setActiveTab('urgent')}
-                  size="sm"
-                >
-                  דחופות ({urgentCount})
-                </Button>
-                <Button
-                  variant={activeTab === 'settings' ? 'default' : 'outline'}
-                  onClick={() => setActiveTab('settings')}
-                  size="sm"
-                >
-                  הגדרות
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="חיפוש בהתראות..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-48"
-                />
-                <Select
-                  value={filterCategory}
-                  onValueChange={setFilterCategory}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">כל הקטגוריות</SelectItem>
-                    <SelectItem value="mood">מצב רוח</SelectItem>
-                    <SelectItem value="journal">יומן</SelectItem>
-                    <SelectItem value="breathing">נשימה</SelectItem>
-                    <SelectItem value="goal">מטרות</SelectItem>
-                    <SelectItem value="general">כללי</SelectItem>
-                    <SelectItem value="crisis">משבר</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
+        {activeTab === 'notifications' ? (
+          <>
+            {/* Filters and Actions */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">כל ההתראות</SelectItem>
+                      <SelectItem value="unread">לא נקראו</SelectItem>
+                      <SelectItem value="read">נקראו</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-        {/* Notifications List */}
-        {activeTab !== 'settings' && (
-          <div className="space-y-3">
-            {filteredNotifications.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <BellOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                    אין התראות
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    {activeTab === 'all'
-                      ? 'אין התראות להצגה'
-                      : activeTab === 'unread'
-                        ? 'כל ההתראות נקראו'
-                        : activeTab === 'urgent'
-                          ? 'אין התראות דחופות'
-                          : 'אין התראות'}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              filteredNotifications.map((notification) => (
-                <Card
-                  key={notification.id}
-                  className={`${!notification.isRead ? 'border-blue-200 bg-blue-50 dark:bg-blue-900/10' : ''}`}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            notification.priority === 'urgent'
-                              ? 'bg-red-100 dark:bg-red-900/20'
-                              : notification.priority === 'high'
-                                ? 'bg-orange-100 dark:bg-orange-900/20'
-                                : notification.priority === 'medium'
-                                  ? 'bg-yellow-100 dark:bg-yellow-900/20'
-                                  : 'bg-blue-100 dark:bg-blue-900/20'
-                          }`}
-                        >
-                          {notification.type === 'reminder' && (
-                            <Clock className="w-5 h-5 text-blue-600" />
-                          )}
-                          {notification.type === 'achievement' && (
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                          )}
-                          {notification.type === 'alert' && (
-                            <AlertTriangle className="w-5 h-5 text-orange-600" />
-                          )}
-                          {notification.type === 'urgent' && (
-                            <Zap className="w-5 h-5 text-red-600" />
-                          )}
-                          {notification.type === 'system' && (
-                            <Settings className="w-5 h-5 text-gray-600" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium text-gray-900 dark:text-white">
-                              {notification.title}
-                            </h3>
-                            <Badge
-                              variant={
-                                notification.priority === 'urgent'
-                                  ? 'destructive'
-                                  : notification.priority === 'high'
-                                    ? 'default'
-                                    : notification.priority === 'medium'
-                                      ? 'secondary'
-                                      : 'outline'
-                              }
-                            >
-                              {notification.priority === 'urgent'
-                                ? 'דחוף'
-                                : notification.priority === 'high'
-                                  ? 'גבוה'
-                                  : notification.priority === 'medium'
-                                    ? 'בינוני'
-                                    : 'נמוך'}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {notification.category === 'mood'
-                                ? 'מצב רוח'
-                                : notification.category === 'journal'
-                                  ? 'יומן'
-                                  : notification.category === 'breathing'
-                                    ? 'נשימה'
-                                    : notification.category === 'goal'
-                                      ? 'מטרות'
-                                      : notification.category === 'general'
-                                        ? 'כללי'
-                                        : 'משבר'}
-                            </Badge>
-                          </div>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                            {notification.message}
-                          </p>
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
-                            <span>
-                              {new Date(
-                                notification.createdAt
-                              ).toLocaleDateString('he-IL')}
-                            </span>
-                            {notification.scheduledFor && (
-                              <span>
-                                מתוזמן ל:{' '}
-                                {new Date(
-                                  notification.scheduledFor
-                                ).toLocaleString('he-IL')}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        {!notification.isRead && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => markAsRead(notification.id)}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => dismissNotification(notification.id)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteNotification(notification.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">כל הסוגים</SelectItem>
+                      <SelectItem value="mood">מצב רוח</SelectItem>
+                      <SelectItem value="goal">מטרות</SelectItem>
+                      <SelectItem value="journal">יומן</SelectItem>
+                      <SelectItem value="breathing">נשימה</SelectItem>
+                      <SelectItem value="report">דוחות</SelectItem>
+                      <SelectItem value="reminder">תזכורות</SelectItem>
+                      <SelectItem value="social">חברתי</SelectItem>
+                      <SelectItem value="system">מערכת</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="flex gap-2 mr-auto">
+                    {unreadCount > 0 && (
+                      <Button onClick={markAllAsRead} variant="outline" size="sm">
+                        <Check className="w-4 h-4 mr-2" />
+                        סמן הכל כנקרא
+                      </Button>
+                    )}
+                    <Button onClick={clearAllNotifications} variant="outline" size="sm">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      מחק הכל
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notifications List */}
+            <div className="space-y-3">
+              {filteredNotifications.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <BellOff className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                      אין התראות
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {filter === 'unread' ? 'כל ההתראות נקראו' : 'אין התראות להצגה'}
+                    </p>
                   </CardContent>
                 </Card>
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Settings Tab */}
-        {activeTab === 'settings' && settings && (
-          <div className="space-y-6">
-            {/* General Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
-                  הגדרות כלליות
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">הפעל התראות</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      הפעל או בטל את כל ההתראות
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.general.enabled}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              general: { ...prev.general, enabled: checked },
-                            }
-                          : null
-                      )
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">צליל</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      הפעל צליל בהתראות
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.general.sound}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              general: { ...prev.general, sound: checked },
-                            }
-                          : null
-                      )
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">רטט</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      הפעל רטט בהתראות
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.general.vibration}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              general: { ...prev.general, vibration: checked },
-                            }
-                          : null
-                      )
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">שעות שקט</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      השתק התראות בשעות מסוימות
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.general.quietHours.enabled}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              general: {
-                                ...prev.general,
-                                quietHours: {
-                                  ...prev.general.quietHours,
-                                  enabled: checked,
-                                },
-                              },
-                            }
-                          : null
-                      )
-                    }
-                  />
-                </div>
-                {settings.general.quietHours.enabled && (
-                  <div className="grid grid-cols-2 gap-4 ml-4">
+              ) : (
+                filteredNotifications.map((notification) => (
+                  <Card key={notification.id} className={`${!notification.read ? 'border-l-4 border-l-blue-500' : ''}`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-4">
+                        <div className={`p-2 rounded-full ${getPriorityColor(notification.priority)}`}>
+                          {getTypeIcon(notification.type)}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h4 className={`font-medium ${!notification.read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                                {notification.title}
+                              </h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                {notification.message}
+                              </p>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                <span>{new Date(notification.timestamp).toLocaleString('he-IL')}</span>
+                                <span className="flex items-center gap-1">
+                                  {getTypeIcon(notification.type)}
+                                  {getTypeLabel(notification.type)}
+                                </span>
+                                <span className={`px-2 py-1 rounded-full ${getPriorityColor(notification.priority)}`}>
+                                  {getPriorityLabel(notification.priority)}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              {!notification.read && (
+                                <Button
+                                  onClick={() => markAsRead(notification.id)}
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  <Check className="w-4 h-4" />
+                                </Button>
+                              )}
+                              <Button
+                                onClick={() => deleteNotification(notification.id)}
+                                variant="ghost"
+                                size="sm"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          {notification.actionUrl && notification.actionText && (
+                            <Button variant="outline" size="sm" className="mt-3">
+                              {notification.actionText}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </>
+        ) : (
+          settings && (
+            <>
+              {/* Notification Channels */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Smartphone className="w-5 h-5" />
+                    ערוצי התראות
+                  </CardTitle>
+                  <CardDescription>
+                    בחר איך תרצה לקבל התראות
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <label className="text-sm font-medium">משעה</label>
-                      <Input
-                        type="time"
-                        value={settings.general.quietHours.start}
-                        onChange={(e) =>
-                          setSettings((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  general: {
-                                    ...prev.general,
-                                    quietHours: {
-                                      ...prev.general.quietHours,
-                                      start: e.target.value,
-                                    },
-                                  },
-                                }
-                              : null
-                          )
+                      <h4 className="font-medium">התראות כלליות</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        הפעל או כבה את כל ההתראות
+                      </p>
+                    </div>
+                    <Switch
+                      checked={settings.enabled}
+                      onCheckedChange={(checked) =>
+                        updateSettings({ ...settings, enabled: checked })
+                      }
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Mail className="w-5 h-5 text-blue-600" />
+                        <div>
+                          <h4 className="font-medium">אימייל</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            התראות באימייל
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={settings.channels.email}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            channels: { ...settings.channels, email: checked }
+                          })
                         }
                       />
                     </div>
-                    <div>
-                      <label className="text-sm font-medium">עד שעה</label>
-                      <Input
-                        type="time"
-                        value={settings.general.quietHours.end}
-                        onChange={(e) =>
-                          setSettings((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  general: {
-                                    ...prev.general,
-                                    quietHours: {
-                                      ...prev.general.quietHours,
-                                      end: e.target.value,
-                                    },
-                                  },
-                                }
-                              : null
-                          )
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <BellRing className="w-5 h-5 text-green-600" />
+                        <div>
+                          <h4 className="font-medium">Push</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            התראות בדפדפן
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={settings.channels.push}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            channels: { ...settings.channels, push: checked }
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <MessageSquare className="w-5 h-5 text-purple-600" />
+                        <div>
+                          <h4 className="font-medium">SMS</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            הודעות טקסט
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={settings.channels.sms}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            channels: { ...settings.channels, sms: checked }
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Bell className="w-5 h-5 text-orange-600" />
+                        <div>
+                          <h4 className="font-medium">באפליקציה</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            התראות בתוך האפליקציה
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={settings.channels.inApp}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            channels: { ...settings.channels, inApp: checked }
+                          })
                         }
                       />
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Channel Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>ערוצי התראה</CardTitle>
-                <CardDescription>בחר איך תרצה לקבל התראות</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Smartphone className="w-5 h-5 text-blue-600" />
-                    <div>
-                      <h4 className="font-medium">התראות דחיפה</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        התראות במכשיר הנייד
-                      </p>
+              {/* Notification Types */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5" />
+                    סוגי התראות
+                  </CardTitle>
+                  <CardDescription>
+                    בחר איזה סוגי התראות תרצה לקבל
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {Object.entries(settings.types).map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {key === 'moodReminders' && <Heart className="w-5 h-5 text-red-500" />}
+                        {key === 'goalDeadlines' && <Target className="w-5 h-5 text-blue-500" />}
+                        {key === 'journalPrompts' && <BookOpen className="w-5 h-5 text-green-500" />}
+                        {key === 'breathingReminders' && <Activity className="w-5 h-5 text-purple-500" />}
+                        {key === 'weeklyReports' && <Calendar className="w-5 h-5 text-orange-500" />}
+                        {key === 'socialUpdates' && <Users className="w-5 h-5 text-pink-500" />}
+                        {key === 'systemAlerts' && <AlertCircle className="w-5 h-5 text-yellow-500" />}
+                        {key === 'achievements' && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                        <div>
+                          <h4 className="font-medium">
+                            {key === 'moodReminders' && 'תזכורות מצב רוח'}
+                            {key === 'goalDeadlines' && 'דדליינים של מטרות'}
+                            {key === 'journalPrompts' && 'הנחיות יומן'}
+                            {key === 'breathingReminders' && 'תזכורות נשימה'}
+                            {key === 'weeklyReports' && 'דוחות שבועיים'}
+                            {key === 'socialUpdates' && 'עדכונים חברתיים'}
+                            {key === 'systemAlerts' && 'התראות מערכת'}
+                            {key === 'achievements' && 'הישגים'}
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {key === 'moodReminders' && 'תזכורת יומית לתיעוד מצב רוח'}
+                            {key === 'goalDeadlines' && 'התראות על מטרות שמתקרבות לדדליין'}
+                            {key === 'journalPrompts' && 'הצעות לכתיבה ביומן'}
+                            {key === 'breathingReminders' && 'תזכורות לתרגילי נשימה'}
+                            {key === 'weeklyReports' && 'דוח התקדמות שבועי'}
+                            {key === 'socialUpdates' && 'עדכונים מקבוצות תמיכה'}
+                            {key === 'systemAlerts' && 'עדכוני מערכת וגרסאות'}
+                            {key === 'achievements' && 'הודעות על הישגים חדשים'}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={value}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            types: { ...settings.types, [key]: checked }
+                          })
+                        }
+                      />
                     </div>
-                  </div>
-                  <Switch
-                    checked={settings.channels.push}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              channels: { ...prev.channels, push: checked },
-                            }
-                          : null
-                      )
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-green-600" />
-                    <div>
-                      <h4 className="font-medium">אימייל</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        התראות במייל
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings.channels.email}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              channels: { ...prev.channels, email: checked },
-                            }
-                          : null
-                      )
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <MessageSquare className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <h4 className="font-medium">הודעות SMS</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        התראות בהודעות טקסט
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings.channels.sms}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              channels: { ...prev.channels, sms: checked },
-                            }
-                          : null
-                      )
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Bell className="w-5 h-5 text-orange-600" />
-                    <div>
-                      <h4 className="font-medium">בתוך האפליקציה</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        התראות בתוך האפליקציה
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={settings.channels.inApp}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              channels: { ...prev.channels, inApp: checked },
-                            }
-                          : null
-                      )
-                    }
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                  ))}
+                </CardContent>
+              </Card>
 
-            {/* Reminder Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>תזכורות</CardTitle>
-                <CardDescription>הגדר תזכורות יומיות ושבועיות</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Heart className="w-5 h-5 text-red-600" />
-                      <div>
-                        <h4 className="font-medium">בדיקת מצב רוח יומית</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          תזכורה יומית לתעד מצב רוח
-                        </p>
+              {/* Schedule Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    לוח זמנים
+                  </CardTitle>
+                  <CardDescription>
+                    הגדר מתי תרצה לקבל התראות
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Quiet Hours */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <Moon className="w-5 h-5 text-blue-500" />
+                        <div>
+                          <h4 className="font-medium">שעות שקט</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            זמן שבו לא תתקבלנה התראות
+                          </p>
+                        </div>
                       </div>
+                      <Switch
+                        checked={settings.schedule.quietHours.enabled}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            schedule: {
+                              ...settings.schedule,
+                              quietHours: { ...settings.schedule.quietHours, enabled: checked }
+                            }
+                          })
+                        }
+                      />
                     </div>
-                    <Switch
-                      checked={settings.reminders.dailyMoodCheck}
-                      onCheckedChange={(checked) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                reminders: {
-                                  ...prev.reminders,
-                                  dailyMoodCheck: checked,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="w-5 h-5 text-blue-600" />
-                      <div>
-                        <h4 className="font-medium">כתיבת יומן יומית</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          תזכורה לכתוב יומן
-                        </p>
+                    
+                    {settings.schedule.quietHours.enabled && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium">התחלה</label>
+                          <Input
+                            type="time"
+                            value={settings.schedule.quietHours.start}
+                            onChange={(e) =>
+                              updateSettings({
+                                ...settings,
+                                schedule: {
+                                  ...settings.schedule,
+                                  quietHours: { ...settings.schedule.quietHours, start: e.target.value }
+                                }
+                              })
+                            }
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">סיום</label>
+                          <Input
+                            type="time"
+                            value={settings.schedule.quietHours.end}
+                            onChange={(e) =>
+                              updateSettings({
+                                ...settings,
+                                schedule: {
+                                  ...settings.schedule,
+                                  quietHours: { ...settings.schedule.quietHours, end: e.target.value }
+                                }
+                              })
+                            }
+                            className="mt-1"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <Switch
-                      checked={settings.reminders.dailyJournal}
-                      onCheckedChange={(checked) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                reminders: {
-                                  ...prev.reminders,
-                                  dailyJournal: checked,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                    />
+                    )}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Brain className="w-5 h-5 text-purple-600" />
-                      <div>
-                        <h4 className="font-medium">תרגילי נשימה</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          תזכורה לתרגילי נשימה
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={settings.reminders.breathingExercise}
-                      onCheckedChange={(checked) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                reminders: {
-                                  ...prev.reminders,
-                                  breathingExercise: checked,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Target className="w-5 h-5 text-green-600" />
-                      <div>
-                        <h4 className="font-medium">מעקב מטרות</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          תזכורה לעקוב אחר מטרות
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={settings.reminders.goalProgress}
-                      onCheckedChange={(checked) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                reminders: {
-                                  ...prev.reminders,
-                                  goalProgress: checked,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Timing Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>זמני תזכורות</CardTitle>
-                <CardDescription>הגדר מתי לקבל תזכורות</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Custom Times */}
                   <div>
-                    <label className="text-sm font-medium">
-                      זמן תזכורת מצב רוח
-                    </label>
+                    <h4 className="font-medium mb-4 flex items-center gap-2">
+                      <Sun className="w-5 h-5 text-yellow-500" />
+                      זמנים מותאמים
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-sm font-medium">תזכורת בוקר</label>
+                        <Input
+                          type="time"
+                          value={settings.schedule.customTimes.morningReminder}
+                          onChange={(e) =>
+                            updateSettings({
+                              ...settings,
+                              schedule: {
+                                ...settings.schedule,
+                                customTimes: { ...settings.schedule.customTimes, morningReminder: e.target.value }
+                              }
+                            })
+                          }
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">תזכורת ערב</label>
+                        <Input
+                          type="time"
+                          value={settings.schedule.customTimes.eveningReminder}
+                          onChange={(e) =>
+                            updateSettings({
+                              ...settings,
+                              schedule: {
+                                ...settings.schedule,
+                                customTimes: { ...settings.schedule.customTimes, eveningReminder: e.target.value }
+                              }
+                            })
+                          }
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">דוח שבועי</label>
+                        <Input
+                          type="time"
+                          value={settings.schedule.customTimes.weeklyReport}
+                          onChange={(e) =>
+                            updateSettings({
+                              ...settings,
+                              schedule: {
+                                ...settings.schedule,
+                                customTimes: { ...settings.schedule.customTimes, weeklyReport: e.target.value }
+                              }
+                            })
+                          }
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Preferences */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    העדפות מתקדמות
+                  </CardTitle>
+                  <CardDescription>
+                    התאמות נוספות להתראות
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Volume2 className="w-5 h-5 text-blue-500" />
+                        <div>
+                          <h4 className="font-medium">צליל</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            השמע צליל עם התראות
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={settings.preferences.sound}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            preferences: { ...settings.preferences, sound: checked }
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Smartphone className="w-5 h-5 text-green-500" />
+                        <div>
+                          <h4 className="font-medium">רטט</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            רטט במכשירים ניידים
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={settings.preferences.vibration}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            preferences: { ...settings.preferences, vibration: checked }
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Info className="w-5 h-5 text-purple-500" />
+                        <div>
+                          <h4 className="font-medium">תצוגה מקדימה</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            הצג תוכן ההתראה
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={settings.preferences.preview}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            preferences: { ...settings.preferences, preview: checked }
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="w-5 h-5 text-emerald-500" />
+                        <div>
+                          <h4 className="font-medium">סימון אוטומטי כנקרא</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            סמן התראות כנקראו אוטומטית
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={settings.preferences.autoMarkRead}
+                        onCheckedChange={(checked) =>
+                          updateSettings({
+                            ...settings,
+                            preferences: { ...settings.preferences, autoMarkRead: checked }
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium">מספר התראות מקסימלי ליום</label>
                     <Input
-                      type="time"
-                      value={settings.timing.moodReminderTime}
+                      type="number"
+                      min="1"
+                      max="50"
+                      value={settings.preferences.maxPerDay}
                       onChange={(e) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                timing: {
-                                  ...prev.timing,
-                                  moodReminderTime: e.target.value,
-                                },
-                              }
-                            : null
-                        )
+                        updateSettings({
+                          ...settings,
+                          preferences: { ...settings.preferences, maxPerDay: parseInt(e.target.value) }
+                        })
                       }
+                      className="mt-1"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      הגבל את מספר ההתראות ליום (1-50)
+                    </p>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium">
-                      זמן תזכורת יומן
-                    </label>
-                    <Input
-                      type="time"
-                      value={settings.timing.journalReminderTime}
-                      onChange={(e) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                timing: {
-                                  ...prev.timing,
-                                  journalReminderTime: e.target.value,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">
-                      זמן תזכורת נשימה
-                    </label>
-                    <Input
-                      type="time"
-                      value={settings.timing.breathingReminderTime}
-                      onChange={(e) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                timing: {
-                                  ...prev.timing,
-                                  breathingReminderTime: e.target.value,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">
-                      זמן תזכורת מטרות
-                    </label>
-                    <Input
-                      type="time"
-                      value={settings.timing.goalReminderTime}
-                      onChange={(e) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                timing: {
-                                  ...prev.timing,
-                                  goalReminderTime: e.target.value,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">
-                      יום סקירה שבועית
-                    </label>
-                    <Select
-                      value={settings.timing.weeklyReviewDay}
-                      onValueChange={(value) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                timing: {
-                                  ...prev.timing,
-                                  weeklyReviewDay: value as any,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sunday">ראשון</SelectItem>
-                        <SelectItem value="monday">שני</SelectItem>
-                        <SelectItem value="tuesday">שלישי</SelectItem>
-                        <SelectItem value="wednesday">רביעי</SelectItem>
-                        <SelectItem value="thursday">חמישי</SelectItem>
-                        <SelectItem value="friday">שישי</SelectItem>
-                        <SelectItem value="saturday">שבת</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">
-                      שעת סקירה שבועית
-                    </label>
-                    <Input
-                      type="time"
-                      value={settings.timing.weeklyReviewTime}
-                      onChange={(e) =>
-                        setSettings((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                timing: {
-                                  ...prev.timing,
-                                  weeklyReviewTime: e.target.value,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </>
+          )
         )}
       </div>
     </DashboardLayout>
