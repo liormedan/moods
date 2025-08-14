@@ -99,51 +99,48 @@ export default function CalendarPage() {
     priority: 'medium' as CalendarEvent['priority'],
   });
 
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);
+
   useEffect(() => {
     loadEvents();
-  }, []);
+  }, [currentDate]);
 
-  const loadEvents = () => {
-    const saved = localStorage.getItem('calendar-events');
-    if (saved) {
-      setEvents(JSON.parse(saved));
-    } else {
-      // Load sample events
-      const sampleEvents: CalendarEvent[] = [
-        {
-          id: '1',
-          date: '2025-08-12',
-          type: 'mood',
-          title: 'מצב רוח טוב',
-          moodValue: 6,
-          moodEmoji: '😊',
-        },
-        {
-          id: '2',
-          date: '2025-08-12',
-          type: 'activity',
-          title: 'הליכה בפארק',
-          activityType: 'פעילות גופנית',
-          duration: 45,
-        },
-        {
-          id: '3',
-          date: '2025-08-13',
-          type: 'goal',
-          title: 'תרגול מדיטציה',
-          completed: false,
-          priority: 'high',
-        },
-        {
-          id: '4',
-          date: '2025-08-14',
-          type: 'reminder',
-          title: 'פגישה עם מטפל',
-          priority: 'high',
-        },
-      ];
-      setEvents(sampleEvents);
-      localStorage.setItem('calendar-events', JSON.stringify(sampleEvents));
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      
+      // Calculate date range for current month
+      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+      
+      const params = new URLSearchParams({
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+      });
+
+      const response = await fetch(`/api/calendar?${params}`);
+      if (response.ok) {
+        const result = await response.json();
+        setEvents(result.data || []);
+        setStats(result.stats);
+      } else {
+        console.error('Failed to load calendar events');
+        // Fallback to localStorage
+        const saved = localStorage.getItem('calendar-events');
+        if (saved) {
+          setEvents(JSON.parse(saved));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading calendar events:', error);
+      // Fallback to localStorage
+      const saved = localStorage.getItem('calendar-events');
+      if (saved) {
+        setEvents(JSON.parse(saved));
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -152,33 +149,48 @@ export default function CalendarPage() {
     localStorage.setItem('calendar-events', JSON.stringify(newEvents));
   };
 
-  const addEvent = () => {
+  const addEvent = async () => {
     if (!selectedDate || !newEvent.title) return;
 
-    const event: CalendarEvent = {
-      id: Date.now().toString(),
-      date: selectedDate.toISOString().split('T')[0],
-      ...newEvent,
-      moodEmoji:
-        newEvent.type === 'mood'
-          ? moodEmojis[newEvent.moodValue - 1]
-          : undefined,
-    };
+    try {
+      const eventData = {
+        type: newEvent.type,
+        date: selectedDate.toISOString().split('T')[0],
+        title: newEvent.title,
+        description: newEvent.description,
+        moodValue: newEvent.moodValue,
+        activityType: newEvent.activityType,
+        duration: newEvent.duration,
+        priority: newEvent.priority,
+      };
 
-    const updatedEvents = [...events, event];
-    saveEvents(updatedEvents);
+      const response = await fetch('/api/calendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData),
+      });
 
-    // Reset form
-    setNewEvent({
-      type: 'mood',
-      title: '',
-      description: '',
-      moodValue: 5,
-      activityType: '',
-      duration: 30,
-      priority: 'medium',
-    });
-    setShowAddEvent(false);
+      if (response.ok) {
+        // Reload events to get updated data
+        await loadEvents();
+        
+        // Reset form
+        setNewEvent({
+          type: 'mood',
+          title: '',
+          description: '',
+          moodValue: 5,
+          activityType: '',
+          duration: 30,
+          priority: 'medium',
+        });
+        setShowAddEvent(false);
+      } else {
+        console.error('Failed to create event');
+      }
+    } catch (error) {
+      console.error('Error creating event:', error);
+    }
   };
 
   const toggleEventCompletion = (eventId: string) => {
@@ -418,7 +430,14 @@ export default function CalendarPage() {
         </Card>
 
         {/* Calendar View */}
-        {viewMode === 'month' && (
+        {loading ? (
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardContent className="py-12 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 dark:text-gray-400 mt-4">טוען נתוני לוח שנה...</p>
+            </CardContent>
+          </Card>
+        ) : viewMode === 'month' && (
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardContent className="p-6">
               {/* Week Days Header */}
@@ -878,51 +897,175 @@ export default function CalendarPage() {
           </Card>
         )}
 
-        {/* Monthly Summary */}
-        <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        {/* Monthly Statistics */}
+        {stats && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Summary Stats */}
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  סיכום חודשי
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {stats.moodEntries}
+                    </div>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      תיעודי מצב רוח
+                    </p>
+                  </div>
+
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {stats.activities}
+                    </div>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      פעילויות
+                    </p>
+                  </div>
+
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {stats.completedGoals}
+                    </div>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      מטרות הושלמו
+                    </p>
+                  </div>
+
+                  <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {stats.activeDays}
+                    </div>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      ימים פעילים
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Mood Analytics */}
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="w-5 h-5" />
+                  ניתוח מצב רוח
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">ממוצע מצב רוח</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                        {stats.averageMood}/10
+                      </p>
+                    </div>
+                    <div className="text-3xl">
+                      {stats.averageMood >= 7 ? '😊' : stats.averageMood >= 5 ? '🙂' : '😕'}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">מגמה</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {stats.moodTrend === 'up' ? 'עולה' : 
+                         stats.moodTrend === 'down' ? 'יורדת' : 'יציבה'}
+                      </p>
+                    </div>
+                    <div className="text-2xl">
+                      {stats.moodTrend === 'up' ? '📈' : 
+                       stats.moodTrend === 'down' ? '📉' : '➡️'}
+                    </div>
+                  </div>
+
+                  {stats.moodTrend === 'up' && (
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <p className="text-sm text-green-800 dark:text-green-300">
+                        🎉 מצב הרוח שלך משתפר! המשך כך!
+                      </p>
+                    </div>
+                  )}
+
+                  {stats.moodTrend === 'down' && (
+                    <div className="p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                      <p className="text-sm text-orange-800 dark:text-orange-300">
+                        💪 שקול לנסות פעילויות מרגיעות או לפנות לעזרה מקצועית
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Export and Actions */}
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-800">
           <CardHeader>
-            <CardTitle>סיכום חודשי</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              פעולות נוספות
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {events.filter((e) => e.type === 'mood').length}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  תיעודי מצב רוח
-                </p>
-              </div>
+            <div className="flex flex-wrap gap-4">
+              <Button
+                onClick={() => {
+                  const csvContent = [
+                    ['תאריך', 'סוג', 'כותרת', 'תיאור', 'מצב רוח', 'משך', 'עדיפות'].join(','),
+                    ...events.map(event => [
+                      event.date,
+                      event.type === 'mood' ? 'מצב רוח' : 
+                      event.type === 'activity' ? 'פעילות' :
+                      event.type === 'goal' ? 'מטרה' : 'תזכורת',
+                      `"${event.title}"`,
+                      `"${event.description || ''}"`,
+                      event.moodValue || '',
+                      event.duration || '',
+                      event.priority || ''
+                    ].join(','))
+                  ].join('\n');
 
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {events.filter((e) => e.type === 'activity').length}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  פעילויות
-                </p>
-              </div>
+                  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                  const link = document.createElement('a');
+                  link.href = URL.createObjectURL(blob);
+                  link.download = `לוח_שנה_${currentDate.getFullYear()}_${currentDate.getMonth() + 1}.csv`;
+                  link.click();
+                }}
+                variant="outline"
+                className="border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                ייצא לCSV
+              </Button>
 
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                  {
-                    events.filter((e) => e.type === 'goal' && e.completed)
-                      .length
-                  }
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  מטרות שהושלמו
-                </p>
-              </div>
+              <Button
+                onClick={() => setCurrentDate(new Date())}
+                variant="outline"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                חזור להיום
+              </Button>
 
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {events.filter((e) => e.type === 'reminder').length}
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  תזכורות
-                </p>
-              </div>
+              <Button
+                onClick={() => {
+                  const today = new Date();
+                  setSelectedDate(today);
+                  setCurrentDate(today);
+                  setShowAddEvent(true);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                הוסף אירוע להיום
+              </Button>
             </div>
           </CardContent>
         </Card>

@@ -73,8 +73,24 @@ export default function DashboardPage() {
         throw new Error('שגיאה בטעינת נתונים');
       }
 
-      const data = await response.json();
-      setStats(data);
+      const result = await response.json();
+      const apiData = result.data;
+      
+      // Transform API data to match our interface
+      const transformedStats: DashboardStats = {
+        totalEntries: apiData.totalEntries || 0,
+        averageMood: apiData.averageMood || 0,
+        currentStreak: apiData.streakDays || 0,
+        bestStreak: apiData.streakDays || 0, // For now, use current streak as best
+        insightsCount: apiData.insights?.length || 0,
+        unreadInsights: Math.min(apiData.insights?.length || 0, 2), // Mock unread count
+        weeklyAverage: apiData.weeklyAverages?.slice(-1)[0]?.average || apiData.averageMood || 0,
+        monthlyAverage: apiData.averageMood || 0,
+        moodTrend: apiData.moodTrend || 'stable',
+        lastEntryDate: apiData.recentMood?.date || null,
+      };
+      
+      setStats(transformedStats);
     } catch (err) {
       console.error('Dashboard stats error:', err);
 

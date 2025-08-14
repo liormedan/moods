@@ -36,6 +36,11 @@ import {
   MapPin,
   Mail,
   MessageCircle,
+  AlertCircle,
+  CheckCircle2,
+  Lightbulb,
+  Shield,
+  Zap,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
@@ -43,24 +48,8 @@ interface Resource {
   id: string;
   title: string;
   description: string;
-  type:
-    | 'article'
-    | 'video'
-    | 'podcast'
-    | 'book'
-    | 'tool'
-    | 'app'
-    | 'contact'
-    | 'event';
-  category:
-    | 'anxiety'
-    | 'depression'
-    | 'general'
-    | 'crisis'
-    | 'self-help'
-    | 'professional'
-    | 'family'
-    | 'youth';
+  type: 'article' | 'video' | 'podcast' | 'book' | 'tool' | 'app' | 'contact' | 'event';
+  category: 'anxiety' | 'depression' | 'general' | 'crisis' | 'self-help' | 'professional' | 'family' | 'youth';
   url?: string;
   fileUrl?: string;
   author?: string;
@@ -71,138 +60,20 @@ interface Resource {
   language: 'hebrew' | 'english' | 'arabic' | 'russian';
   lastUpdated: string;
   featured: boolean;
+  views?: number;
+  difficulty?: 'beginner' | 'intermediate' | 'advanced' | 'all';
 }
 
-const resources: Resource[] = [
-  {
-    id: '1',
-    title: 'מדריך להתמודדות עם חרדה יומיומית',
-    description:
-      'מדריך מקיף עם טכניקות מעשיות להתמודדות עם חרדה, כולל תרגילי נשימה, מדיטציה וכלים קוגניטיביים.',
-    type: 'article',
-    category: 'anxiety',
-    url: 'https://example.com/anxiety-guide',
-    author: 'ד"ר יעל כהן',
-    tags: ['חרדה', 'טכניקות התמודדות', 'תרגילי נשימה', 'מדיטציה'],
-    isFree: true,
-    language: 'hebrew',
-    lastUpdated: '2025-08-01',
-    featured: true,
-  },
-  {
-    id: '2',
-    title: 'סדרת וידאו: יסודות המיינדפולנס',
-    description:
-      'סדרה של 10 סרטונים קצרים המסבירים ומלמדים את יסודות המיינדפולנס למתחילים.',
-    type: 'video',
-    category: 'general',
-    url: 'https://youtube.com/playlist?list=123',
-    duration: '2 שעות',
-    tags: ['מיינדפולנס', 'מדיטציה', 'הרגעה', 'מתחילים'],
-    isFree: true,
-    language: 'hebrew',
-    lastUpdated: '2025-07-15',
-    featured: true,
-  },
-  {
-    id: '3',
-    title: 'פודקאסט: בריאות הנפש בישראל',
-    description:
-      'פודקאסט שבועי העוסק בנושאי בריאות הנפש, עם אורחים מומחים ודיונים על נושאים אקטואליים.',
-    type: 'podcast',
-    category: 'general',
-    url: 'https://spotify.com/show/mental-health-israel',
-    duration: '45 דקות',
-    tags: ['בריאות נפש', 'ישראל', 'מומחים', 'שבועי'],
-    isFree: true,
-    language: 'hebrew',
-    lastUpdated: '2025-08-10',
-    featured: false,
-  },
-  {
-    id: '4',
-    title: 'אפליקציית מדיטציה מונחית',
-    description:
-      'אפליקציה עם עשרות מדיטציות מונחות בעברית, מתאימה למתחילים ומתקדמים.',
-    type: 'app',
-    category: 'general',
-    url: 'https://play.google.com/store/apps/details?id=meditation.he',
-    tags: ['מדיטציה', 'אפליקציה', 'מונחה', 'עברית'],
-    isFree: false,
-    language: 'hebrew',
-    lastUpdated: '2025-06-20',
-    featured: false,
-  },
-  {
-    id: '5',
-    title: 'קו חירום לבריאות הנפש',
-    description:
-      'קו חירום 24/7 המספק תמיכה מיידית במצבי משבר נפשי. צוות מקצועי זמין בכל שעה.',
-    type: 'contact',
-    category: 'crisis',
-    url: 'tel:1201',
-    tags: ['חירום', 'משבר', 'תמיכה מיידית', '24/7'],
-    isFree: true,
-    language: 'hebrew',
-    lastUpdated: '2025-01-01',
-    featured: true,
-  },
-  {
-    id: '6',
-    title: 'ספר: "הדרך לרווחה נפשית"',
-    description:
-      'ספר מקיף המשלב תיאוריה מערבית עם חכמה מזרחית, כולל תרגילים מעשיים לשיפור הרווחה הנפשית.',
-    type: 'book',
-    category: 'self-help',
-    url: 'https://example.com/book',
-    author: "פרופ' דוד לוי",
-    tags: ['ספר', 'רווחה נפשית', 'תרגילים', 'תיאוריה'],
-    isFree: false,
-    language: 'hebrew',
-    lastUpdated: '2025-05-10',
-    featured: false,
-  },
-  {
-    id: '7',
-    title: 'כלי מעקב מצב רוח דיגיטלי',
-    description:
-      'כלי אינטראקטיבי למעקב אחרי מצב הרוח, זיהוי דפוסים והמלצות מותאמות אישית.',
-    type: 'tool',
-    category: 'self-help',
-    url: 'https://example.com/mood-tracker',
-    tags: ['מעקב מצב רוח', 'דפוסים', 'המלצות', 'אינטראקטיבי'],
-    isFree: true,
-    language: 'hebrew',
-    lastUpdated: '2025-07-30',
-    featured: false,
-  },
-  {
-    id: '8',
-    title: 'סדנה: התמודדות עם לחץ בעבודה',
-    description:
-      'סדנה מעשית בת 3 שעות על טכניקות להתמודדות עם לחץ בעבודה ושיפור האיזון בין עבודה לחיים.',
-    type: 'event',
-    category: 'professional',
-    url: 'https://example.com/workshop',
-    duration: '3 שעות',
-    tags: ['סדנה', 'לחץ בעבודה', 'איזון', 'טכניקות'],
-    isFree: false,
-    language: 'hebrew',
-    lastUpdated: '2025-08-05',
-    featured: true,
-  },
-];
-
 const categories = [
-  { id: 'all', name: 'כל הקטגוריות', icon: HelpCircle },
-  { id: 'anxiety', name: 'חרדה', icon: Brain },
-  { id: 'depression', name: 'דיכאון', icon: Heart },
-  { id: 'general', name: 'כללי', icon: HelpCircle },
-  { id: 'crisis', name: 'משבר', icon: Activity },
-  { id: 'self-help', name: 'עזרה עצמית', icon: BookOpen },
-  { id: 'professional', name: 'מקצועי', icon: Users },
-  { id: 'family', name: 'משפחה', icon: Users },
-  { id: 'youth', name: 'נוער', icon: Users },
+  { id: 'all', name: 'כל הקטגוריות', icon: HelpCircle, color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' },
+  { id: 'anxiety', name: 'חרדה', icon: Brain, color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400' },
+  { id: 'depression', name: 'דיכאון', icon: Heart, color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' },
+  { id: 'general', name: 'כללי', icon: HelpCircle, color: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' },
+  { id: 'crisis', name: 'משבר', icon: AlertCircle, color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' },
+  { id: 'self-help', name: 'עזרה עצמית', icon: Lightbulb, color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' },
+  { id: 'professional', name: 'מקצועי', icon: Users, color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400' },
+  { id: 'family', name: 'משפחה', icon: Users, color: 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-400' },
+  { id: 'youth', name: 'נוער', icon: Zap, color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400' },
 ];
 
 const types = [
@@ -218,14 +89,16 @@ const types = [
 ];
 
 export default function ResourcesPage() {
-  const [currentResources, setCurrentResources] =
-    useState<Resource[]>(resources);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFreeOnly, setShowFreeOnly] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>('all');
   const [bookmarkedResources, setBookmarkedResources] = useState<string[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [sortBy, setSortBy] = useState<'featured' | 'rating' | 'views' | 'recent'>('featured');
 
   useEffect(() => {
     // Load bookmarked resources from localStorage
@@ -233,26 +106,78 @@ export default function ResourcesPage() {
     if (saved) {
       setBookmarkedResources(JSON.parse(saved));
     }
+    loadResources();
   }, []);
 
-  const filteredResources = currentResources.filter((resource) => {
-    if (selectedCategory !== 'all' && resource.category !== selectedCategory)
-      return false;
-    if (selectedType !== 'all' && resource.type !== selectedType) return false;
-    if (selectedLanguage !== 'all' && resource.language !== selectedLanguage)
-      return false;
-    if (showFreeOnly && !resource.isFree) return false;
-    if (
-      searchQuery &&
-      !resource.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !resource.description.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !resource.tags.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    )
-      return false;
-    return true;
+  useEffect(() => {
+    loadResources();
+  }, [selectedCategory, selectedType, selectedLanguage, showFreeOnly, searchQuery]);
+
+  const loadResources = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      
+      if (selectedCategory !== 'all') params.append('category', selectedCategory);
+      if (selectedType !== 'all') params.append('type', selectedType);
+      if (selectedLanguage !== 'all') params.append('language', selectedLanguage);
+      if (showFreeOnly) params.append('isFree', 'true');
+      if (searchQuery) params.append('search', searchQuery);
+      
+      const response = await fetch(`/api/resources?${params}`);
+      if (response.ok) {
+        const result = await response.json();
+        setResources(result.data || []);
+        setStats(result.stats);
+      } else {
+        console.error('Failed to load resources');
+      }
+    } catch (error) {
+      console.error('Error loading resources:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sort resources based on selected criteria
+  const sortedResources = [...resources].sort((a, b) => {
+    switch (sortBy) {
+      case 'rating':
+        return (b.rating || 0) - (a.rating || 0);
+      case 'views':
+        return (b.views || 0) - (a.views || 0);
+      case 'recent':
+        return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+      case 'featured':
+      default:
+        if (a.featured && !b.featured) return -1;
+        if (!a.featured && b.featured) return 1;
+        return (b.views || 0) - (a.views || 0);
+    }
   });
+
+  const exportResources = () => {
+    const csvContent = [
+      ['כותרת', 'תיאור', 'סוג', 'קטגוריה', 'שפה', 'חינמי', 'דירוג', 'צפיות', 'מחבר'].join(','),
+      ...resources.map(resource => [
+        `"${resource.title}"`,
+        `"${resource.description}"`,
+        getTypeText(resource.type),
+        getCategoryName(resource.category),
+        getLanguageText(resource.language),
+        resource.isFree ? 'כן' : 'לא',
+        resource.rating || 'לא דורג',
+        resource.views || 0,
+        `"${resource.author || 'לא צוין'}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `משאבי_עזרה_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
 
   const toggleBookmark = (resourceId: string) => {
     const newBookmarks = bookmarkedResources.includes(resourceId)
@@ -291,6 +216,11 @@ export default function ResourcesPage() {
     return cat ? cat.name : category;
   };
 
+  const getCategoryColor = (category: string) => {
+    const cat = categories.find((c) => c.id === category);
+    return cat ? cat.color : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+  };
+
   const getLanguageText = (language: string) => {
     switch (language) {
       case 'hebrew':
@@ -318,8 +248,8 @@ export default function ResourcesPage() {
     }
   };
 
-  const featuredResources = filteredResources.filter((r) => r.featured);
-  const regularResources = filteredResources.filter((r) => !r.featured);
+  const featuredResources = sortedResources.filter((r) => r.featured);
+  const regularResources = sortedResources.filter((r) => !r.featured);
 
   return (
     <DashboardLayout>
@@ -327,12 +257,81 @@ export default function ResourcesPage() {
         {/* Header */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            משאבי עזרה ומידע 📚💡
+            משאבי עזרה ומידע 📚
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
             אוסף מקיף של משאבים, כלים ומידע שיעזרו לך לשפר את הרווחה הנפשית
           </p>
         </div>
+
+        {/* Statistics Overview */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {stats.total}
+                    </div>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      סה"כ משאבים
+                    </p>
+                  </div>
+                  <BookOpen className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {stats.freeResources}
+                    </div>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      משאבים חינמיים
+                    </p>
+                  </div>
+                  <Heart className="w-8 h-8 text-green-500 dark:text-green-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {stats.featuredResources}
+                    </div>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      משאבים מומלצים
+                    </p>
+                  </div>
+                  <Star className="w-8 h-8 text-purple-500 dark:text-purple-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {bookmarkedResources.length}
+                    </div>
+                    <p className="text-sm text-orange-700 dark:text-orange-300">
+                      משאבים שמורים
+                    </p>
+                  </div>
+                  <Bookmark className="w-8 h-8 text-orange-500 dark:text-orange-400" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Search and Filters */}
         <div className="space-y-4">
@@ -347,68 +346,128 @@ export default function ResourcesPage() {
             />
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-4">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+          {/* Filters and Controls */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
 
-            <select
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {types.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {types.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
 
-            <select
-              value={selectedLanguage}
-              onChange={(e) => setSelectedLanguage(e.target.value)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">כל השפות</option>
-              <option value="hebrew">עברית</option>
-              <option value="english">אנגלית</option>
-              <option value="arabic">ערבית</option>
-              <option value="russian">רוסית</option>
-            </select>
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">כל השפות</option>
+                <option value="hebrew">עברית</option>
+                <option value="english">אנגלית</option>
+                <option value="arabic">ערבית</option>
+                <option value="russian">רוסית</option>
+              </select>
 
-            <button
-              onClick={() => setShowFreeOnly(!showFreeOnly)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                showFreeOnly
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-              }`}
-            >
-              <span>{showFreeOnly ? 'רק חינמי' : 'כל המשאבים'}</span>
-            </button>
+              <button
+                onClick={() => setShowFreeOnly(!showFreeOnly)}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+                  showFreeOnly
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                }`}
+              >
+                <span>{showFreeOnly ? 'רק חינמי' : 'כל המשאבים'}</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="featured">מומלצים</option>
+                <option value="rating">דירוג</option>
+                <option value="views">צפיות</option>
+                <option value="recent">עדכון אחרון</option>
+              </select>
+
+              <Button
+                onClick={exportResources}
+                variant="outline"
+                className="border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                ייצא
+              </Button>
+            </div>
           </div>
         </div>
+
+        {/* Emergency Resources */}
+        <Card className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border-red-200 dark:border-red-800">
+          <CardHeader>
+            <CardTitle className="text-red-800 dark:text-red-300 flex items-center gap-2">
+              <Shield className="w-5 h-5" />
+              משאבי חירום - זמינים 24/7
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
+                <Phone className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">ער"ן - קו חירום</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">1201 - חינמי</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
+                <Phone className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">נטל - קו נוער</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">1800-250-250</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
+                <MessageCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-gray-100">צ'אט חירום</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">sahar.org.il</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Featured Resources */}
         {featuredResources.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              משאבים מומלצים ⭐
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" />
+              משאבים מומלצים ({featuredResources.length})
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredResources.map((resource) => (
                 <Card
                   key={resource.id}
-                  className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-yellow-200 dark:border-yellow-800"
+                  className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-yellow-200 dark:border-yellow-800 hover:shadow-lg transition-shadow"
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -443,15 +502,15 @@ export default function ResourcesPage() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center space-x-2">
                         {getCategoryIcon(resource.category)}
-                        <span className="text-gray-600 dark:text-gray-400">
+                        <Badge className={getCategoryColor(resource.category)}>
                           {getCategoryName(resource.category)}
-                        </span>
+                        </Badge>
                       </div>
                       <Badge
                         className={
                           resource.isFree
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-blue-100 text-blue-800'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
                         }
                       >
                         {resource.isFree ? 'חינמי' : 'בתשלום'}
@@ -486,26 +545,25 @@ export default function ResourcesPage() {
                         )}
                       </div>
 
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleResourceClick(resource)}
-                        >
-                          {resource.type === 'contact' ? (
-                            <Phone className="w-4 h-4 mr-1" />
-                          ) : resource.type === 'video' ? (
-                            <Play className="w-4 h-4 mr-1" />
-                          ) : (
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                          )}
-                          {resource.type === 'contact'
-                            ? 'צור קשר'
-                            : resource.type === 'video'
-                              ? 'צפה'
-                              : 'פתח'}
-                        </Button>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleResourceClick(resource)}
+                        className="bg-white dark:bg-gray-800"
+                      >
+                        {resource.type === 'contact' ? (
+                          <Phone className="w-4 h-4 mr-1" />
+                        ) : resource.type === 'video' ? (
+                          <Play className="w-4 h-4 mr-1" />
+                        ) : (
+                          <ExternalLink className="w-4 h-4 mr-1" />
+                        )}
+                        {resource.type === 'contact'
+                          ? 'צור קשר'
+                          : resource.type === 'video'
+                            ? 'צפה'
+                            : 'פתח'}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -516,11 +574,34 @@ export default function ResourcesPage() {
 
         {/* All Resources */}
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            כל המשאבים ({regularResources.length})
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              כל המשאבים ({regularResources.length})
+            </h3>
+            {bookmarkedResources.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const bookmarked = resources.filter(r => bookmarkedResources.includes(r.id));
+                  if (bookmarked.length > 0) {
+                    setResources(bookmarked);
+                  }
+                }}
+                className="text-orange-600 border-orange-200 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-800 dark:hover:bg-orange-900/20"
+              >
+                <Bookmark className="w-4 h-4 mr-2" />
+                הצג שמורים ({bookmarkedResources.length})
+              </Button>
+            )}
+          </div>
 
-          {regularResources.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 dark:text-gray-400 mt-4">טוען משאבים...</p>
+            </div>
+          ) : regularResources.length === 0 ? (
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardContent className="py-12 text-center">
                 <HelpCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -569,15 +650,15 @@ export default function ResourcesPage() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center space-x-2">
                         {getCategoryIcon(resource.category)}
-                        <span className="text-gray-600 dark:text-gray-400">
+                        <Badge className={getCategoryColor(resource.category)}>
                           {getCategoryName(resource.category)}
-                        </span>
+                        </Badge>
                       </div>
                       <Badge
                         className={
                           resource.isFree
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-blue-100 text-blue-800'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
                         }
                       >
                         {resource.isFree ? 'חינמי' : 'בתשלום'}
@@ -610,28 +691,31 @@ export default function ResourcesPage() {
                             </span>
                           </div>
                         )}
+                        {resource.views && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {resource.views.toLocaleString()} צפיות
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleResourceClick(resource)}
-                        >
-                          {resource.type === 'contact' ? (
-                            <Phone className="w-4 h-4 mr-1" />
-                          ) : resource.type === 'video' ? (
-                            <Play className="w-4 h-4 mr-1" />
-                          ) : (
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                          )}
-                          {resource.type === 'contact'
-                            ? 'צור קשר'
-                            : resource.type === 'video'
-                              ? 'צפה'
-                              : 'פתח'}
-                        </Button>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleResourceClick(resource)}
+                      >
+                        {resource.type === 'contact' ? (
+                          <Phone className="w-4 h-4 mr-1" />
+                        ) : resource.type === 'video' ? (
+                          <Play className="w-4 h-4 mr-1" />
+                        ) : (
+                          <ExternalLink className="w-4 h-4 mr-1" />
+                        )}
+                        {resource.type === 'contact'
+                          ? 'צור קשר'
+                          : resource.type === 'video'
+                            ? 'צפה'
+                            : 'פתח'}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -640,105 +724,55 @@ export default function ResourcesPage() {
           )}
         </div>
 
-        {/* Quick Access Section */}
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-800">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              גישה מהירה למשאבים חשובים
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-20 flex-col space-y-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                onClick={() => window.open('tel:1201', '_self')}
-              >
-                <Phone className="w-6 h-6 text-red-600" />
-                <span className="text-sm">קו חירום</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-20 flex-col space-y-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                onClick={() => window.open('https://www.eran.org.il', '_blank')}
-              >
-                <MessageCircle className="w-6 h-6 text-blue-600" />
-                <span className="text-sm">ער"ן</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-20 flex-col space-y-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                onClick={() =>
-                  window.open('https://www.health.gov.il', '_blank')
-                }
-              >
-                <Globe className="w-6 h-6 text-green-600" />
-                <span className="text-sm">משרד הבריאות</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-20 flex-col space-y-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                onClick={() =>
-                  window.open('https://www.mentalhealth.org.il', '_blank')
-                }
-              >
-                <Heart className="w-6 h-6 text-purple-600" />
-                <span className="text-sm">בריאות הנפש</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tips Section */}
-        <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-green-200 dark:border-green-800">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        {/* Tips and Guidelines */}
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
+          <CardHeader>
+            <CardTitle className="text-blue-800 dark:text-blue-300 flex items-center gap-2">
+              <Lightbulb className="w-5 h-5" />
               טיפים לשימוש במשאבים
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Bookmark className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">התחל בהדרגה</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      בחר משאב אחד או שניים להתחלה, אל תנסה לעשות הכל בבת אחת
+                    </p>
+                  </div>
                 </div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  שמור משאבים
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  שמור משאבים מעניינים לשימוש עתידי עם כפתור הסימניה
-                </p>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">שמור מה שעובד</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      השתמש בכפתור הסימניות כדי לשמור משאבים שמועילים לך
+                    </p>
+                  </div>
+                </div>
               </div>
-
-              <div className="text-center">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Filter className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">פנה לעזרה מקצועית</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      משאבים אלה אינם תחליף לטיפול מקצועי במקרה הצורך
+                    </p>
+                  </div>
                 </div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  השתמש בסינון
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  השתמש בסינון כדי למצוא משאבים רלוונטיים לך
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Share2 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">שתף עם אחרים</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      משאבים מועילים יכולים לעזור גם לחברים ובני משפחה
+                    </p>
+                  </div>
                 </div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  שתף עם אחרים
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  שתף משאבים מועילים עם חברים ומשפחה
-                </p>
               </div>
             </div>
           </CardContent>

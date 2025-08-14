@@ -29,6 +29,14 @@ import {
   Heart,
   Brain,
   Users,
+  Download,
+  Search,
+  Filter,
+  BarChart3,
+  AlertCircle,
+  CheckCircle2,
+  X,
+  Save,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
@@ -113,10 +121,12 @@ const statusColors = {
 
 export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [newGoal, setNewGoal] = useState({
     title: '',
     description: '',
@@ -125,174 +135,163 @@ export default function GoalsPage() {
     priority: 'medium' as Goal['priority'],
     milestones: [] as Milestone[],
   });
+  const [newMilestone, setNewMilestone] = useState('');
 
   useEffect(() => {
     loadGoals();
-  }, []);
+  }, [selectedCategory, selectedStatus]);
 
-  const loadGoals = () => {
-    const saved = localStorage.getItem('goals');
-    if (saved) {
-      setGoals(JSON.parse(saved));
-    } else {
-      // Load sample goals
-      const sampleGoals: Goal[] = [
-        {
-          id: '1',
-          title: 'תרגול מדיטציה יומי',
-          description: 'להתחיל לתרגל מדיטציה של 10 דקות כל בוקר',
-          category: 'mental-health',
-          targetDate: '2025-09-30',
-          progress: 60,
-          status: 'in-progress',
-          priority: 'high',
-          milestones: [
-            { id: '1-1', title: 'התקנת אפליקציית מדיטציה', completed: true },
-            { id: '1-2', title: 'תרגול ראשון של 5 דקות', completed: true },
-            { id: '1-3', title: 'הגעה ל-10 דקות', completed: false },
-            { id: '1-4', title: 'תרגול יומי במשך שבוע', completed: false },
-          ],
-          createdAt: '2025-08-01',
-        },
-        {
-          id: '2',
-          title: 'פעילות גופנית 3 פעמים בשבוע',
-          description: 'להתחיל בפעילות גופנית קבועה לשיפור מצב הרוח',
-          category: 'physical',
-          targetDate: '2025-10-15',
-          progress: 30,
-          status: 'in-progress',
-          priority: 'medium',
-          milestones: [
-            { id: '2-1', title: 'בחירת סוג פעילות', completed: true },
-            { id: '2-2', title: 'פעילות ראשונה', completed: true },
-            { id: '2-3', title: 'פעילות שבועית', completed: false },
-            { id: '2-4', title: 'הגעה ל-3 פעמים בשבוע', completed: false },
-          ],
-          createdAt: '2025-08-05',
-        },
-        {
-          id: '3',
-          title: 'שיפור איכות השינה',
-          description: 'להגיע ל-7-8 שעות שינה איכותית בלילה',
-          category: 'mental-health',
-          targetDate: '2025-09-15',
-          progress: 80,
-          status: 'in-progress',
-          priority: 'high',
-          milestones: [
-            { id: '3-1', title: 'הגדרת זמן שינה קבוע', completed: true },
-            { id: '3-2', title: 'יצירת שגרת ערב', completed: true },
-            { id: '3-3', title: 'הפחתת מסכים לפני שינה', completed: true },
-            { id: '3-4', title: 'הגעה ל-7 שעות שינה', completed: false },
-          ],
-          createdAt: '2025-07-20',
-        },
-      ];
-      setGoals(sampleGoals);
-      localStorage.setItem('goals', JSON.stringify(sampleGoals));
+  const loadGoals = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (selectedCategory !== 'all') params.append('category', selectedCategory);
+      if (selectedStatus !== 'all') params.append('status', selectedStatus);
+      
+      const response = await fetch(`/api/goals?${params}`);
+      if (response.ok) {
+        const result = await response.json();
+        setGoals(result.data || []);
+      } else {
+        console.error('Failed to load goals');
+        // Fallback to localStorage for demo
+        const saved = localStorage.getItem('goals');
+        if (saved) {
+          setGoals(JSON.parse(saved));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading goals:', error);
+      // Fallback to localStorage for demo
+      const saved = localStorage.getItem('goals');
+      if (saved) {
+        setGoals(JSON.parse(saved));
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const saveGoals = (newGoals: Goal[]) => {
-    setGoals(newGoals);
-    localStorage.setItem('goals', JSON.stringify(newGoals));
-  };
-
-  const addGoal = () => {
+  const addGoal = async () => {
     if (!newGoal.title || !newGoal.targetDate) return;
 
-    const goal: Goal = {
-      id: Date.now().toString(),
-      ...newGoal,
-      progress: 0,
-      status: 'not-started',
-      createdAt: new Date().toISOString().split('T')[0],
-    };
+    try {
+      const response = await fetch('/api/goals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newGoal),
+      });
 
-    const updatedGoals = [...goals, goal];
-    saveGoals(updatedGoals);
-
-    // Reset form
-    setNewGoal({
-      title: '',
-      description: '',
-      category: 'mental-health',
-      targetDate: '',
-      priority: 'medium',
-      milestones: [],
-    });
-    setShowAddForm(false);
-  };
-
-  const updateGoal = (id: string, updates: Partial<Goal>) => {
-    const updatedGoals = goals.map((goal) =>
-      goal.id === id ? { ...goal, ...updates } : goal
-    );
-    saveGoals(updatedGoals);
-  };
-
-  const deleteGoal = (id: string) => {
-    const updatedGoals = goals.filter((goal) => goal.id !== id);
-    saveGoals(updatedGoals);
-  };
-
-  const toggleMilestone = (goalId: string, milestoneId: string) => {
-    const updatedGoals = goals.map((goal) => {
-      if (goal.id === goalId) {
-        const updatedMilestones = goal.milestones.map((milestone) =>
-          milestone.id === milestoneId
-            ? { ...milestone, completed: !milestone.completed }
-            : milestone
-        );
-
-        const completedCount = updatedMilestones.filter(
-          (m) => m.completed
-        ).length;
-        const progress = Math.round(
-          (completedCount / updatedMilestones.length) * 100
-        );
-
-        let status = goal.status;
-        if (progress === 100) {
-          status = 'completed';
-        } else if (progress > 0) {
-          status = 'in-progress';
-        }
-
-        return {
-          ...goal,
-          milestones: updatedMilestones,
-          progress,
-          status,
-          completedAt:
-            status === 'completed'
-              ? new Date().toISOString().split('T')[0]
-              : undefined,
-        };
+      if (response.ok) {
+        const result = await response.json();
+        setGoals(prev => [...prev, result.data]);
+        
+        // Reset form
+        setNewGoal({
+          title: '',
+          description: '',
+          category: 'mental-health',
+          targetDate: '',
+          priority: 'medium',
+          milestones: [],
+        });
+        setShowAddForm(false);
+      } else {
+        console.error('Failed to create goal');
       }
-      return goal;
-    });
-    saveGoals(updatedGoals);
+    } catch (error) {
+      console.error('Error creating goal:', error);
+    }
   };
 
-  const addMilestone = (goalId: string, title: string) => {
+  const updateGoal = async (id: string, updates: Partial<Goal>) => {
+    try {
+      const response = await fetch('/api/goals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...updates }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setGoals(prev => prev.map(goal => 
+          goal.id === id ? result.data : goal
+        ));
+        setEditingGoal(null);
+      } else {
+        console.error('Failed to update goal');
+      }
+    } catch (error) {
+      console.error('Error updating goal:', error);
+    }
+  };
+
+  const deleteGoal = async (id: string) => {
+    if (!confirm('האם אתה בטוח שברצונך למחוק את המטרה?')) return;
+
+    try {
+      const response = await fetch(`/api/goals?id=${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setGoals(prev => prev.filter(goal => goal.id !== id));
+      } else {
+        console.error('Failed to delete goal');
+      }
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+    }
+  };
+
+  const toggleMilestone = async (goalId: string, milestoneId: string) => {
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    const updatedMilestones = goal.milestones.map((milestone) =>
+      milestone.id === milestoneId
+        ? { ...milestone, completed: !milestone.completed }
+        : milestone
+    );
+
+    await updateGoal(goalId, { milestones: updatedMilestones });
+  };
+
+  const addMilestone = async (goalId: string, title: string) => {
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
     const milestone: Milestone = {
       id: Date.now().toString(),
       title,
       completed: false,
     };
 
-    const updatedGoals = goals.map((goal) => {
-      if (goal.id === goalId) {
-        return {
-          ...goal,
-          milestones: [...goal.milestones, milestone],
-        };
-      }
-      return goal;
-    });
-    saveGoals(updatedGoals);
+    const updatedMilestones = [...goal.milestones, milestone];
+    await updateGoal(goalId, { milestones: updatedMilestones });
+  };
+
+  const exportGoals = () => {
+    const csvContent = [
+      ['כותרת', 'תיאור', 'קטגוריה', 'סטטוס', 'עדיפות', 'התקדמות', 'תאריך יעד', 'תאריך יצירה', 'תאריך השלמה'].join(','),
+      ...goals.map(goal => [
+        `"${goal.title}"`,
+        `"${goal.description}"`,
+        getCategoryName(goal.category),
+        getStatusText(goal.status),
+        getPriorityText(goal.priority),
+        `${goal.progress}%`,
+        new Date(goal.targetDate).toLocaleDateString('he-IL'),
+        new Date(goal.createdAt).toLocaleDateString('he-IL'),
+        goal.completedAt ? new Date(goal.completedAt).toLocaleDateString('he-IL') : ''
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `מטרות_אישיות_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
   };
 
   const getStatusText = (status: string) => {
@@ -332,10 +331,18 @@ export default function GoalsPage() {
     );
   };
 
+  const getCategoryName = (category: string) => {
+    const cat = goalCategories.find((c) => c.id === category);
+    return cat ? cat.name : category;
+  };
+
   const filteredGoals = goals.filter((goal) => {
     if (selectedCategory !== 'all' && goal.category !== selectedCategory)
       return false;
     if (selectedStatus !== 'all' && goal.status !== selectedStatus)
+      return false;
+    if (searchTerm && !goal.title.toLowerCase().includes(searchTerm.toLowerCase()) && 
+        !goal.description.toLowerCase().includes(searchTerm.toLowerCase()))
       return false;
     return true;
   });
@@ -362,72 +369,139 @@ export default function GoalsPage() {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
             <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {goals.length}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {goals.length}
+                  </div>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    סה"כ מטרות
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  סה"כ מטרות
-                </p>
+                <Target className="w-8 h-8 text-blue-500 dark:text-blue-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
             <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {completedGoals}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {completedGoals}
+                  </div>
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    הושלמו ({goals.length > 0 ? Math.round((completedGoals / goals.length) * 100) : 0}%)
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  הושלמו
-                </p>
+                <CheckCircle2 className="w-8 h-8 text-green-500 dark:text-green-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 border-yellow-200 dark:border-yellow-800">
             <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                  {inProgressGoals}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                    {inProgressGoals}
+                  </div>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                    בתהליך
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  בתהליך
-                </p>
+                <TrendingUp className="w-8 h-8 text-yellow-500 dark:text-yellow-400" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-800">
             <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                  {overdueGoals}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                    {overdueGoals}
+                  </div>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    עבר זמנן
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  עבר זמנן
-                </p>
+                <AlertCircle className="w-8 h-8 text-red-500 dark:text-red-400" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Add Goal Button */}
-        <div className="flex justify-between items-center">
-          <Button
-            onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            הוסף מטרה חדשה
-          </Button>
+        {/* Additional Stats */}
+        {goals.length > 0 && (
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 mb-8">
+            <CardHeader>
+              <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                סטטיסטיקות מתקדמות
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {Math.round(goals.reduce((sum, goal) => sum + goal.progress, 0) / goals.length)}%
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">ממוצע התקדמות</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {goals.reduce((sum, goal) => sum + goal.milestones.length, 0)}
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">סה"כ אבני דרך</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    {goals.reduce((sum, goal) => sum + goal.milestones.filter(m => m.completed).length, 0)}
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">אבני דרך הושלמו</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-          {/* Filters */}
-          <div className="flex items-center space-x-4">
+        {/* Controls Bar */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => setShowAddForm(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              הוסף מטרה חדשה
+            </Button>
+            
+            <Button
+              onClick={exportGoals}
+              variant="outline"
+              className="border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              ייצא לCSV
+            </Button>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="חיפוש מטרות..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -574,9 +648,141 @@ export default function GoalsPage() {
           </Card>
         )}
 
+        {/* Edit Goal Form */}
+        {editingGoal && (
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-gray-900 dark:text-gray-100">
+                  עריכת מטרה
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditingGoal(null)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    כותרת המטרה
+                  </label>
+                  <Input
+                    value={editingGoal.title}
+                    onChange={(e) =>
+                      setEditingGoal(prev => prev ? { ...prev, title: e.target.value } : null)
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    קטגוריה
+                  </label>
+                  <select
+                    value={editingGoal.category}
+                    onChange={(e) =>
+                      setEditingGoal(prev => prev ? {
+                        ...prev,
+                        category: e.target.value as Goal['category'],
+                      } : null)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {goalCategories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  תיאור
+                </label>
+                <Textarea
+                  value={editingGoal.description}
+                  onChange={(e) =>
+                    setEditingGoal(prev => prev ? {
+                      ...prev,
+                      description: e.target.value,
+                    } : null)
+                  }
+                  rows={3}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    תאריך יעד
+                  </label>
+                  <Input
+                    type="date"
+                    value={editingGoal.targetDate.split('T')[0]}
+                    onChange={(e) =>
+                      setEditingGoal(prev => prev ? {
+                        ...prev,
+                        targetDate: e.target.value,
+                      } : null)
+                    }
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    עדיפות
+                  </label>
+                  <select
+                    value={editingGoal.priority}
+                    onChange={(e) =>
+                      setEditingGoal(prev => prev ? {
+                        ...prev,
+                        priority: e.target.value as Goal['priority'],
+                      } : null)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="low">נמוכה</option>
+                    <option value="medium">בינונית</option>
+                    <option value="high">גבוהה</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end space-x-3">
+                <Button variant="outline" onClick={() => setEditingGoal(null)}>
+                  ביטול
+                </Button>
+                <Button
+                  onClick={() => editingGoal && updateGoal(editingGoal.id, editingGoal)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  שמור שינויים
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Goals List */}
         <div className="space-y-6">
-          {filteredGoals.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 dark:text-gray-400 mt-4">טוען מטרות...</p>
+            </div>
+          ) : filteredGoals.length === 0 ? (
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardContent className="py-12 text-center">
                 <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -584,11 +790,11 @@ export default function GoalsPage() {
                   אין מטרות להצגה
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  {selectedCategory !== 'all' || selectedStatus !== 'all'
-                    ? 'נסה לשנות את הסינון או הוסף מטרה חדשה'
+                  {selectedCategory !== 'all' || selectedStatus !== 'all' || searchTerm
+                    ? 'נסה לשנות את הסינון או החיפוש'
                     : 'התחל על ידי הוספת מטרה חדשה'}
                 </p>
-                {selectedCategory === 'all' && selectedStatus === 'all' && (
+                {selectedCategory === 'all' && selectedStatus === 'all' && !searchTerm && (
                   <Button
                     onClick={() => setShowAddForm(true)}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -691,46 +897,92 @@ export default function GoalsPage() {
                   {/* Milestones */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
                         אבני דרך
+                        <Badge variant="outline" className="text-xs">
+                          {goal.milestones.filter(m => m.completed).length}/{goal.milestones.length}
+                        </Badge>
                       </h4>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const title = prompt('כותרת אבן דרך חדשה:');
-                          if (title) addMilestone(goal.id, title);
-                        }}
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        הוסף אבן דרך
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder="אבן דרך חדשה..."
+                          value={newMilestone}
+                          onChange={(e) => setNewMilestone(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && newMilestone.trim()) {
+                              addMilestone(goal.id, newMilestone.trim());
+                              setNewMilestone('');
+                            }
+                          }}
+                          className="w-48 text-sm"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (newMilestone.trim()) {
+                              addMilestone(goal.id, newMilestone.trim());
+                              setNewMilestone('');
+                            }
+                          }}
+                          disabled={!newMilestone.trim()}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      {goal.milestones.map((milestone) => (
-                        <div
-                          key={milestone.id}
-                          className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={milestone.completed}
-                            onChange={() =>
-                              toggleMilestone(goal.id, milestone.id)
-                            }
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                          />
-                          <span
-                            className={`flex-1 ${milestone.completed ? 'line-through text-gray-500' : 'text-gray-900 dark:text-gray-100'}`}
-                          >
-                            {milestone.title}
-                          </span>
-                          {milestone.completed && (
-                            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                          )}
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {goal.milestones.length === 0 ? (
+                        <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                          <Target className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">אין אבני דרך עדיין</p>
+                          <p className="text-xs">הוסף אבן דרך ראשונה כדי להתחיל</p>
                         </div>
-                      ))}
+                      ) : (
+                        goal.milestones.map((milestone, index) => (
+                          <div
+                            key={milestone.id}
+                            className={`flex items-center space-x-3 p-3 rounded-lg transition-all ${
+                              milestone.completed 
+                                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+                                : 'bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-gray-400 font-mono w-6">
+                                {index + 1}.
+                              </span>
+                              <input
+                                type="checkbox"
+                                checked={milestone.completed}
+                                onChange={() =>
+                                  toggleMilestone(goal.id, milestone.id)
+                                }
+                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                              />
+                            </div>
+                            <span
+                              className={`flex-1 ${
+                                milestone.completed 
+                                  ? 'line-through text-gray-500 dark:text-gray-400' 
+                                  : 'text-gray-900 dark:text-gray-100'
+                              }`}
+                            >
+                              {milestone.title}
+                            </span>
+                            {milestone.completed && (
+                              <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+                            )}
+                            {milestone.dueDate && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(milestone.dueDate).toLocaleDateString('he-IL')}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -739,53 +991,128 @@ export default function GoalsPage() {
           )}
         </div>
 
-        {/* Tips Section */}
-        <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              טיפים להצלחה במטרות
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        {/* Tips and Insights Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Tips Section */}
+          <Card className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200 dark:border-purple-800">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <Lightbulb className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                טיפים להצלחה במטרות
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  הגדר מטרות SMART
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  ספציפיות, מדידות, ברות השגה, רלוונטיות ומוגבלות בזמן
-                </p>
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                    הגדר מטרות SMART
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    ספציפיות, מדידות, ברות השגה, רלוונטיות ומוגבלות בזמן
+                  </p>
+                </div>
               </div>
 
-              <div className="text-center">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
                 </div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  עקוב אחרי התקדמות
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  בדוק את ההתקדמות שלך באופן קבוע וחגוג הצלחות קטנות
-                </p>
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                    עקוב אחרי התקדמות
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    בדוק את ההתקדמות שלך באופן קבוע וחגוג הצלחות קטנות
+                  </p>
+                </div>
               </div>
 
-              <div className="text-center">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Lightbulb className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 </div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  היה גמיש
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  אל תפחד לשנות או להתאים מטרות בהתאם למצב החדש
-                </p>
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                    חלק למטרות קטנות
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    פרק מטרות גדולות לאבני דרך קטנות וברות השגה
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Personal Insights */}
+          <Card className="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 border-green-200 dark:border-green-800">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <Award className="w-5 h-5 text-green-600 dark:text-green-400" />
+                התובנות שלך
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {goals.length === 0 ? (
+                <p className="text-gray-600 dark:text-gray-400 text-center py-4">
+                  הוסף מטרות כדי לקבל תובנות אישיות
+                </p>
+              ) : (
+                <>
+                  {completedGoals > 0 && (
+                    <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <Star className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                          כל הכבוד! השלמת {completedGoals} מטרות
+                        </p>
+                        <p className="text-xs text-green-600 dark:text-green-400">
+                          זה מראה על מחויבות והתמדה מרשימות
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {inProgressGoals > 0 && (
+                    <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                          {inProgressGoals} מטרות בתהליך
+                        </p>
+                        <p className="text-xs text-blue-600 dark:text-blue-400">
+                          המשך בקצב הנוכחי - אתה על הדרך הנכונה!
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {overdueGoals > 0 && (
+                    <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                      <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-orange-800 dark:text-orange-300">
+                          {overdueGoals} מטרות עברו את המועד
+                        </p>
+                        <p className="text-xs text-orange-600 dark:text-orange-400">
+                          שקול לעדכן תאריכים או לחלק למטרות קטנות יותר
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="text-center pt-2">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      ממוצע ההתקדמות שלך: {Math.round(goals.reduce((sum, goal) => sum + goal.progress, 0) / goals.length)}%
+                    </p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </DashboardLayout>
   );

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Menu, X, LogOut, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ThemeSwitcher } from '@/components/ui/theme-switcher';
+import { AuthGuard } from '@/components/auth/auth-guard';
+import { useSession, signOut } from 'next-auth/react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -15,13 +17,15 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
-  const handleSignOut = () => {
-    router.push('/');
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/auth/signin' });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+    <AuthGuard>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -63,7 +67,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <ThemeSwitcher />
                 <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
                   <User className="w-4 h-4" />
-                  <span>משתמש דמו</span>
+                  <span>{session?.user?.name || session?.user?.email || 'משתמש'}</span>
                 </div>
                 <Button
                   variant="outline"
@@ -96,6 +100,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <X className="h-6 w-6" />
         </Button>
       )}
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

@@ -76,6 +76,9 @@ interface UserProfile {
   totalBreathingSessions: number;
   totalGoals: number;
   completedGoals: number;
+  averageProgress?: number;
+  streakDays?: number;
+  totalPoints?: number;
 }
 
 interface ActivityLog {
@@ -83,9 +86,10 @@ interface ActivityLog {
   action: string;
   description: string;
   timestamp: string;
-  type: 'mood' | 'journal' | 'breathing' | 'goal' | 'login' | 'settings';
+  type: 'mood' | 'journal' | 'breathing' | 'goal' | 'login' | 'settings' | 'profile' | 'export';
   ipAddress?: string;
   device?: string;
+  location?: string;
 }
 
 export default function ProfilePage() {
@@ -103,96 +107,71 @@ export default function ProfilePage() {
     loadActivityLogs();
   }, []);
 
-  const loadProfile = () => {
-    // Mock data for demo
-    const mockProfile: UserProfile = {
-      id: '1',
-      firstName: 'יוסי',
-      lastName: 'כהן',
-      email: 'yossi.cohen@example.com',
-      phone: '050-1234567',
-      dateOfBirth: '1990-05-15',
-      gender: 'male',
-      location: 'תל אביב, ישראל',
-      timezone: 'Asia/Jerusalem',
-      language: 'hebrew',
-      profileImage: '/api/placeholder/150/150',
-      bio: 'אני מתעניין בבריאות הנפש ומחפש דרכים לשפר את הרווחה האישית שלי.',
-      preferences: {
-        theme: 'auto',
-        notifications: {
-          email: true,
-          push: true,
-          sms: false,
-        },
-        privacy: {
-          shareData: false,
-          anonymousMode: false,
-          dataRetention: 365,
-        },
-      },
-      createdAt: '2024-01-01',
-      lastActive: '2025-08-12T10:30:00Z',
-      totalMoodEntries: 156,
-      totalJournalEntries: 89,
-      totalBreathingSessions: 234,
-      totalGoals: 12,
-      completedGoals: 8,
-    };
-
-    setProfile(mockProfile);
-    setEditingProfile(mockProfile);
-    setLoading(false);
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/profile');
+      if (response.ok) {
+        const result = await response.json();
+        setProfile(result.data);
+        setEditingProfile(result.data);
+      } else {
+        console.error('Failed to load profile');
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loadActivityLogs = () => {
-    const mockLogs: ActivityLog[] = [
-      {
-        id: '1',
-        action: 'התחברות למערכת',
-        description: 'התחברות מוצלחת מהדפדפן',
-        timestamp: '2025-08-12T10:30:00Z',
-        type: 'login',
-        ipAddress: '192.168.1.100',
-        device: 'Chrome on Windows',
-      },
-      {
-        id: '2',
-        action: 'עדכון מצב רוח',
-        description: 'הוספת רשומת מצב רוח חדשה',
-        timestamp: '2025-08-12T09:15:00Z',
-        type: 'mood',
-      },
-      {
-        id: '3',
-        action: 'כתיבת יומן',
-        description: 'הוספת רשומה חדשה ליומן',
-        timestamp: '2025-08-11T21:00:00Z',
-        type: 'journal',
-      },
-      {
-        id: '4',
-        action: 'תרגיל נשימה',
-        description: 'השלמת תרגיל נשימה 4-7-8',
-        timestamp: '2025-08-11T20:30:00Z',
-        type: 'breathing',
-      },
-      {
-        id: '5',
-        action: 'עדכון מטרה',
-        description: 'עדכון התקדמות במטרה: תרגול מדיטציה יומי',
-        timestamp: '2025-08-10T18:45:00Z',
-        type: 'goal',
-      },
-    ];
-
-    setActivityLogs(mockLogs);
+  const loadActivityLogs = async () => {
+    try {
+      const response = await fetch('/api/profile/activity?limit=10');
+      if (response.ok) {
+        const result = await response.json();
+        setActivityLogs(result.data || []);
+      } else {
+        console.error('Failed to load activity logs');
+      }
+    } catch (error) {
+      console.error('Error loading activity logs:', error);
+    }
   };
 
-  const handleSave = () => {
-    if (profile && editingProfile) {
-      setProfile({ ...profile, ...editingProfile });
-      setIsEditing(false);
+  const handleSave = async () => {
+    if (!profile || !editingProfile) return;
+
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingProfile),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setProfile({ ...profile, ...editingProfile });
+        setIsEditing(false);
+        
+        // Log the activity
+        await fetch('/api/profile/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'עדכון פרופיל',
+            description: 'עדכון פרטי פרופיל אישי',
+            type: 'profile',
+          }),
+        });
+
+        // Reload activity logs
+        loadActivityLogs();
+      } else {
+        console.error('Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
     }
   };
 
@@ -203,15 +182,58 @@ export default function ProfilePage() {
     }
   };
 
-  const handleDeleteAccount = () => {
-    // TODO: Implement account deletion
-    console.log('Deleting account...');
+  const handleDeleteAccount = async () => {
+    try {
+      const response = await fetch('/api/profile?confirm=true', {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Redirect to login or show success message
+        window.location.href = '/auth/signin';
+      } else {
+        console.error('Failed to delete account');
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+    }
     setShowDeleteConfirm(false);
   };
 
-  const exportData = () => {
-    // TODO: Implement data export
-    console.log('Exporting data...');
+  const exportData = async () => {
+    try {
+      // Create CSV content with all user data
+      const csvContent = [
+        ['סוג נתון', 'כמות', 'תאריך עדכון אחרון'].join(','),
+        ['רשומות מצב רוח', profile?.totalMoodEntries || 0, new Date().toLocaleDateString('he-IL')].join(','),
+        ['רשומות יומן', profile?.totalJournalEntries || 0, new Date().toLocaleDateString('he-IL')].join(','),
+        ['תרגילי נשימה', profile?.totalBreathingSessions || 0, new Date().toLocaleDateString('he-IL')].join(','),
+        ['מטרות', profile?.totalGoals || 0, new Date().toLocaleDateString('he-IL')].join(','),
+        ['מטרות הושלמו', profile?.completedGoals || 0, new Date().toLocaleDateString('he-IL')].join(','),
+      ].join('\n');
+
+      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `נתוני_פרופיל_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+
+      // Log the activity
+      await fetch('/api/profile/activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ייצוא נתונים',
+          description: 'ייצוא נתוני פרופיל לקובץ CSV',
+          type: 'export',
+        }),
+      });
+
+      // Reload activity logs
+      loadActivityLogs();
+    } catch (error) {
+      console.error('Error exporting data:', error);
+    }
   };
 
   if (loading) {
@@ -570,37 +592,76 @@ export default function ProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {profile.totalMoodEntries}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-blue-700 dark:text-blue-300">
                       רשומות מצב רוח
                     </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                       {profile.totalJournalEntries}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-green-700 dark:text-green-300">
                       רשומות יומן
                     </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                       {profile.totalBreathingSessions}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-purple-700 dark:text-purple-300">
                       תרגילי נשימה
                     </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">
+                  <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                       {profile.completedGoals}/{profile.totalGoals}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-sm text-orange-700 dark:text-orange-300">
                       מטרות הושלמו
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <Star className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                      <span className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+                        {profile.streakDays || 0}
+                      </span>
+                    </div>
+                    <div className="text-xs text-yellow-700 dark:text-yellow-300">
+                      ימי רצף פעילות
+                    </div>
+                  </div>
+
+                  <div className="text-center p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <Target className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                        {profile.averageProgress || 0}%
+                      </span>
+                    </div>
+                    <div className="text-xs text-indigo-700 dark:text-indigo-300">
+                      ממוצע התקדמות
+                    </div>
+                  </div>
+
+                  <div className="text-center p-3 bg-gradient-to-r from-pink-50 to-red-50 dark:from-pink-900/20 dark:to-red-900/20 rounded-lg">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <Heart className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                      <span className="text-lg font-bold text-pink-600 dark:text-pink-400">
+                        {profile.totalPoints || 0}
+                      </span>
+                    </div>
+                    <div className="text-xs text-pink-700 dark:text-pink-300">
+                      נקודות רווחה
                     </div>
                   </div>
                 </div>
@@ -653,14 +714,135 @@ export default function ProfilePage() {
                   <Download className="w-4 h-4 mr-2" />
                   ייצוא נתונים
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => {
+                    // Navigate to privacy settings
+                    window.location.href = '/dashboard/privacy';
+                  }}
+                >
                   <Shield className="w-4 h-4 mr-2" />
                   הגדרות פרטיות
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => {
+                    // Navigate to settings
+                    window.location.href = '/dashboard/settings';
+                  }}
+                >
                   <Settings className="w-4 h-4 mr-2" />
                   הגדרות מתקדמות
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    // Clear activity logs older than 30 days
+                    if (confirm('האם אתה בטוח שברצונך למחוק את היסטוריית הפעילות מהחודש האחרון?')) {
+                      fetch('/api/profile/activity?days=30', { method: 'DELETE' })
+                        .then(() => loadActivityLogs())
+                        .catch(console.error);
+                    }
+                  }}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  נקה היסטוריה
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Account Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>מידע חשבון</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">תאריך הצטרפות:</span>
+                  <span className="font-medium">
+                    {new Date(profile.createdAt).toLocaleDateString('he-IL')}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">פעילות אחרונה:</span>
+                  <span className="font-medium">
+                    {new Date(profile.lastActive).toLocaleDateString('he-IL')}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">אזור זמן:</span>
+                  <span className="font-medium">{profile.timezone}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">מזהה משתמש:</span>
+                  <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                    {profile.id}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Achievements */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-yellow-500" />
+                  הישגים
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {profile.totalMoodEntries >= 100 && (
+                    <div className="flex items-center gap-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                        <Heart className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-blue-900 dark:text-blue-100">מעקב מצב רוח</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-300">100+ רשומות</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {profile.completedGoals >= 5 && (
+                    <div className="flex items-center gap-3 p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                        <Target className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-green-900 dark:text-green-100">משיג מטרות</p>
+                        <p className="text-xs text-green-700 dark:text-green-300">5+ מטרות הושלמו</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {(profile.streakDays || 0) >= 7 && (
+                    <div className="flex items-center gap-3 p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-purple-900 dark:text-purple-100">רצף פעילות</p>
+                        <p className="text-xs text-purple-700 dark:text-purple-300">{profile.streakDays} ימים ברצף</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {profile.totalJournalEntries >= 50 && (
+                    <div className="flex items-center gap-3 p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                      <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                        <BookOpen className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-orange-900 dark:text-orange-100">כותב יומן</p>
+                        <p className="text-xs text-orange-700 dark:text-orange-300">50+ רשומות יומן</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -687,60 +869,159 @@ export default function ProfilePage() {
         {/* Activity Log */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              היסטוריית פעילות
-            </CardTitle>
-            <CardDescription>פעילות אחרונה במערכת</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  היסטוריית פעילות
+                </CardTitle>
+                <CardDescription>פעילות אחרונה במערכת</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                  onChange={(e) => {
+                    const type = e.target.value;
+                    // Reload activity logs with filter
+                    fetch(`/api/profile/activity?type=${type}&limit=10`)
+                      .then(res => res.json())
+                      .then(result => setActivityLogs(result.data || []))
+                      .catch(console.error);
+                  }}
+                >
+                  <option value="all">כל הפעילויות</option>
+                  <option value="mood">מצב רוח</option>
+                  <option value="journal">יומן</option>
+                  <option value="breathing">תרגילי נשימה</option>
+                  <option value="goal">מטרות</option>
+                  <option value="login">התחברות</option>
+                  <option value="settings">הגדרות</option>
+                  <option value="profile">פרופיל</option>
+                  <option value="export">ייצוא</option>
+                </select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const csvContent = [
+                      ['תאריך', 'שעה', 'פעולה', 'תיאור', 'סוג'].join(','),
+                      ...activityLogs.map(log => [
+                        new Date(log.timestamp).toLocaleDateString('he-IL'),
+                        new Date(log.timestamp).toLocaleTimeString('he-IL'),
+                        `"${log.action}"`,
+                        `"${log.description}"`,
+                        log.type
+                      ].join(','))
+                    ].join('\n');
+
+                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `היסטוריית_פעילות_${new Date().toISOString().split('T')[0]}.csv`;
+                    link.click();
+                  }}
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {activityLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                      {log.type === 'mood' && (
-                        <Heart className="w-4 h-4 text-blue-600" />
-                      )}
-                      {log.type === 'journal' && (
-                        <BookOpen className="w-4 h-4 text-blue-600" />
-                      )}
-                      {log.type === 'breathing' && (
-                        <Brain className="w-4 h-4 text-blue-600" />
-                      )}
-                      {log.type === 'goal' && (
-                        <Target className="w-4 h-4 text-blue-600" />
-                      )}
-                      {log.type === 'login' && (
-                        <User className="w-4 h-4 text-blue-600" />
-                      )}
-                      {log.type === 'settings' && (
-                        <Settings className="w-4 h-4 text-blue-600" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {log.action}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {log.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {new Date(log.timestamp).toLocaleDateString('he-IL')}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(log.timestamp).toLocaleTimeString('he-IL')}
-                    </p>
-                  </div>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {activityLogs.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>אין פעילות להצגה</p>
                 </div>
-              ))}
+              ) : (
+                activityLogs.map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        log.type === 'mood' ? 'bg-red-100 dark:bg-red-900/20' :
+                        log.type === 'journal' ? 'bg-green-100 dark:bg-green-900/20' :
+                        log.type === 'breathing' ? 'bg-purple-100 dark:bg-purple-900/20' :
+                        log.type === 'goal' ? 'bg-blue-100 dark:bg-blue-900/20' :
+                        log.type === 'login' ? 'bg-yellow-100 dark:bg-yellow-900/20' :
+                        log.type === 'settings' ? 'bg-gray-100 dark:bg-gray-700' :
+                        log.type === 'profile' ? 'bg-indigo-100 dark:bg-indigo-900/20' :
+                        'bg-orange-100 dark:bg-orange-900/20'
+                      }`}>
+                        {log.type === 'mood' && (
+                          <Heart className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        )}
+                        {log.type === 'journal' && (
+                          <BookOpen className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        )}
+                        {log.type === 'breathing' && (
+                          <Brain className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        )}
+                        {log.type === 'goal' && (
+                          <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        )}
+                        {log.type === 'login' && (
+                          <User className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                        )}
+                        {log.type === 'settings' && (
+                          <Settings className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        )}
+                        {log.type === 'profile' && (
+                          <User className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        )}
+                        {log.type === 'export' && (
+                          <Download className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {log.action}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {log.description}
+                        </p>
+                        {log.device && (
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            {log.device} • {log.location || 'מיקום לא ידוע'}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {new Date(log.timestamp).toLocaleDateString('he-IL')}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(log.timestamp).toLocaleTimeString('he-IL')}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
+            {activityLogs.length > 0 && (
+              <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // Load more activity logs
+                    fetch(`/api/profile/activity?limit=20&offset=${activityLogs.length}`)
+                      .then(res => res.json())
+                      .then(result => {
+                        if (result.data && result.data.length > 0) {
+                          setActivityLogs(prev => [...prev, ...result.data]);
+                        }
+                      })
+                      .catch(console.error);
+                  }}
+                >
+                  טען עוד פעילויות
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

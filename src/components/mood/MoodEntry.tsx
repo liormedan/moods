@@ -274,6 +274,7 @@ export default function MoodEntry({
                 min={1}
                 step={1}
                 className="w-full"
+                showValue={false}
               />
               <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
                 <span>רע מאוד</span>

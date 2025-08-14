@@ -23,7 +23,9 @@ import {
   Plus,
   Heart,
   TrendingUp,
+  TrendingDown,
   BarChart3,
+  X,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -42,8 +44,13 @@ export default function MoodEntryPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPeriod, setFilterPeriod] = useState('all');
+  const [filterMoodRange, setFilterMoodRange] = useState('all');
+  const [sortBy, setSortBy] = useState<'date' | 'mood'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [editingRecord, setEditingRecord] = useState<MoodRecord | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
 
   useEffect(() => {
     fetchMoodRecords();
@@ -53,53 +60,21 @@ export default function MoodEntryPage() {
     try {
       setLoading(true);
 
-      // Mock data for demo
-      const mockRecords: MoodRecord[] = [
-        {
-          id: '1',
-          date: '2025-08-12',
-          moodValue: 7,
-          notes: 'יום טוב! פגישה מוצלחת בעבודה והרגשתי מאוד מרוצה.',
-          createdAt: '2025-08-12T10:30:00Z',
-          updatedAt: '2025-08-12T10:30:00Z',
-        },
-        {
-          id: '2',
-          date: '2025-08-11',
-          moodValue: 5,
-          notes: 'יום רגיל, קצת עייפות אבל בסדר.',
-          createdAt: '2025-08-11T20:15:00Z',
-          updatedAt: '2025-08-11T20:15:00Z',
-        },
-        {
-          id: '3',
-          date: '2025-08-10',
-          moodValue: 8,
-          notes: 'יום מעולה! בילוי עם חברים והרגשתי מאוד שמח.',
-          createdAt: '2025-08-10T19:45:00Z',
-          updatedAt: '2025-08-10T19:45:00Z',
-        },
-        {
-          id: '4',
-          date: '2025-08-09',
-          moodValue: 4,
-          notes: 'יום קשה, הרבה לחץ בעבודה.',
-          createdAt: '2025-08-09T22:00:00Z',
-          updatedAt: '2025-08-09T22:00:00Z',
-        },
-        {
-          id: '5',
-          date: '2025-08-08',
-          moodValue: 6,
-          notes: 'יום בסדר, אימון ספורט עזר לשפר את מצב הרוח.',
-          createdAt: '2025-08-08T18:30:00Z',
-          updatedAt: '2025-08-08T18:30:00Z',
-        },
-      ];
-
-      setRecords(mockRecords);
+      const response = await fetch('/api/mood?limit=50');
+      if (response.ok) {
+        const data = await response.json();
+        // Handle both old and new API response formats
+        const moodRecords = data.data || data || [];
+        setRecords(Array.isArray(moodRecords) ? moodRecords : []);
+      } else {
+        console.error('Failed to fetch mood records:', response.status);
+        // Fallback to empty array
+        setRecords([]);
+      }
     } catch (error) {
       console.error('Error fetching mood records:', error);
+      // Fallback to empty array
+      setRecords([]);
     } finally {
       setLoading(false);
     }
@@ -116,24 +91,46 @@ export default function MoodEntryPage() {
 
   const handleDeleteRecord = async (recordId: string) => {
     if (confirm('האם אתה בטוח שברצונך למחוק רשומה זו?')) {
-      setRecords((prev) => prev.filter((r) => r.id !== recordId));
+      try {
+        const response = await fetch(`/api/mood/${recordId}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          // Remove from local state
+          setRecords((prev) => prev.filter((r) => r.id !== recordId));
+        } else {
+          console.error('Failed to delete mood record:', response.status);
+          alert('שגיאה במחיקת הרשומה. נסה שוב.');
+        }
+      } catch (error) {
+        console.error('Error deleting mood record:', error);
+        alert('שגיאה במחיקת הרשומה. נסה שוב.');
+      }
     }
   };
 
   const handleExportData = () => {
+    if (filteredRecords.length === 0) {
+      alert('אין נתונים לייצוא');
+      return;
+    }
+
+    // Add BOM for Hebrew support in Excel
+    const BOM = '\uFEFF';
     const csvContent = [
       ['תאריך', 'מצב רוח', 'הערות', 'נוצר בתאריך'],
-      ...records.map((record) => [
+      ...filteredRecords.map((record) => [
         record.date,
         record.moodValue.toString(),
-        record.notes || '',
+        (record.notes || '').replace(/,/g, ';'), // Replace commas to avoid CSV issues
         format(new Date(record.createdAt), 'dd/MM/yyyy HH:mm', { locale: he }),
       ]),
     ]
-      .map((row) => row.join(','))
+      .map((row) => row.map(cell => `"${cell}"`).join(','))
       .join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `mood-records-${format(new Date(), 'yyyy-MM-dd')}.csv`;
@@ -186,7 +183,24 @@ export default function MoodEntryPage() {
       matchesPeriod = recordDate >= monthAgo;
     }
 
-    return matchesSearch && matchesPeriod;
+    let matchesMoodRange = true;
+    if (filterMoodRange === 'high') {
+      matchesMoodRange = record.moodValue >= 7;
+    } else if (filterMoodRange === 'medium') {
+      matchesMoodRange = record.moodValue >= 4 && record.moodValue <= 6;
+    } else if (filterMoodRange === 'low') {
+      matchesMoodRange = record.moodValue <= 3;
+    }
+
+    return matchesSearch && matchesPeriod && matchesMoodRange;
+  }).sort((a, b) => {
+    if (sortBy === 'date') {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    } else {
+      return sortOrder === 'desc' ? b.moodValue - a.moodValue : a.moodValue - b.moodValue;
+    }
   });
 
   const averageMood =
@@ -194,6 +208,14 @@ export default function MoodEntryPage() {
       ? filteredRecords.reduce((sum, record) => sum + record.moodValue, 0) /
         filteredRecords.length
       : 0;
+
+  const highestMood = filteredRecords.length > 0 
+    ? Math.max(...filteredRecords.map(r => r.moodValue))
+    : 0;
+
+  const lowestMood = filteredRecords.length > 0 
+    ? Math.min(...filteredRecords.map(r => r.moodValue))
+    : 0;
 
   return (
     <DashboardLayout>
@@ -208,29 +230,49 @@ export default function MoodEntryPage() {
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               נהל ועקוב אחר מצב הרוח שלך לאורך זמן
             </p>
+            {records.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
+                <span>📊 {records.length} רשומות סה"כ</span>
+                <span>📈 ממוצע: {averageMood.toFixed(1)}</span>
+                <span>🎯 גבוה ביותר: {highestMood}</span>
+                <span>📉 נמוך ביותר: {lowestMood}</span>
+              </div>
+            )}
           </div>
 
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              הוסף רשומה
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleExportData}
-              disabled={records.length === 0}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              ייצא נתונים
-            </Button>
-          </div>
+
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            הוסף רשומה מהירה
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => window.location.href = '/dashboard/analytics'}
+            className="border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/20"
+          >
+            <BarChart3 className="w-4 h-4 mr-2" />
+            צפה בגרפים
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportData}
+            disabled={records.length === 0}
+            className="border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-900/20"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            ייצא נתונים
+          </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
@@ -279,6 +321,36 @@ export default function MoodEntryPage() {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                מצב רוח גבוה
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold flex items-center gap-2 ${getMoodColor(highestMood)}`}>
+                {highestMood > 0 ? highestMood : '-'}
+                {highestMood > 0 && <span className="text-xl">{getMoodEmoji(highestMood)}</span>}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <TrendingDown className="w-4 h-4" />
+                מצב רוח נמוך
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold flex items-center gap-2 ${getMoodColor(lowestMood)}`}>
+                {lowestMood > 0 ? lowestMood : '-'}
+                {lowestMood > 0 && <span className="text-xl">{getMoodEmoji(lowestMood)}</span>}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Add/Edit Form */}
@@ -294,6 +366,7 @@ export default function MoodEntryPage() {
                 initialData={
                   editingRecord
                     ? {
+                        id: editingRecord.id,
                         moodValue: editingRecord.moodValue,
                         notes: editingRecord.notes,
                         date: editingRecord.date,
@@ -330,7 +403,7 @@ export default function MoodEntryPage() {
             <CardTitle className="text-lg">סינון וחיפוש</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
               <div className="flex-1">
                 <label
                   htmlFor="search"
@@ -369,6 +442,73 @@ export default function MoodEntryPage() {
                   <option value="month">חודש אחרון</option>
                 </select>
               </div>
+
+              <div>
+                <label
+                  htmlFor="moodRange"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  טווח מצב רוח
+                </label>
+                <select
+                  id="moodRange"
+                  value={filterMoodRange}
+                  onChange={(e) => setFilterMoodRange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">כל הטווחים</option>
+                  <option value="high">גבוה (7-10)</option>
+                  <option value="medium">בינוני (4-6)</option>
+                  <option value="low">נמוך (1-3)</option>
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="sortBy"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  מיון לפי
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    id="sortBy"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as 'date' | 'mood')}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="date">תאריך</option>
+                    <option value="mood">מצב רוח</option>
+                  </select>
+                  <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="desc">יורד</option>
+                    <option value="asc">עולה</option>
+                  </select>
+                </div>
+              </div>
+
+              {(searchTerm || filterPeriod !== 'all' || filterMoodRange !== 'all') && (
+                <div>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setFilterPeriod('all');
+                      setFilterMoodRange('all');
+                      setSortBy('date');
+                      setSortOrder('desc');
+                    }}
+                    className="whitespace-nowrap"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    נקה סינונים
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -393,7 +533,7 @@ export default function MoodEntryPage() {
               <div className="text-center py-8">
                 <Heart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 dark:text-gray-400">
-                  {searchTerm || filterPeriod !== 'all'
+                  {searchTerm || filterPeriod !== 'all' || filterMoodRange !== 'all'
                     ? 'לא נמצאו רשומות התואמות לחיפוש'
                     : 'עדיין לא הוספת רשומות מצב רוח'}
                 </p>

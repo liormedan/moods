@@ -143,12 +143,40 @@ export default function BreathingPage() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Load session history from localStorage
-    const saved = localStorage.getItem('breathing-sessions');
-    if (saved) {
-      setSessionHistory(JSON.parse(saved));
-    }
+    loadSessionHistory();
   }, []);
+
+  const loadSessionHistory = async () => {
+    try {
+      const response = await fetch('/api/breathing?limit=10');
+      if (response.ok) {
+        const data = await response.json();
+        const sessions = data.data.map((session: any) => ({
+          id: session.id,
+          exerciseName: session.exerciseName,
+          duration: session.duration,
+          completedAt: session.createdAt,
+        }));
+        setSessionHistory(sessions);
+        
+        // Also save to localStorage as backup
+        localStorage.setItem('breathing-sessions', JSON.stringify(sessions));
+      } else {
+        // Fallback to localStorage if API fails
+        const saved = localStorage.getItem('breathing-sessions');
+        if (saved) {
+          setSessionHistory(JSON.parse(saved));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading session history:', error);
+      // Fallback to localStorage if API fails
+      const saved = localStorage.getItem('breathing-sessions');
+      if (saved) {
+        setSessionHistory(JSON.parse(saved));
+      }
+    }
+  };
 
   const startExercise = (exercise: BreathingExercise) => {
     setSelectedExercise(exercise);
@@ -221,19 +249,47 @@ export default function BreathingPage() {
               setTimeLeft(0);
               setCurrentCycle(0);
 
-              // Save session
-              const session = {
-                id: Date.now().toString(),
+              // Save session to API
+              const sessionData = {
+                exerciseId: selectedExercise.id,
                 exerciseName: selectedExercise.name,
                 duration: calculateTotalDuration(selectedExercise),
-                completedAt: new Date().toISOString(),
+                cycles: selectedExercise.cycles,
+                inhaleTime: selectedExercise.inhaleTime,
+                holdTime: selectedExercise.holdTime,
+                exhaleTime: selectedExercise.exhaleTime,
+                completed: true,
               };
-              const newHistory = [session, ...sessionHistory];
-              setSessionHistory(newHistory);
-              localStorage.setItem(
-                'breathing-sessions',
-                JSON.stringify(newHistory)
-              );
+
+              try {
+                const response = await fetch('/api/breathing', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(sessionData),
+                });
+
+                if (response.ok) {
+                  const result = await response.json();
+                  const session = {
+                    id: result.data.id,
+                    exerciseName: result.data.exerciseName,
+                    duration: result.data.duration,
+                    completedAt: result.data.createdAt,
+                  };
+                  const newHistory = [session, ...sessionHistory];
+                  setSessionHistory(newHistory);
+                  
+                  // Also save to localStorage as backup
+                  localStorage.setItem(
+                    'breathing-sessions',
+                    JSON.stringify(newHistory)
+                  );
+                } else {
+                  console.error('Failed to save breathing session:', response.status);
+                }
+              } catch (error) {
+                console.error('Error saving breathing session:', error);
+              }
 
               return 0;
             }
@@ -356,19 +412,65 @@ export default function BreathingPage() {
             </CardHeader>
             <CardContent>
               <div className="text-center space-y-6">
-                {/* Current Phase Display */}
-                <div
-                  className={`p-8 rounded-full mx-auto w-48 h-48 flex items-center justify-center ${getPhaseBackground()} border-4 border-gray-200 dark:border-gray-700`}
-                >
-                  <div className="text-center">
-                    <div
-                      className={`text-6xl font-bold ${getPhaseColor()} mb-2`}
-                    >
-                      {timeLeft}
+                {/* Current Phase Display with Animation */}
+                <div className="relative">
+                  <div
+                    className={`p-8 rounded-full mx-auto w-48 h-48 flex items-center justify-center ${getPhaseBackground()} border-4 border-gray-200 dark:border-gray-700 transition-all duration-1000 ${
+                      currentPhase === 'inhale' ? 'scale-110' : 
+                      currentPhase === 'hold' ? 'scale-105' : 
+                      'scale-95'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div
+                        className={`text-6xl font-bold ${getPhaseColor()} mb-2 transition-colors duration-500`}
+                      >
+                        {timeLeft}
+                      </div>
+                      <div className={`text-xl font-semibold ${getPhaseColor()} transition-colors duration-500`}>
+                        {getPhaseText()}
+                      </div>
                     </div>
-                    <div className={`text-xl font-semibold ${getPhaseColor()}`}>
-                      {getPhaseText()}
-                    </div>
+                  </div>
+                  
+                  {/* Breathing Animation Rings */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div 
+                      className={`absolute rounded-full border-2 ${
+                        currentPhase === 'inhale' ? 'border-blue-300 dark:border-blue-600' :
+                        currentPhase === 'hold' ? 'border-yellow-300 dark:border-yellow-600' :
+                        'border-green-300 dark:border-green-600'
+                      } transition-all duration-1000 ${
+                        currentPhase === 'inhale' ? 'w-56 h-56 opacity-70' :
+                        currentPhase === 'hold' ? 'w-52 h-52 opacity-50' :
+                        'w-44 h-44 opacity-30'
+                      }`}
+                    />
+                    <div 
+                      className={`absolute rounded-full border-2 ${
+                        currentPhase === 'inhale' ? 'border-blue-200 dark:border-blue-700' :
+                        currentPhase === 'hold' ? 'border-yellow-200 dark:border-yellow-700' :
+                        'border-green-200 dark:border-green-700'
+                      } transition-all duration-1000 delay-200 ${
+                        currentPhase === 'inhale' ? 'w-64 h-64 opacity-40' :
+                        currentPhase === 'hold' ? 'w-60 h-60 opacity-30' :
+                        'w-40 h-40 opacity-20'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Guidance Text */}
+                <div className="text-center mb-6">
+                  <div className={`text-lg font-medium ${getPhaseColor()} transition-colors duration-500`}>
+                    {currentPhase === 'inhale' && 'שאף לאט ועמוק דרך האף...'}
+                    {currentPhase === 'hold' && 'החזק את הנשימה בעדינות...'}
+                    {currentPhase === 'exhale' && 'נשוף לאט ורגוע דרך הפה...'}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    {currentPhase === 'inhale' && 'הרגש איך הריאות שלך מתמלאות באוויר'}
+                    {currentPhase === 'hold' && 'שמור על רגיעה ואל תתאמץ'}
+                    {currentPhase === 'exhale' && 'שחרר את כל המתח והדאגות'}
                   </div>
                 </div>
 
@@ -623,17 +725,139 @@ export default function BreathingPage() {
           </>
         )}
 
+        {/* Statistics Cards */}
+        {sessionHistory.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  סה"כ תרגילים
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {sessionHistory.length}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                  <Timer className="w-4 h-4" />
+                  זמן כולל
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {Math.round(sessionHistory.reduce((sum, session) => sum + session.duration, 0) / 60)}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">דקות</div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  השבוע
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {sessionHistory.filter(session => {
+                    const sessionDate = new Date(session.completedAt);
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return sessionDate >= weekAgo;
+                  }).length}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">תרגילים</div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                  <Target className="w-4 h-4" />
+                  ממוצע יומי
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {sessionHistory.length > 0 
+                    ? Math.round((sessionHistory.reduce((sum, session) => sum + session.duration, 0) / 60) / Math.max(1, Math.ceil((new Date().getTime() - new Date(sessionHistory[sessionHistory.length - 1].completedAt).getTime()) / (1000 * 60 * 60 * 24))))
+                    : 0
+                  }
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">דקות</div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Session History */}
         {sessionHistory.length > 0 && (
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                <span>היסטוריית תרגילים</span>
-              </CardTitle>
-              <CardDescription className="text-gray-600 dark:text-gray-400">
-                התרגילים שהשלמת לאחרונה
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-gray-100">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span>היסטוריית תרגילים</span>
+                  </CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-400">
+                    התרגילים שהשלמת לאחרונה
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    // Export breathing sessions
+                    if (sessionHistory.length === 0) {
+                      alert('אין נתונים לייצוא');
+                      return;
+                    }
+
+                    try {
+                      const exportData = [
+                        ['היסטוריית תרגילי נשימה'],
+                        [''],
+                        ['תאריך ייצוא', new Date().toLocaleDateString('he-IL')],
+                        ['סה"כ תרגילים', sessionHistory.length.toString()],
+                        [''],
+                        ['תרגילים'],
+                        ['תאריך', 'שם התרגיל', 'משך (שניות)', 'משך (דקות)'],
+                        ...sessionHistory.map(session => [
+                          new Date(session.completedAt).toLocaleDateString('he-IL'),
+                          session.exerciseName,
+                          session.duration.toString(),
+                          Math.round(session.duration / 60).toString()
+                        ])
+                      ];
+
+                      const BOM = '\uFEFF';
+                      const csvContent = exportData
+                        .map(row => row.map(cell => `"${cell}"`).join(','))
+                        .join('\n');
+
+                      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+                      const link = document.createElement('a');
+                      link.href = URL.createObjectURL(blob);
+                      link.download = `breathing-sessions-${new Date().toISOString().split('T')[0]}.csv`;
+                      link.click();
+                    } catch (error) {
+                      console.error('Error exporting breathing sessions:', error);
+                      alert('שגיאה בייצוא הנתונים. נסה שוב.');
+                    }
+                  }}
+                  className="text-sm"
+                >
+                  <Timer className="w-4 h-4 mr-2" />
+                  ייצוא נתונים
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">

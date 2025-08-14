@@ -122,64 +122,81 @@ export default function JournalPage() {
     fetchEntries();
   }, []);
 
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchEntries();
+    }, 300); // Debounce search
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, filterTag, sortBy]);
+
   const fetchEntries = async () => {
     setLoading(true);
     try {
-      // Mock data for demo
-      const mockEntries: JournalEntry[] = [
-        {
-          id: '1',
-          title: 'יום מעולה בעבודה',
-          content:
-            'היום הצלחתי לסיים פרויקט חשוב. הרגשתי מאוד מרוצה מהתוצאה...',
-          mood: 8,
-          tags: ['עבודה', 'הצלחה', 'גאווה'],
-          template: 'reflection',
-          createdAt: '2025-08-12T10:30:00Z',
-          updatedAt: '2025-08-12T10:30:00Z',
-          isFavorite: true,
-        },
-        {
-          id: '2',
-          title: 'רגעי הכרת תודה',
-          content:
-            'אני מודה על המשפחה שלי, על הבריאות, ועל ההזדמנויות שיש לי...',
-          mood: 7,
-          tags: ['הכרת תודה', 'משפחה'],
-          template: 'gratitude',
-          createdAt: '2025-08-11T20:15:00Z',
-          updatedAt: '2025-08-11T20:15:00Z',
-          isFavorite: false,
-        },
-      ];
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (filterTag !== 'all') params.append('tag', filterTag);
+      params.append('sortBy', sortBy);
+      params.append('limit', '50');
 
-      setEntries(mockEntries);
+      const response = await fetch(`/api/journal?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setEntries(data.data || []);
+      } else {
+        console.error('Failed to fetch journal entries:', response.status);
+        setEntries([]);
+      }
     } catch (error) {
       console.error('Error fetching journal entries:', error);
+      setEntries([]);
     } finally {
       setLoading(false);
     }
   };
   const handleSaveEntry = async () => {
     try {
-      const entry: JournalEntry = {
-        id: editingEntry?.id || Date.now().toString(),
+      const entryData = {
         title: newEntry.title || 'רשומה ללא כותרת',
         content: newEntry.content,
         mood: newEntry.mood,
         tags: newEntry.tags,
         template: newEntry.template,
-        createdAt: editingEntry?.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
         isFavorite: editingEntry?.isFavorite || false,
       };
 
       if (editingEntry) {
-        setEntries((prev) =>
-          prev.map((e) => (e.id === editingEntry.id ? entry : e))
-        );
+        // Update existing entry
+        const response = await fetch(`/api/journal/${editingEntry.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entryData),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEntries((prev) =>
+            prev.map((e) => (e.id === editingEntry.id ? data.data : e))
+          );
+        } else {
+          console.error('Failed to update entry:', response.status);
+          return;
+        }
       } else {
-        setEntries((prev) => [entry, ...prev]);
+        // Create new entry
+        const response = await fetch('/api/journal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entryData),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEntries((prev) => [data.data, ...prev]);
+        } else {
+          console.error('Failed to create entry:', response.status);
+          return;
+        }
       }
 
       // Reset form
@@ -206,16 +223,46 @@ export default function JournalPage() {
 
   const handleDeleteEntry = async (entryId: string) => {
     if (confirm('האם אתה בטוח שברצונך למחוק רשומה זו?')) {
-      setEntries((prev) => prev.filter((e) => e.id !== entryId));
+      try {
+        const response = await fetch(`/api/journal/${entryId}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          setEntries((prev) => prev.filter((e) => e.id !== entryId));
+        } else {
+          console.error('Failed to delete entry:', response.status);
+          alert('שגיאה במחיקת הרשומה. נסה שוב.');
+        }
+      } catch (error) {
+        console.error('Error deleting entry:', error);
+        alert('שגיאה במחיקת הרשומה. נסה שוב.');
+      }
     }
   };
 
-  const handleToggleFavorite = (entryId: string) => {
-    setEntries((prev) =>
-      prev.map((e) =>
-        e.id === entryId ? { ...e, isFavorite: !e.isFavorite } : e
-      )
-    );
+  const handleToggleFavorite = async (entryId: string) => {
+    try {
+      const entry = entries.find(e => e.id === entryId);
+      if (!entry) return;
+
+      const response = await fetch(`/api/journal/${entryId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFavorite: !entry.isFavorite }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setEntries((prev) =>
+          prev.map((e) => (e.id === entryId ? data.data : e))
+        );
+      } else {
+        console.error('Failed to toggle favorite:', response.status);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
   };
 
   const handleTemplateSelect = (templateId: string) => {
@@ -285,6 +332,50 @@ export default function JournalPage() {
 
   const allTags = Array.from(new Set(entries.flatMap((entry) => entry.tags)));
 
+  const handleExportJournal = () => {
+    if (entries.length === 0) {
+      alert('אין רשומות לייצוא');
+      return;
+    }
+
+    try {
+      // Create comprehensive journal export
+      const exportData = [
+        ['יומן אישי - ייצוא מלא'],
+        [''],
+        ['תאריך ייצוא', new Date().toLocaleDateString('he-IL')],
+        ['סה"כ רשומות', entries.length.toString()],
+        [''],
+        ['רשומות יומן'],
+        ['תאריך', 'כותרת', 'תוכן', 'מצב רוח', 'תגיות', 'תבנית', 'מועדף'],
+        ...entries.map(entry => [
+          new Date(entry.createdAt).toLocaleDateString('he-IL'),
+          entry.title,
+          entry.content.replace(/\n/g, ' '), // Remove line breaks for CSV
+          entry.mood?.toString() || '',
+          entry.tags.join(', '),
+          entry.template ? journalTemplates.find(t => t.id === entry.template)?.name || entry.template : '',
+          entry.isFavorite ? 'כן' : 'לא'
+        ])
+      ];
+
+      // Add BOM for Hebrew support
+      const BOM = '\uFEFF';
+      const csvContent = exportData
+        .map(row => row.map(cell => `"${cell}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `journal-export-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    } catch (error) {
+      console.error('Error exporting journal:', error);
+      alert('שגיאה בייצוא היומן. נסה שוב.');
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -306,7 +397,11 @@ export default function JournalPage() {
               <Plus className="w-4 h-4 mr-2" />
               רשומה חדשה
             </Button>
-            <Button variant="outline">
+            <Button 
+              variant="outline"
+              onClick={handleExportJournal}
+              disabled={entries.length === 0}
+            >
               <Download className="w-4 h-4 mr-2" />
               ייצוא יומן
             </Button>
@@ -684,10 +779,11 @@ export default function JournalPage() {
         </Card>
 
         {/* Writing Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-gray-600 dark:text-gray-400">
+              <CardTitle className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
                 סה"כ רשומות
               </CardTitle>
             </CardHeader>
@@ -700,20 +796,27 @@ export default function JournalPage() {
 
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-gray-600 dark:text-gray-400">
-                רשומות השבוע
+              <CardTitle className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                השבוע
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                3
+                {entries.filter(e => {
+                  const entryDate = new Date(e.createdAt);
+                  const weekAgo = new Date();
+                  weekAgo.setDate(weekAgo.getDate() - 7);
+                  return entryDate >= weekAgo;
+                }).length}
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-gray-600 dark:text-gray-400">
+              <CardTitle className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <Star className="w-4 h-4" />
                 מועדפות
               </CardTitle>
             </CardHeader>
@@ -726,13 +829,31 @@ export default function JournalPage() {
 
           <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm text-gray-600 dark:text-gray-400">
+              <CardTitle className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <Tag className="w-4 h-4" />
                 תגיות
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {allTags.length}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                <Heart className="w-4 h-4" />
+                ממוצע מצב רוח
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {entries.filter(e => e.mood).length > 0 
+                  ? (entries.filter(e => e.mood).reduce((sum, e) => sum + (e.mood || 0), 0) / entries.filter(e => e.mood).length).toFixed(1)
+                  : '-'
+                }
               </div>
             </CardContent>
           </Card>

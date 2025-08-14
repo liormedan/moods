@@ -20,14 +20,12 @@ const moodUpdateSchema = z.object({
 // GET /api/mood - Get mood entries for the authenticated user
 export async function GET(request: NextRequest) {
   try {
-    // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
-    // if (!session?.user?.id) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    // Mock user ID for demo
-    const userId = 'demo-user';
+    const userId = session.user.id;
 
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
@@ -72,11 +70,21 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Format the data to match the expected interface
+    const formattedEntries = moodEntries.map(entry => ({
+      id: entry.id,
+      moodValue: entry.moodValue,
+      notes: entry.notes,
+      date: entry.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+      createdAt: entry.createdAt.toISOString(),
+      updatedAt: entry.updatedAt.toISOString(),
+    }));
+
     // Get total count for pagination
     const totalCount = await prisma.moodEntry.count({ where });
 
     return NextResponse.json({
-      data: moodEntries,
+      data: formattedEntries,
       pagination: {
         total: totalCount,
         limit,
@@ -96,14 +104,12 @@ export async function GET(request: NextRequest) {
 // POST /api/mood - Create a new mood entry
 export async function POST(request: NextRequest) {
   try {
-    // Temporarily disabled authentication for demo
-    // const session = await getServerSession(authOptions);
-    // if (!session?.user?.id) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    // Mock user ID for demo
-    const userId = 'demo-user';
+    const userId = session.user.id;
 
     const body = await request.json();
 

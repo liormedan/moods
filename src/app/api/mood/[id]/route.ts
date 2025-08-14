@@ -18,10 +18,11 @@ export async function GET(
   const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const userId = session.user.id;
 
     // Validate ID format
     if (!id || typeof id !== 'string') {
@@ -52,12 +53,12 @@ export async function GET(
     }
 
     // Check if user owns this mood entry
-    if (moodEntry.userId !== session.user.id) {
+    if (moodEntry.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Remove userId from response for security
-    const { userId, ...entryData } = moodEntry;
+    const { userId: _, ...entryData } = moodEntry;
 
     return NextResponse.json({ data: entryData });
   } catch (error) {
@@ -77,10 +78,11 @@ export async function PUT(
   const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const userId = session.user.id;
 
     // Validate ID format
     if (!id || typeof id !== 'string') {
@@ -117,7 +119,7 @@ export async function PUT(
       );
     }
 
-    if (existingEntry.userId !== session.user.id) {
+    if (existingEntry.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -156,10 +158,11 @@ export async function DELETE(
   const { id } = await params;
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const userId = session.user.id;
 
     // Validate ID format
     if (!id || typeof id !== 'string') {
@@ -182,7 +185,7 @@ export async function DELETE(
       );
     }
 
-    if (existingEntry.userId !== session.user.id) {
+    if (existingEntry.userId !== userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

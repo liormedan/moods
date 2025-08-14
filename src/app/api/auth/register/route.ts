@@ -1,68 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { registerUser } from '@/lib/firebase-auth';
+import { prisma } from '@/lib/db';
+import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
 // Validation schema for registration
 const registerSchema = z.object({
-  email: z.string().email('כתובת אימייל לא חוקית'),
+  name: z.string().min(2, 'השם חייב להכיל לפחות 2 תווים'),
+  email: z.string().email('כתובת אימייל לא תקינה'),
   password: z.string().min(6, 'הסיסמה חייבת להכיל לפחות 6 תווים'),
-  fullName: z.string().min(2, 'השם חייב להכיל לפחות 2 תווים')
 });
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    // Validate request body
+
+    // Validate input
     const validationResult = registerSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'נתונים לא חוקיים', details: validationResult.error.issues },
+        {
+          error: 'נתונים לא תקינים',
+          details: validationResult.error.issues,
+        },
         { status: 400 }
       );
     }
 
-    const { email, password, fullName } = validationResult.data;
+    const { name, email, password } = validationResult.data;
 
-    // Register user with Firebase
-    const userCredential = await registerUser(email, password, fullName);
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
 
-    return NextResponse.json({
-      message: 'המשתמש נרשם בהצלחה',
-      user: {
-        id: userCredential.user.uid,
-        email: userCredential.user.email,
-        fullName
-      }
-    }, { status: 201 });
-
-  } catch (error: any) {
-    console.error('Registration error:', error);
-    
-    // Handle Firebase Auth errors
-    if (error.code === 'auth/email-already-in-use') {
+    if (existingUser) {
       return NextResponse.json(
-        { error: 'כתובת האימייל כבר בשימוש' },
+        { error: 'משתמש עם כתובת אימייל זו כבר קיים' },
         { status: 409 }
       );
     }
-    
-    if (error.code === 'auth/weak-password') {
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        message: 'המשתמש נוצר בהצלחה',
+        user,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('Error creating user:', error);
+
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
       return NextResponse.json(
-        { error: 'הסיסמה חייבת להכיל לפחות 6 תווים' },
-        { status: 400 }
-      );
-    }
-    
-    if (error.code === 'auth/invalid-email') {
-      return NextResponse.json(
-        { error: 'כתובת אימייל לא חוקית' },
-        { status: 400 }
+        { error: 'משתמש עם כתובת אימייל זו כבר קיים' },
+        { status: 409 }
       );
     }
 
     return NextResponse.json(
-      { error: 'שגיאה בהרשמת המשתמש' },
+      { error: 'שגיאה פנימית בשרת' },
       { status: 500 }
     );
   }
