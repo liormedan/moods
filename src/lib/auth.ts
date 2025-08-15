@@ -1,56 +1,14 @@
 import NextAuth from 'next-auth';
-import { auth } from './firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { db } from './firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import Auth0Provider from 'next-auth/providers/auth0';
 
 export const authOptions = {
   providers: [
-    {
-      id: 'firebase',
-      name: 'Firebase',
-      type: 'credentials',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials: any) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        try {
-          // Sign in with Firebase Auth
-          const userCredential = await signInWithEmailAndPassword(
-            auth,
-            credentials.email,
-            credentials.password
-          );
-
-          const user = userCredential.user;
-
-          // Get additional user data from Firestore using Firebase UID
-          const usersRef = collection(db, 'users');
-          const userQuery = query(usersRef, where('uid', '==', user.uid));
-          const userSnapshot = await getDocs(userQuery);
-
-          let userData = null;
-          if (!userSnapshot.empty) {
-            userData = userSnapshot.docs[0].data();
-          }
-
-          return {
-            id: user.uid, // Use Firebase UID as NextAuth ID
-            email: user.email,
-            name: userData?.name || user.displayName || 'User',
-            image: userData?.profileImage || user.photoURL,
-          };
-        } catch (error) {
-          console.error('Firebase authentication error:', error);
-          return null;
-        }
-      },
-    },
+    // Auth0 Provider - הרבה יותר פשוט ובטוח!
+    Auth0Provider({
+      clientId: process.env.AUTH0_CLIENT_ID!,
+      clientSecret: process.env.AUTH0_CLIENT_SECRET!,
+      issuer: process.env.AUTH0_ISSUER,
+    }),
   ],
   session: {
     strategy: 'jwt',
@@ -62,18 +20,19 @@ export const authOptions = {
     error: '/auth/error',
   },
   callbacks: {
-    async jwt({ token, user, account }: any) {
+    async jwt({ token, user, account, profile }: any) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
-        token.image = user.image;
+        token.image = user.picture; // Auth0 uses 'picture' instead of 'image'
+        token.sub = user.sub; // Auth0 user ID
       }
       return token;
     },
     async session({ session, token }: any) {
       if (token && session.user) {
-        session.user.id = token.id as string;
+        session.user.id = token.sub as string; // Use Auth0 sub as ID
         session.user.email = token.email as string;
         session.user.name = token.name as string;
         session.user.image = token.image as string;

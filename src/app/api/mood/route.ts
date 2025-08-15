@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = (session as any).user.id; // This is now Firebase UID
+    const userId = (session as any).user.id; // This is now Auth0 sub (user ID)
 
     const { searchParams } = new URL(request.url);
 
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     // Build Firebase query
     let moodQuery = query(
       collection(db, 'mood_entries'),
-      where('uid', '==', userId),
+      where('userId', '==', userId),
       orderBy('date', 'desc')
     );
 
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
 
     // Create new mood entry
     const moodEntryData = {
-              uid: userId,
+              userId: userId,
       moodValue,
       notes: notes || '',
       date: Timestamp.fromDate(entryDate),
