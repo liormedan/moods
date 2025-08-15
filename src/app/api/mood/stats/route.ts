@@ -1,21 +1,24 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth-helpers';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     console.log('🔍 Fetching mood stats...');
     
-    // Try to get real data from database
-    const demoUser = await prisma.user.findUnique({
-      where: { email: 'demo@example.com' }
-    });
+    // Get current user (tries multiple methods)
+    const dbUser = await getCurrentUser(request);
+    
+    if (!dbUser) {
+      return NextResponse.json({ error: 'No user found' }, { status: 401 });
+    }
+    
+    console.log('👤 Using user:', dbUser.email);
 
-    console.log('👤 Demo user found:', !!demoUser);
-
-    if (demoUser) {
+    if (dbUser) {
       // Get mood entries for calculations
       const moodEntries = await prisma.moodEntry.findMany({
-        where: { userId: demoUser.id },
+        where: { userId: dbUser.id },
         orderBy: { date: 'desc' }
       });
 

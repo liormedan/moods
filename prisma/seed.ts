@@ -21,12 +21,12 @@ async function main() {
   // Create sample mood entries for the last 14 days
   const moodEntries = []
   const today = new Date()
-  
+
   for (let i = 0; i < 14; i++) {
     const date = new Date(today)
     date.setDate(today.getDate() - i)
     date.setHours(12, 0, 0, 0) // Set to noon to avoid timezone issues
-    
+
     const moodValue = Math.floor(Math.random() * 4) + 6 // Random mood between 6-9
     const notes = [
       'יום טוב!',
@@ -38,7 +38,7 @@ async function main() {
       'יום רגוע ונעים',
       null
     ]
-    
+
     moodEntries.push({
       userId: demoUser.id,
       moodValue,

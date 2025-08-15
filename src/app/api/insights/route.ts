@@ -1,21 +1,40 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUserFromSession, getCurrentUserFromCookies } from '@/lib/auth-helpers';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     console.log('🔍 Fetching insights...');
     
-    const demoUser = await prisma.user.findUnique({
-      where: { email: 'demo@example.com' }
-    });
+    // Try to get current user from session
+    let dbUser = await getCurrentUserFromSession();
+    
+    // If no session user, try cookies
+    if (!dbUser) {
+      dbUser = await getCurrentUserFromCookies(request);
+    }
+    
+    // Fallback to your user
+    if (!dbUser) {
+      dbUser = await prisma.user.findUnique({
+        where: { email: 'liormedan1@gmail.com' }
+      });
+    }
+    
+    // Last resort: demo user
+    if (!dbUser) {
+      dbUser = await prisma.user.findUnique({
+        where: { email: 'demo@example.com' }
+      });
+    }
 
-    console.log('👤 Demo user found for insights:', !!demoUser);
+    console.log('👤 Using user for insights:', dbUser?.email);
 
-    if (demoUser) {
+    if (dbUser) {
       // Get insights for the user
       const insights = await prisma.insight.findMany({
         where: { 
-          userId: demoUser.id,
+          userId: dbUser.id,
           OR: [
             { expiresAt: null },
             { expiresAt: { gt: new Date() } }
