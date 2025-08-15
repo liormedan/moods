@@ -16,6 +16,7 @@
     "db:seed": "npm run db:init"
   },
   "dependencies": {
+    "@auth0/nextjs-auth0": "^3.8.0",
     "@prisma/client": "^6.14.0",
     "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-select": "^2.2.5",
@@ -25,7 +26,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "firebase": "^10.14.1",
     "lucide-react": "^0.539.0",
     "next": "15.4.6",
     "next-auth": "^4.24.11",

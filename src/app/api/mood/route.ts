@@ -1,166 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/firebase';
-import { 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
-  limit as firestoreLimit, 
-  startAfter, 
-  getDocs, 
-  addDoc, 
-  Timestamp,
-  getCountFromServer
-} from 'firebase/firestore';
-import { z } from 'zod';
-import { PaginationSchema, DateRangeSchema } from '@/lib/validation';
+import { prisma } from '@/lib/prisma';
 
-// Validation schema for mood entry
-const moodEntrySchema = z.object({
-  moodValue: z.number().min(1).max(10),
-  notes: z.string().optional(),
-  date: z.string().optional(), // ISO date string
-});
-
-// Validation schema for mood update
-const moodUpdateSchema = z.object({
-  moodValue: z.number().min(1).max(10).optional(),
-  notes: z.string().optional(),
-});
-
-// GET /api/mood - Get mood entries for the authenticated user
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!(session as any)?.user?.id) {
+    
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = (session as any).user.id; // This is now Auth0 sub (user ID)
-
-    const { searchParams } = new URL(request.url);
-
-    const paginationSchema = PaginationSchema.pick({ limit: true }).extend({
-      offset: z.coerce.number().int().min(0).default(0),
-    });
-
-    const paginationResult = paginationSchema.safeParse({
-      limit: searchParams.get('limit') ?? '30',
-      offset: searchParams.get('offset') ?? '0',
-    });
-
-    if (!paginationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Invalid input',
-          details: paginationResult.error.issues,
-        },
-        { status: 400 }
-      );
-    }
-
-    const { limit, offset } = paginationResult.data;
-
-    const date = searchParams.get('date');
-    const startDateParam = searchParams.get('startDate');
-    const endDateParam = searchParams.get('endDate');
-
-    // Build Firebase query
-    let moodQuery = query(
-      collection(db, 'mood_entries'),
-      where('userId', '==', userId),
-      orderBy('date', 'desc')
-    );
-
-    if (date) {
-      // Single date filter
-      const parsedDate = new Date(date);
-      if (isNaN(parsedDate.getTime())) {
-        return NextResponse.json(
-          {
-            error: 'Invalid input',
-            details: [{ path: ['date'], message: 'Invalid date' }],
-          },
-          { status: 400 }
-        );
+    // Return mock mood entries for now
+    const mockMoods = [
+      {
+        id: '1',
+        mood: 8,
+        note: 'Great day at work!',
+        date: new Date().toISOString(),
+        userId: session.user.email
+      },
+      {
+        id: '2', 
+        mood: 6,
+        note: 'Feeling okay',
+        date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        userId: session.user.email
       }
-
-      const endDate = new Date(parsedDate);
-      endDate.setDate(endDate.getDate() + 1);
-
-      moodQuery = query(
-        moodQuery,
-        where('date', '>=', Timestamp.fromDate(parsedDate)),
-        where('date', '<', Timestamp.fromDate(endDate))
-      );
-    } else if (startDateParam || endDateParam) {
-      const dateRangeResult = DateRangeSchema.safeParse({
-        startDate: startDateParam,
-        endDate: endDateParam,
-      });
-
-      if (!dateRangeResult.success) {
-        return NextResponse.json(
-          {
-            error: 'Invalid input',
-            details: dateRangeResult.error.issues,
-          },
-          { status: 400 }
-        );
-      }
-
-      const { startDate, endDate } = dateRangeResult.data;
-
-      moodQuery = query(
-        moodQuery,
-        where('date', '>=', Timestamp.fromDate(startDate)),
-        where('date', '<=', Timestamp.fromDate(endDate))
-      );
-    }
-
-    // Get total count
-    const countSnapshot = await getCountFromServer(moodQuery);
-    const totalCount = countSnapshot.data().count;
-
-    // Apply pagination
-    moodQuery = query(moodQuery, firestoreLimit(Math.min(limit, 100)));
-
-    const moodSnapshot = await getDocs(moodQuery);
-    const moodEntries = moodSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        moodValue: data.moodValue,
-        notes: data.notes || '',
-        date: data.date.toDate(), // Convert Firestore Timestamp to Date
-        createdAt: data.createdAt.toDate(),
-        updatedAt: data.updatedAt.toDate(),
-      };
-    });
-
-    // Format the data to match the expected interface
-    const formattedEntries = moodEntries.map((entry) => ({
-      id: entry.id,
-      moodValue: entry.moodValue,
-      notes: entry.notes,
-      date: entry.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
-      createdAt: entry.createdAt.toISOString(),
-      updatedAt: entry.updatedAt.toISOString(),
-    }));
+    ];
 
     return NextResponse.json({
-      data: formattedEntries,
-      pagination: {
-        total: totalCount,
-        limit,
-        offset,
-        hasMore: offset + limit < totalCount,
-      },
+      success: true,
+      data: mockMoods
     });
   } catch (error) {
-    console.error('Error fetching mood entries:', error);
+    console.error('Mood fetch error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -168,88 +42,32 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/mood - Create a new mood entry
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!(session as any)?.user?.id) {
+    
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = (session as any).user.id;
-
     const body = await request.json();
+    const { mood, note } = body;
 
-    // Validate input
-    const validationResult = moodEntrySchema.safeParse(body);
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Invalid input',
-          details: validationResult.error.issues,
-        },
-        { status: 400 }
-      );
-    }
-
-    const { moodValue, notes, date } = validationResult.data;
-
-    // Parse date or use current date
-    const entryDate = date ? new Date(date) : new Date();
-
-    // Check if entry already exists for this date
-    const existingQuery = query(
-      collection(db, 'mood_entries'),
-      where('userId', '==', userId),
-      where('date', '==', Timestamp.fromDate(entryDate))
-    );
-    
-    const existingSnapshot = await getDocs(existingQuery);
-    if (!existingSnapshot.empty) {
-      return NextResponse.json(
-        { error: 'Mood entry already exists for this date' },
-        { status: 409 }
-      );
-    }
-
-    // Create new mood entry
-    const moodEntryData = {
-              userId: userId,
-      moodValue,
-      notes: notes || '',
-      date: Timestamp.fromDate(entryDate),
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
+    // For now, just return success without actually saving to database
+    const newMoodEntry = {
+      id: Date.now().toString(),
+      mood,
+      note,
+      date: new Date().toISOString(),
+      userId: session.user.email
     };
 
-    const docRef = await addDoc(collection(db, 'mood_entries'), moodEntryData);
-
-    const moodEntry = {
-      id: docRef.id,
-      moodValue,
-      notes: notes || '',
-      date: entryDate.toISOString().split('T')[0],
-      createdAt: moodEntryData.createdAt.toDate().toISOString(),
-      updatedAt: moodEntryData.updatedAt.toDate().toISOString(),
-    };
-
-    return NextResponse.json(
-      {
-        message: 'Mood entry created successfully',
-        data: moodEntry,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      success: true,
+      data: newMoodEntry
+    });
   } catch (error) {
-    console.error('Error creating mood entry:', error);
-
-    if (error instanceof Error && error.message.includes('Unique constraint')) {
-      return NextResponse.json(
-        { error: 'Mood entry already exists for this date' },
-        { status: 409 }
-      );
-    }
-
+    console.error('Mood creation error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import Auth0Provider from 'next-auth/providers/auth0';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
 export const authOptions = {
   providers: [
@@ -8,6 +9,26 @@ export const authOptions = {
       clientId: process.env.AUTH0_CLIENT_ID!,
       clientSecret: process.env.AUTH0_CLIENT_SECRET!,
       issuer: process.env.AUTH0_ISSUER,
+    }),
+    // Credentials Provider for demo account
+    CredentialsProvider({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        // Demo account for testing
+        if (credentials?.email === 'demo@example.com' && credentials?.password === 'demo123') {
+          return {
+            id: 'demo-user-001',
+            email: 'demo@example.com',
+            name: 'Demo User',
+            image: null,
+          };
+        }
+        return null;
+      },
     }),
   ],
   session: {

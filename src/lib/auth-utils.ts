@@ -1,5 +1,5 @@
 // Auth utilities for Mental Health Tracker
-// Supports both admin mode and Firebase authentication
+// Supports both admin mode and Auth0 authentication
 
 export interface AuthUser {
   id: string;
@@ -11,7 +11,7 @@ export interface AuthUser {
 export interface AuthConfig {
   isAdminMode: boolean;
   skipAuth: boolean;
-  useFirebaseEmulator: boolean;
+  useAuth0: boolean;
 }
 
 // Get authentication configuration from environment variables
@@ -19,8 +19,7 @@ export function getAuthConfig(): AuthConfig {
   return {
     isAdminMode: process.env.NEXT_PUBLIC_ADMIN_MODE === 'true',
     skipAuth: process.env.NEXT_PUBLIC_SKIP_AUTH === 'true',
-    useFirebaseEmulator:
-      process.env.NEXT_PUBLIC_FIREBASE_USE_EMULATOR === 'true',
+    useAuth0: process.env.AUTH0_CLIENT_ID !== undefined,
   };
 }
 
@@ -55,9 +54,9 @@ export function shouldSkipAuth(): boolean {
   return getAuthConfig().skipAuth;
 }
 
-// Check if Firebase emulators should be used
-export function shouldUseFirebaseEmulator(): boolean {
-  return getAuthConfig().useFirebaseEmulator;
+// Check if Auth0 should be used
+export function shouldUseAuth0(): boolean {
+  return getAuthConfig().useAuth0;
 }
 
 // Get authentication status message
@@ -72,11 +71,11 @@ export function getAuthStatusMessage(): string {
     return 'Running with Authentication Disabled';
   }
 
-  if (config.useFirebaseEmulator) {
-    return 'Running with Firebase Emulators';
+  if (config.useAuth0) {
+    return 'Running with Auth0 Authentication';
   }
 
-  return 'Running with Production Firebase';
+  return 'Running with NextAuth.js';
 }
 
 // Validate user permissions

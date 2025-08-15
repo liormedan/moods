@@ -1,32 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase';
-import { collection, getCountFromServer } from 'firebase/firestore';
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Test Firebase connection
-    const usersRef = collection(db, 'users');
-    const userCountSnapshot = await getCountFromServer(usersRef);
-    const userCount = userCountSnapshot.data().count;
-
+    // Test database connection by counting users
+    const userCount = await prisma.user.count();
+    
     return NextResponse.json({
       success: true,
-      message: 'Firebase connection successful',
+      message: 'API and Database are working',
       data: {
         userCount,
         timestamp: new Date().toISOString(),
-      },
+        environment: process.env.NODE_ENV,
+      }
     });
   } catch (error) {
-    console.error('Firebase test error:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Firebase connection failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+    console.error('Database test failed:', error);
+    
+    return NextResponse.json({
+      success: false,
+      message: 'Database connection failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
