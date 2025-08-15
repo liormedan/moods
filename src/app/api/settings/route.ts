@@ -1,17 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { getSession } from '@auth0/nextjs-auth0';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Mock settings data
-    const mockSettings = {
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Default settings (in a real app, these would be stored in a UserSettings table)
+    const defaultSettings = {
       notifications: {
         email: true,
         push: false,
@@ -31,7 +40,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: mockSettings
+      data: defaultSettings
     });
   } catch (error) {
     console.error('Settings fetch error:', error);
@@ -44,7 +53,7 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
     
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -52,10 +61,21 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     
-    // For now, just return success without actually saving
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // In a real app, you'd save settings to a UserSettings table
+    // For now, just return success
     return NextResponse.json({
       success: true,
-      message: 'Settings updated successfully'
+      message: 'Settings updated successfully',
+      data: body
     });
   } catch (error) {
     console.error('Settings update error:', error);

@@ -1,31 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    console.log('🔍 Fetching mood entries...');
     
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const demoUser = await prisma.user.findUnique({
+      where: { email: 'demo@example.com' }
+    });
+
+    console.log('👤 Demo user found for mood:', !!demoUser);
+
+    if (demoUser) {
+      // Get mood entries for the user
+      const moodEntries = await prisma.moodEntry.findMany({
+        where: { userId: demoUser.id },
+        orderBy: { date: 'desc' },
+        take: 30 // Last 30 entries
+      });
+
+      console.log('📝 Mood entries found:', moodEntries.length);
+
+      return NextResponse.json({
+        success: true,
+        data: moodEntries
+      });
     }
 
-    // Return mock mood entries for now
+    // Fallback to mock data
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+    
     const mockMoods = [
       {
         id: '1',
-        mood: 8,
-        note: 'Great day at work!',
-        date: new Date().toISOString(),
-        userId: session.user.email
+        moodValue: 8,
+        notes: 'יום נהדר בעבודה!',
+        date: now.toISOString(),
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        userId: 'demo-user'
       },
       {
         id: '2', 
-        mood: 6,
-        note: 'Feeling okay',
-        date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        userId: session.user.email
+        moodValue: 6,
+        notes: 'מרגיש בסדר',
+        date: yesterday.toISOString(),
+        createdAt: yesterday.toISOString(),
+        updatedAt: yesterday.toISOString(),
+        userId: 'demo-user'
+      },
+      {
+        id: '3', 
+        moodValue: 7,
+        notes: 'יום טוב עם החברים',
+        date: twoDaysAgo.toISOString(),
+        createdAt: twoDaysAgo.toISOString(),
+        updatedAt: twoDaysAgo.toISOString(),
+        userId: 'demo-user'
       }
     ];
 
@@ -44,22 +77,64 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await request.json();
+    const { moodValue, notes, date } = body;
+
+    // Validate input
+    if (!moodValue || moodValue < 1 || moodValue > 10) {
+      return NextResponse.json(
+        { error: 'Mood value must be between 1 and 10' },
+        { status: 400 }
+      );
     }
 
-    const body = await request.json();
-    const { mood, note } = body;
+    // For now, use demo user
+    // TODO: Implement proper Auth0 authentication
+    const demoUser = await prisma.user.findUnique({
+      where: { email: 'demo@example.com' }
+    });
 
-    // For now, just return success without actually saving to database
+    if (demoUser) {
+      const entryDate = date ? new Date(date) : new Date();
+      
+      // Create or update mood entry for the date
+      const moodEntry = await prisma.moodEntry.upsert({
+        where: {
+          userId_date: {
+            userId: demoUser.id,
+            date: entryDate
+          }
+        },
+        update: {
+          moodValue,
+          notes: notes || null
+        },
+        create: {
+          userId: demoUser.id,
+          moodValue,
+          notes: notes || null,
+          date: entryDate
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: moodEntry
+      });
+    }
+
+    // Fallback to mock response
+    const now = new Date();
+    const entryDate = date ? new Date(date) : now;
+    
     const newMoodEntry = {
       id: Date.now().toString(),
-      mood,
-      note,
-      date: new Date().toISOString(),
-      userId: session.user.email
+      moodValue: moodValue || 5,
+      notes: notes || '',
+      date: entryDate.toISOString(),
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+      userId: 'demo-user'
     };
 
     return NextResponse.json({
