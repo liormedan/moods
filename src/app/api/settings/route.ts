@@ -5,14 +5,14 @@ import { prisma } from '@/lib/prisma';
 export async function GET() {
   try {
     const session = await getSession();
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     });
 
     if (!user) {
@@ -25,22 +25,22 @@ export async function GET() {
         email: true,
         push: false,
         dailyReminder: true,
-        weeklyReport: true
+        weeklyReport: true,
       },
       privacy: {
         shareData: false,
-        publicProfile: false
+        publicProfile: false,
       },
       preferences: {
         theme: 'light',
         language: 'he',
-        timezone: 'Asia/Jerusalem'
-      }
+        timezone: 'Asia/Jerusalem',
+      },
     };
 
     return NextResponse.json({
       success: true,
-      data: defaultSettings
+      data: defaultSettings,
     });
   } catch (error) {
     console.error('Settings fetch error:', error);
@@ -54,16 +54,16 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    
+
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     });
 
     if (!user) {
@@ -75,7 +75,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Settings updated successfully',
-      data: body
+      data: body,
     });
   } catch (error) {
     console.error('Settings update error:', error);

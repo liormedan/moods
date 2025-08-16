@@ -65,15 +65,14 @@ export function SignUpForm() {
       // For now, redirect to Auth0 for registration
       // In a real implementation, you might want to create the user first
       setSuccess('מעביר אותך להרשמה מאובטחת...');
-      
+
       setTimeout(() => {
         // Redirect to Auth0 signup
-        signIn('auth0', { 
+        signIn('auth0', {
           callbackUrl: '/dashboard',
           // Auth0 will handle the signup flow
         });
       }, 1000);
-      
     } catch (error) {
       setError('שגיאה בהרשמה. אנא נסה שוב.');
     } finally {
@@ -107,7 +106,7 @@ export function SignUpForm() {
           </svg>
           הרשמה מהירה עם Auth0
         </Button>
-        
+
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-gray-300 dark:border-gray-600" />
@@ -118,7 +117,7 @@ export function SignUpForm() {
             </span>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label

@@ -1,137 +1,81 @@
-'use client'
+'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase, SupabaseUser, SupabaseSession } from '@/lib/supabase'
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
 
-interface AuthContextType {
-  user: SupabaseUser | null
-  session: SupabaseSession | null
-  loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error?: string }>
-  signUp: (email: string, password: string) => Promise<{ error?: string }>
-  signOut: () => Promise<void>
-  signInWithGoogle: () => Promise<{ error?: string }>
+interface AuthUser {
+  id: string;
+  email: string;
+  name?: string;
+  picture?: string;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+interface AuthContextType {
+  user: AuthUser | null;
+  loading: boolean;
+  signIn: () => void;
+  signOut: () => void;
+  isAuthenticated: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<SupabaseUser | null>(null)
-  const [session, setSession] = useState<SupabaseSession | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user: auth0User, isLoading, error } = useUser();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session as SupabaseSession | null)
-      setUser(session?.user as SupabaseUser | null)
-      setLoading(false)
-      
-      // Store tokens in cookies for API access
-      if (session?.access_token) {
-        document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=3600`
-      }
-      if (session?.refresh_token) {
-        document.cookie = `sb-refresh-token=${session.refresh_token}; path=/; max-age=86400`
-      }
-    })
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session as SupabaseSession | null)
-      setUser(session?.user as SupabaseUser | null)
-      setLoading(false)
-      
-      // Update cookies on auth changes
-      if (session?.access_token) {
-        document.cookie = `sb-access-token=${session.access_token}; path=/; max-age=3600`
-        document.cookie = `sb-refresh-token=${session.refresh_token}; path=/; max-age=86400`
-      } else {
-        // Clear cookies on logout
-        document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-        document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      
-      if (error) {
-        return { error: error.message }
-      }
-      
-      return {}
-    } catch (error) {
-      return { error: 'שגיאה בהתחברות' }
+    if (isLoading) {
+      setLoading(true);
+      return;
     }
-  }
 
-  const signUp = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-      
-      if (error) {
-        return { error: error.message }
-      }
-      
-      return {}
-    } catch (error) {
-      return { error: 'שגיאה בהרשמה' }
+    if (auth0User) {
+      // Transform Auth0 user to our format
+      const transformedUser: AuthUser = {
+        id: auth0User.sub || '',
+        email: auth0User.email || '',
+        name: auth0User.name || undefined,
+        picture: auth0User.picture || undefined,
+      };
+      setUser(transformedUser);
+      setLoading(false);
+    } else {
+      setUser(null);
+      setLoading(false);
     }
-  }
+  }, [auth0User, isLoading]);
 
-  const signOut = async () => {
-    await supabase.auth.signOut()
-  }
+  const signIn = () => {
+    // Redirect to Auth0 login
+    window.location.href = '/api/auth/login';
+  };
 
-  const signInWithGoogle = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
-      })
-      
-      if (error) {
-        return { error: error.message }
-      }
-      
-      return {}
-    } catch (error) {
-      return { error: 'שגיאה בהתחברות עם Google' }
-    }
-  }
+  const signOut = () => {
+    // Redirect to Auth0 logout
+    window.location.href = '/api/auth/logout';
+  };
 
-  const value = {
+  const value: AuthContextType = {
     user,
-    session,
     loading,
     signIn,
-    signUp,
     signOut,
-    signInWithGoogle,
+    isAuthenticated: !!user,
+  };
+
+  if (error) {
+    console.error('Auth0 error:', error);
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
+  return context;
 }

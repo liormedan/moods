@@ -1,16 +1,12 @@
 # Implementation Plan - Supabase Authentication
 
 - [x] 1. Create Supabase project and configure authentication
-
-
-
   - Go to https://supabase.com and create free account
   - Create new project with name "Mental Health Tracker"
   - Wait for project to be ready (2-3 minutes)
   - Go to Authentication > Settings and enable Email authentication
   - Enable Google OAuth provider in Authentication > Providers
   - Copy Project URL and anon public key from Settings > API
-
 
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
@@ -19,14 +15,12 @@
   - Add NEXT_PUBLIC_SUPABASE_URL to .env.local with project URL
   - Add NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local with anon key
 
-
   - Add SUPABASE_SERVICE_ROLE_KEY for server-side operations
   - Verify environment variables are loaded correctly
   - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
 - [ ] 3. Create Supabase client configuration
   - Create src/lib/supabase.ts with client configuration
-
 
   - Set up browser client for frontend operations
   - Set up server client for API route operations
@@ -35,9 +29,6 @@
   - _Requirements: 5.2, 5.3_
 
 - [x] 4. Create authentication context and hooks
-
-
-
   - Create src/contexts/AuthContext.tsx for authentication state
   - Implement useAuth hook with sign in, sign up, sign out functions
   - Add authentication state management with React context
@@ -83,16 +74,9 @@
   - Implement profile creation from Supabase user metadata
   - Calculate user-specific statistics from their data only
 
-
-
-
-
   - Add session validation and error handling
   - Test profile management with real authenticated users
   - _Requirements: 5.1, 5.4, 6.1, 6.2_
-
-
-
 
 - [ ] 10. Update settings API route with Supabase authentication
   - Add Supabase JWT verification to settings GET and PUT handlers

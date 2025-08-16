@@ -1,58 +1,64 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Mail, Lock, Chrome } from 'lucide-react'
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Mail, Lock, Chrome } from 'lucide-react';
 
 interface LoginFormProps {
-  onToggleMode: () => void
+  onToggleMode: () => void;
 }
 
 export default function LoginForm({ onToggleMode }: LoginFormProps) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  
-  const { signIn, signInWithGoogle } = useAuth()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const { signIn, signInWithGoogle } = useAuth();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
     try {
-      const result = await signIn(email, password)
+      const result = await signIn(email, password);
       if (result.error) {
-        setError(result.error)
+        setError(result.error);
       }
     } catch (err) {
-      setError('שגיאה בהתחברות')
+      setError('שגיאה בהתחברות');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleGoogleLogin = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError('');
 
     try {
-      const result = await signInWithGoogle()
+      const result = await signInWithGoogle();
       if (result.error) {
-        setError(result.error)
+        setError(result.error);
       }
     } catch (err) {
-      setError('שגיאה בהתחברות עם Google')
+      setError('שגיאה בהתחברות עם Google');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -64,7 +70,7 @@ export default function LoginForm({ onToggleMode }: LoginFormProps) {
           התחברו לחשבון שלכם כדי להמשיך במעקב אחר מצב הרוח
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {error && (
           <Alert variant="destructive">
@@ -167,5 +173,5 @@ export default function LoginForm({ onToggleMode }: LoginFormProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

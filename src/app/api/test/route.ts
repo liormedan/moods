@@ -5,7 +5,7 @@ export async function GET() {
   try {
     // Test database connection by counting users
     const userCount = await prisma.user.count();
-    
+
     return NextResponse.json({
       success: true,
       message: 'API and Database are working',
@@ -13,15 +13,18 @@ export async function GET() {
         userCount,
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV,
-      }
+      },
     });
   } catch (error) {
     console.error('Database test failed:', error);
-    
-    return NextResponse.json({
-      success: false,
-      message: 'Database connection failed',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Database connection failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
   }
 }

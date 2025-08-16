@@ -20,6 +20,7 @@ import {
   CheckCircle,
   Clock,
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Insight {
   id: string;
@@ -85,121 +86,60 @@ export default function InsightsPanel({
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [refreshing, setRefreshing] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
-    fetchInsights();
-  }, [showUnreadOnly, selectedCategory]);
+    if (user) {
+      fetchInsights();
+    }
+  }, [user, showUnreadOnly, selectedCategory]);
 
   const fetchInsights = async () => {
+    if (!user) {
+      setError('יש להתחבר כדי לראות תובנות');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      // Try to fetch real insights from API
       const response = await fetch('/api/insights');
       if (response.ok) {
-        const data = await response.json();
-        // Handle both array and { data: array } responses
-        const insightsData = Array.isArray(data) ? data : data.data || [];
-        setInsights(insightsData);
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          // Transform API data to match our interface
+          const transformedInsights: Insight[] = result.data.map(
+            (item: any) => ({
+              id: item.id,
+              type: item.type,
+              title: item.title,
+              description: item.content,
+              priority: item.priority,
+              actionable: item.actionable,
+              isRead: item.read,
+              createdAt: item.date,
+              category: 'general', // Default category
+              tags: [],
+            })
+          );
+
+          setInsights(transformedInsights);
+        } else {
+          throw new Error('הנתונים שהתקבלו מהשרת אינם תקינים');
+        }
       } else {
-        throw new Error('שגיאה בטעינת תובנות מהשרת');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'שגיאה בטעינת תובנות');
       }
     } catch (err) {
       console.error('Error fetching insights:', err);
-
-      // Fallback to mock data if API fails
-      const mockInsights: Insight[] = generateMockInsights();
-      setInsights(mockInsights);
-
-      // Show error but don't block the UI
-      setError('התובנות המוצגות הן לדוגמה בלבד');
+      const errorMessage =
+        err instanceof Error ? err.message : 'שגיאה בטעינת תובנות';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
-
-  const generateMockInsights = (): Insight[] => {
-    return [
-      {
-        id: '1',
-        type: 'recommendation',
-        title: 'המלצה לשיפור מצב הרוח',
-        description:
-          'תבסס על הנתונים שלך, מומלץ לנסות פעילות גופנית קלה כמו הליכה של 15 דקות ביום. זה יכול לשפר את מצב הרוח שלך באופן משמעותי.',
-        priority: 'medium',
-        actionable: true,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-        category: 'activity',
-        tags: ['פעילות גופנית', 'הליכה', 'מצב רוח'],
-      },
-      {
-        id: '2',
-        type: 'pattern',
-        title: 'דפוס שזוהה במצב הרוח',
-        description:
-          'נראה שמצב הרוח שלך טוב יותר בימי שלישי וחמישי. אולי יש קשר לפעילויות מסוימות או ללוח הזמנים השבועי שלך?',
-        priority: 'low',
-        actionable: false,
-        isRead: true,
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-        category: 'mood',
-        tags: ['דפוס', 'מגמה', 'שבועי'],
-      },
-      {
-        id: '3',
-        type: 'celebration',
-        title: 'כל הכבוד! שבוע מעולה',
-        description:
-          'השבוע היה שבוע מעולה עם מצב רוח גבוה. המשך כך! זה מראה שאתה על הדרך הנכונה.',
-        priority: 'low',
-        actionable: false,
-        isRead: false,
-        createdAt: new Date(Date.now() - 172800000).toISOString(),
-        category: 'mood',
-        tags: ['הישג', 'מצוינות', 'מגמה חיובית'],
-      },
-      {
-        id: '4',
-        type: 'warning',
-        title: 'שימו לב: ירידה במצב הרוח',
-        description:
-          'בשבועיים האחרונים יש מגמה של ירידה קלה במצב הרוח. מומלץ לשים לב ולשקול פעילויות שמשפרות את המצב.',
-        priority: 'high',
-        actionable: true,
-        isRead: true,
-        createdAt: new Date(Date.now() - 259200000).toISOString(),
-        category: 'mood',
-        tags: ['אזהרה', 'מגמה שלילית', 'פעולה נדרשת'],
-      },
-      {
-        id: '5',
-        type: 'milestone',
-        title: 'הישג: 30 ימים ברצף!',
-        description:
-          'הגעת ל-30 ימים רצופים של תיעוד מצב רוח! זה הישג מדהים שמראה על מחויבות לרווחה הנפשית שלך.',
-        priority: 'low',
-        actionable: false,
-        isRead: false,
-        createdAt: new Date(Date.now() - 345600000).toISOString(),
-        category: 'general',
-        tags: ['הישג', 'רצף', 'מחויבות'],
-      },
-      {
-        id: '6',
-        type: 'recommendation',
-        title: 'טיפ לשינה טובה יותר',
-        description:
-          'תבסס על הנתונים, נראה שמצב הרוח שלך טוב יותר כשיש לך שינה טובה. נסה לשמור על לוח זמנים קבוע לשינה.',
-        priority: 'medium',
-        actionable: true,
-        isRead: true,
-        createdAt: new Date(Date.now() - 432000000).toISOString(),
-        category: 'sleep',
-        tags: ['שינה', 'לוח זמנים', 'רווחה'],
-      },
-    ];
   };
 
   const handleRefresh = async () => {

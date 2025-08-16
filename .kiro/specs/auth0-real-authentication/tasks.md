@@ -1,9 +1,6 @@
 # Implementation Plan - Auth0 Real Authentication
 
 - [ ] 1. Set up Auth0 account and application configuration
-
-
-
   - Create new Auth0 account at auth0.com
   - Create new Single Page Application in Auth0 dashboard
   - Configure allowed callback URLs: http://localhost:3000/api/auth/callback

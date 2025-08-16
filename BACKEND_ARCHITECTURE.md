@@ -3,6 +3,7 @@
 ## 📋 **Current Status**
 
 ### ✅ **Completed (Firebase)**
+
 - `analytics` API - Mood analytics and trends
 - `mood` API - CRUD for mood entries
 - `mood/[id]` API - Individual mood entry management
@@ -15,6 +16,7 @@
 - `database.ts` - Firebase types
 
 ### ❌ **Pending (Still Prisma)**
+
 - `auth/forgot-password` API - Password reset
 - `auth/register` API - User registration
 - `auth/reset-password` API - Password reset
@@ -38,7 +40,7 @@ collections: {
     createdAt: Timestamp;
     updatedAt: Timestamp;
   },
-  
+
   mood_entries: {
     id: string;
     userId: string;
@@ -48,7 +50,7 @@ collections: {
     createdAt: Timestamp;
     updatedAt: Timestamp;
   },
-  
+
   insights: {
     id: string;
     userId: string;
@@ -61,7 +63,7 @@ collections: {
     createdAt: Timestamp;
     updatedAt: Timestamp;
   },
-  
+
   breathing_sessions: {
     id: string;
     userId: string;
@@ -76,7 +78,7 @@ collections: {
     createdAt: Timestamp;
     updatedAt: Timestamp;
   },
-  
+
   goals: {
     id: string;
     userId: string;
@@ -102,6 +104,7 @@ collections: {
 ## 🚀 **Migration Strategy**
 
 ### **Phase 1: Core APIs (COMPLETED)**
+
 - ✅ Mood management
 - ✅ Analytics
 - ✅ Insights
@@ -109,16 +112,19 @@ collections: {
 - ✅ Goals
 
 ### **Phase 2: User Management (NEXT)**
+
 - 🔄 Auth APIs (register, forgot-password, reset-password)
 - 🔄 Profile API
 - 🔄 NextAuth configuration
 
 ### **Phase 3: Content APIs**
+
 - 🔄 Journal APIs
 - 🔄 Calendar API
 - 🔄 Reports API
 
 ### **Phase 4: Testing & Cleanup**
+
 - 🔄 Test API
 - 🔄 Remove Prisma dependencies
 - 🔄 Update documentation
@@ -142,6 +148,7 @@ collections: {
 ## 📝 **Code Patterns**
 
 ### **Firebase Query Pattern**
+
 ```typescript
 // Example: Get user's mood entries
 const moodQuery = query(
@@ -152,13 +159,14 @@ const moodQuery = query(
 );
 
 const snapshot = await getDocs(moodQuery);
-const entries = snapshot.docs.map(doc => ({
+const entries = snapshot.docs.map((doc) => ({
   id: doc.id,
-  ...doc.data()
+  ...doc.data(),
 }));
 ```
 
 ### **Firebase CRUD Pattern**
+
 ```typescript
 // Create
 const docRef = await addDoc(collection(db, 'collection_name'), data);

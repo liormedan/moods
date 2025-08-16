@@ -24,6 +24,8 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { AuthGuard } from '@/components/auth/auth-guard';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardStats {
   totalEntries: number;
@@ -39,6 +41,7 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
+  const { session } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +71,15 @@ export default function DashboardPage() {
       setError(null);
 
       // Fetch real data from API
-      const response = await fetch('/api/mood/stats');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      
+      const response = await fetch('/api/mood/stats', { headers });
       if (!response.ok) {
         throw new Error('שגיאה בטעינת נתונים');
       }
@@ -219,7 +230,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <DashboardLayout>
+    <AuthGuard>
+      <DashboardLayout>
       <div className="space-y-6">
         {/* Welcome Section with Refresh Button */}
         <div className="mb-8 flex justify-between items-start">
@@ -566,5 +578,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </DashboardLayout>
+    </AuthGuard>
   );
 }

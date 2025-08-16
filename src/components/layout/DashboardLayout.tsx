@@ -20,8 +20,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push('/auth');
+    signOut();
+    // Auth0 will handle the redirect
   };
 
   return (
@@ -71,9 +71,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <ThemeSwitcher />
                   <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
                     <User className="w-4 h-4" />
-                    <span>
-                      {user?.user_metadata?.name || user?.email || 'משתמש'}
-                    </span>
+                    <span>{user?.name || user?.email || 'משתמש'}</span>
                   </div>
                   <Button
                     variant="outline"
@@ -101,7 +99,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             variant="ghost"
             size="sm"
             onClick={() => setSidebarOpen(false)}
-            className="fixed top-4 left-4 z-50 lg:hidden bg-white shadow-md"
+            className="fixed top-4 right-4 z-50 lg:hidden"
           >
             <X className="h-6 w-6" />
           </Button>

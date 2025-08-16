@@ -17,6 +17,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     if (loading) return; // Still loading
 
     if (!user) {
+      // Redirect to our auth page
       router.push('/auth');
       return;
     }
@@ -37,7 +38,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   }
 
   if (!user) {
-    return null; // Will redirect to auth
+    return null; // Will redirect to auth page
   }
 
   return <>{children}</>;

@@ -1,22 +1,22 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/AuthContext'
-import LoginForm from '@/components/auth/LoginForm'
-import SignupForm from '@/components/auth/SignupForm'
-import { Loader2, Heart, Brain, TrendingUp } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import LoginForm from '@/components/auth/LoginForm';
+import SignupForm from '@/components/auth/SignupForm';
+import { Loader2, Heart, Brain, TrendingUp } from 'lucide-react';
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true)
-  const { user, loading } = useAuth()
-  const router = useRouter()
+  const [isLogin, setIsLogin] = useState(true);
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (user && !loading) {
-      router.push('/dashboard')
+      router.push('/dashboard');
     }
-  }, [user, loading, router])
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -26,11 +26,11 @@ export default function AuthPage() {
           <p className="text-gray-600 dark:text-gray-400">טוען...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (user) {
-    return null // Will redirect to dashboard
+    return null; // Will redirect to dashboard
   }
 
   return (
@@ -44,13 +44,12 @@ export default function AuthPage() {
             </div>
             <h1 className="text-2xl font-bold">Mental Health Tracker</h1>
           </div>
-          
-          <h2 className="text-4xl font-bold mb-6">
-            עקבו אחר מצב הרוח שלכם
-          </h2>
-          
+
+          <h2 className="text-4xl font-bold mb-6">עקבו אחר מצב הרוח שלכם</h2>
+
           <p className="text-xl text-blue-100 mb-8">
-            כלי פשוט ויעיל למעקב יומי אחר מצב הרוח, קבלת תובנות אישיות והשגת מטרות בריאות נפשית
+            כלי פשוט ויעיל למעקב יומי אחר מצב הרוח, קבלת תובנות אישיות והשגת
+            מטרות בריאות נפשית
           </p>
 
           <div className="space-y-4">
@@ -94,5 +93,5 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

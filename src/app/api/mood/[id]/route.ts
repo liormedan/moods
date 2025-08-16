@@ -8,7 +8,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -17,7 +17,7 @@ export async function DELETE(
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     });
 
     if (!user) {
@@ -28,17 +28,20 @@ export async function DELETE(
     const deletedEntry = await prisma.moodEntry.deleteMany({
       where: {
         id,
-        userId: user.id
-      }
+        userId: user.id,
+      },
     });
 
     if (deletedEntry.count === 0) {
-      return NextResponse.json({ error: 'Mood entry not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Mood entry not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Mood entry deleted successfully'
+      message: 'Mood entry deleted successfully',
     });
   } catch (error) {
     console.error('Mood deletion error:', error);
@@ -55,7 +58,7 @@ export async function PUT(
 ) {
   try {
     const session = await getSession();
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -74,7 +77,7 @@ export async function PUT(
 
     // Find user
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     });
 
     if (!user) {
@@ -85,30 +88,33 @@ export async function PUT(
     const updatedEntry = await prisma.moodEntry.updateMany({
       where: {
         id,
-        userId: user.id
+        userId: user.id,
       },
       data: {
         ...(moodValue && { moodValue }),
         ...(notes !== undefined && { notes }),
-        ...(date && { date: new Date(date) })
-      }
+        ...(date && { date: new Date(date) }),
+      },
     });
 
     if (updatedEntry.count === 0) {
-      return NextResponse.json({ error: 'Mood entry not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Mood entry not found' },
+        { status: 404 }
+      );
     }
 
     // Get the updated entry to return
     const moodEntry = await prisma.moodEntry.findFirst({
       where: {
         id,
-        userId: user.id
-      }
+        userId: user.id,
+      },
     });
 
     return NextResponse.json({
       success: true,
-      data: moodEntry
+      data: moodEntry,
     });
   } catch (error) {
     console.error('Mood update error:', error);

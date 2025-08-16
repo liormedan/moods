@@ -17,7 +17,7 @@ graph TB
     E --> F[Auth Middleware]
     F --> G[Prisma Client]
     G --> H[SQLite Database]
-    
+
     D --> I[Auth0 Dashboard]
     I --> J[User Management]
     I --> K[Social Providers]
@@ -53,6 +53,7 @@ sequenceDiagram
 ### 1. Auth0 Configuration
 
 **File:** `src/lib/auth0-config.ts`
+
 ```typescript
 interface Auth0Config {
   domain: string;
@@ -73,10 +74,11 @@ interface Auth0Config {
 ### 2. User Session Interface
 
 **File:** `src/types/auth.ts`
+
 ```typescript
 interface UserSession {
   user: {
-    sub: string;           // Auth0 user ID
+    sub: string; // Auth0 user ID
     email: string;
     name?: string;
     picture?: string;
@@ -91,6 +93,7 @@ interface UserSession {
 ### 3. Authentication Middleware
 
 **File:** `src/lib/auth-middleware.ts`
+
 ```typescript
 interface AuthMiddleware {
   requireAuth(handler: NextApiHandler): NextApiHandler;
@@ -116,7 +119,7 @@ export async function GET(request: NextRequest) {
 
     // 3. Query data scoped to user
     const data = await prisma.someModel.findMany({
-      where: { userId: user.id }
+      where: { userId: user.id },
     });
 
     return NextResponse.json({ success: true, data });
@@ -160,7 +163,7 @@ function mapAuth0User(auth0User: any): Partial<User> {
     email: auth0User.email,
     name: auth0User.name || auth0User.nickname,
     image: auth0User.picture,
-    emailVerified: auth0User.email_verified ? new Date() : null
+    emailVerified: auth0User.email_verified ? new Date() : null,
   };
 }
 ```
@@ -175,7 +178,7 @@ enum AuthError {
   SESSION_EXPIRED = 'SESSION_EXPIRED',
   INVALID_TOKEN = 'INVALID_TOKEN',
   USER_NOT_FOUND = 'USER_NOT_FOUND',
-  AUTH0_ERROR = 'AUTH0_ERROR'
+  AUTH0_ERROR = 'AUTH0_ERROR',
 }
 
 interface AuthErrorResponse {
@@ -236,22 +239,26 @@ interface AuthErrorResponse {
 ## Security Considerations
 
 ### 1. Token Security
+
 - Use secure HTTP-only cookies for session storage
 - Implement proper token refresh logic
 - Set appropriate token expiration times
 
 ### 2. Data Isolation
+
 - All database queries MUST include user ID filtering
 - Implement row-level security where possible
 - Validate user ownership before any data operations
 
 ### 3. API Security
+
 - Validate authentication on every API call
 - Implement rate limiting
 - Use HTTPS in production
 - Sanitize all user inputs
 
 ### 4. Session Management
+
 - Implement proper session cleanup
 - Handle concurrent sessions appropriately
 - Provide session monitoring capabilities
@@ -259,24 +266,28 @@ interface AuthErrorResponse {
 ## Implementation Phases
 
 ### Phase 1: Auth0 Setup (15 minutes)
+
 1. Create Auth0 account and application
 2. Configure callback URLs and settings
 3. Update environment variables
 4. Test basic authentication flow
 
 ### Phase 2: Authentication Integration (15 minutes)
+
 1. Update API routes with real authentication
 2. Implement user session handling
 3. Add authentication middleware
 4. Test API security
 
 ### Phase 3: Data Isolation (10 minutes)
+
 1. Update all database queries to include user filtering
 2. Implement user creation logic
 3. Test data separation between users
 4. Verify no data leakage
 
 ### Phase 4: Testing and Polish (5 minutes)
+
 1. Test complete authentication flow
 2. Verify all features work with real auth
 3. Test error scenarios

@@ -1,77 +1,83 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Mail, Lock, Chrome, CheckCircle } from 'lucide-react'
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Mail, Lock, Chrome, CheckCircle } from 'lucide-react';
 
 interface SignupFormProps {
-  onToggleMode: () => void
+  onToggleMode: () => void;
 }
 
 export default function SignupForm({ onToggleMode }: SignupFormProps) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  
-  const { signUp, signInWithGoogle } = useAuth()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  const { signUp, signInWithGoogle } = useAuth();
 
   const handleEmailSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
-    setSuccess(false)
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess(false);
 
     // Validate passwords match
     if (password !== confirmPassword) {
-      setError('הסיסמאות לא תואמות')
-      setLoading(false)
-      return
+      setError('הסיסמאות לא תואמות');
+      setLoading(false);
+      return;
     }
 
     // Validate password strength
     if (password.length < 6) {
-      setError('הסיסמה חייבת להכיל לפחות 6 תווים')
-      setLoading(false)
-      return
+      setError('הסיסמה חייבת להכיל לפחות 6 תווים');
+      setLoading(false);
+      return;
     }
 
     try {
-      const result = await signUp(email, password)
+      const result = await signUp(email, password);
       if (result.error) {
-        setError(result.error)
+        setError(result.error);
       } else {
-        setSuccess(true)
+        setSuccess(true);
       }
     } catch (err) {
-      setError('שגיאה בהרשמה')
+      setError('שגיאה בהרשמה');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleGoogleSignup = async () => {
-    setLoading(true)
-    setError('')
+    setLoading(true);
+    setError('');
 
     try {
-      const result = await signInWithGoogle()
+      const result = await signInWithGoogle();
       if (result.error) {
-        setError(result.error)
+        setError(result.error);
       }
     } catch (err) {
-      setError('שגיאה בהרשמה עם Google')
+      setError('שגיאה בהרשמה עם Google');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (success) {
     return (
@@ -87,23 +93,19 @@ export default function SignupForm({ onToggleMode }: SignupFormProps) {
             נשלח אליכם אימייל לאימות החשבון
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <div className="text-center space-y-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               בדקו את תיבת האימייל שלכם ולחצו על הקישור לאימות החשבון
             </p>
-            <Button
-              onClick={onToggleMode}
-              variant="outline"
-              className="w-full"
-            >
+            <Button onClick={onToggleMode} variant="outline" className="w-full">
               חזרה להתחברות
             </Button>
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -116,7 +118,7 @@ export default function SignupForm({ onToggleMode }: SignupFormProps) {
           הצטרפו אלינו ותתחילו לעקוב אחר מצב הרוח שלכם
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {error && (
           <Alert variant="destructive">
@@ -238,5 +240,5 @@ export default function SignupForm({ onToggleMode }: SignupFormProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

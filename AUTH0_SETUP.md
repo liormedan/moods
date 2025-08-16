@@ -33,18 +33,21 @@
 בלשונית "Settings" של האפליקציה:
 
 **Allowed Callback URLs:**
+
 ```
 http://localhost:3000/api/auth/callback/auth0,
 https://your-domain.vercel.app/api/auth/callback/auth0
 ```
 
 **Allowed Logout URLs:**
+
 ```
 http://localhost:3000,
 https://your-domain.vercel.app
 ```
 
 **Allowed Web Origins:**
+
 ```
 http://localhost:3000,
 https://your-domain.vercel.app
@@ -53,6 +56,7 @@ https://your-domain.vercel.app
 ### 2.3 העתקת פרטי התחברות
 
 העתק את הפרטים הבאים:
+
 - **Domain**: `your-tenant.auth0.com`
 - **Client ID**: `your-client-id`
 - **Client Secret**: `your-client-secret`
@@ -77,6 +81,7 @@ NEXTAUTH_URL=http://localhost:3000
 ### 3.2 יצירת Secret Key
 
 יצור מפתח סודי חזק:
+
 ```bash
 openssl rand -base64 32
 ```
@@ -105,7 +110,7 @@ function addUserMetadata(user, context, callback) {
   const namespace = 'https://mental-health-tracker.com/';
   context.idToken[namespace + 'user_metadata'] = user.user_metadata;
   context.idToken[namespace + 'app_metadata'] = user.app_metadata;
-  
+
   callback(null, user, context);
 }
 ```
@@ -137,6 +142,7 @@ NEXTAUTH_URL=https://your-domain.vercel.app
 ### 6.1 בדיקה מקומית
 
 1. הפעל את השרת המקומי:
+
 ```bash
 npm run dev
 ```
@@ -147,6 +153,7 @@ npm run dev
 ### 6.2 בדיקה בפרודקשן
 
 1. פרסם ל-Vercel:
+
 ```bash
 vercel --prod
 ```
@@ -190,6 +197,7 @@ vercel --prod
 ## תמיכה
 
 אם אתה נתקל בבעיות:
+
 1. בדוק את הלוגים ב-Auth0 Dashboard
 2. בדוק את הקונסול של הדפדפן
 3. פנה לתמיכה של Auth0

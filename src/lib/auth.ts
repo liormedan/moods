@@ -15,11 +15,14 @@ export const authOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         // Demo account for testing
-        if (credentials?.email === 'demo@example.com' && credentials?.password === 'demo123') {
+        if (
+          credentials?.email === 'demo@example.com' &&
+          credentials?.password === 'demo123'
+        ) {
           return {
             id: 'demo-user-001',
             email: 'demo@example.com',

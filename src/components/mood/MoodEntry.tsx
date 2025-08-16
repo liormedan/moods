@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Heart,
   Calendar,
@@ -42,6 +43,7 @@ export default function MoodEntry({
   initialData,
   isEditing = false,
 }: MoodEntryProps) {
+  const { session } = useAuth();
   const [moodValue, setMoodValue] = useState(5);
   const [notes, setNotes] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -69,7 +71,15 @@ export default function MoodEntry({
 
   const loadMoodHistory = async () => {
     try {
-      const response = await fetch('/api/mood?limit=5');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      
+      const response = await fetch('/api/mood?limit=5', { headers });
       if (response.ok) {
         const data = await response.json();
         // Ensure data is an array
@@ -109,9 +119,17 @@ export default function MoodEntry({
         isEditing && initialData ? `/api/mood/${initialData.id}` : '/api/mood';
       const method = isEditing ? 'PUT' : 'POST';
 
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(moodData),
       });
 

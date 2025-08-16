@@ -14,6 +14,7 @@ import {
   AreaChart,
 } from 'recharts';
 import { RefreshCw, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MoodDataPoint {
   date: string;
@@ -34,98 +35,114 @@ export default function MoodChart({ onDataLoad, onError }: MoodChartProps) {
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
   const [chartType, setChartType] = useState<'line' | 'area'>('line');
+  const { user } = useAuth();
 
   const fetchMoodData = async (range: TimeRange) => {
+    if (!user) {
+      setError('יש להתחבר כדי לראות נתונים');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      // Try to fetch real data from API
       const response = await fetch(`/api/mood?range=${range}`);
       if (response.ok) {
-        const data = await response.json();
-        // Ensure data is an array
-        if (Array.isArray(data)) {
-          setMoodData(data);
-          onDataLoad?.(data);
-        } else {
-          console.warn('API returned non-array data:', data);
-          // Fallback to mock data if API returns invalid data
-          const mockData: MoodDataPoint[] = generateMockData(range);
-          setMoodData(mockData);
-          onDataLoad?.(mockData);
-          setError(
-            'הנתונים המוצגים הם לדוגמה בלבד - השרת החזיר נתונים לא תקינים'
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          // Transform the data to match our chart format
+          const transformedData: MoodDataPoint[] = result.data.map(
+            (entry: any) => ({
+              date: new Date(entry.date).toLocaleDateString('he-IL'),
+              mood: entry.moodValue,
+              notes: entry.notes,
+            })
           );
+
+          setMoodData(transformedData);
+          onDataLoad?.(transformedData);
+        } else {
+          throw new Error('הנתונים שהתקבלו מהשרת אינם תקינים');
         }
       } else {
-        throw new Error('שגיאה בטעינת נתונים מהשרת');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'שגיאה בטעינת נתונים מהשרת');
       }
     } catch (err) {
       console.error('Error fetching mood data:', err);
-
-      // Fallback to mock data if API fails
-      const mockData: MoodDataPoint[] = generateMockData(range);
-      setMoodData(mockData);
-      onDataLoad?.(mockData);
-
-      // Show error but don't block the UI
-      setError('הנתונים המוצגים הם לדוגמה בלבד');
+      const errorMessage =
+        err instanceof Error ? err.message : 'שגיאה בטעינת נתונים';
+      setError(errorMessage);
+      onError?.(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const generateMockData = (range: TimeRange): MoodDataPoint[] => {
-    const today = new Date();
-    const data: MoodDataPoint[] = [];
-
-    let days: number;
-    switch (range) {
-      case 'week':
-        days = 7;
-        break;
-      case 'month':
-        days = 30;
-        break;
-      case '3months':
-        days = 90;
-        break;
-      default:
-        days = 7;
-    }
-
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-
-      // Generate realistic mood data with some variation
-      const baseMood = 6.5;
-      const variation = (Math.random() - 0.5) * 3;
-      const mood = Math.max(1, Math.min(10, baseMood + variation));
-
-      data.push({
-        date: date.toISOString().split('T')[0],
-        mood: Math.round(mood * 10) / 10,
-        notes: i === 0 ? 'היום' : undefined,
-      });
-    }
-
-    return data;
-  };
-
   useEffect(() => {
-    fetchMoodData(timeRange);
-  }, [timeRange]);
-
-  const handleTimeRangeChange = (value: string) => {
-    const newRange = value as TimeRange;
-    setTimeRange(newRange);
-  };
+    if (user) {
+      fetchMoodData(timeRange);
+    }
+  }, [user, timeRange]);
 
   const handleRefresh = () => {
     fetchMoodData(timeRange);
   };
+
+  const handleTimeRangeChange = (range: TimeRange) => {
+    setTimeRange(range);
+  };
+
+  const handleChartTypeChange = (type: 'line' | 'area') => {
+    setChartType(type);
+  };
+
+  if (!user) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          יש להתחבר כדי לראות נתונים
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-center space-x-2">
+          <RefreshCw className="w-5 h-5 animate-spin" />
+          <span>טוען נתונים...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="text-center text-red-500">
+          <p className="mb-2">{error}</p>
+          <Button onClick={handleRefresh} variant="outline" size="sm">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            נסה שוב
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (moodData.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          <p className="mb-2">אין נתונים להצגה</p>
+          <p className="text-sm">הוסף רשומות מצב רוח כדי לראות גרף</p>
+        </div>
+      </div>
+    );
+  }
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -220,7 +237,7 @@ export default function MoodChart({ onDataLoad, onError }: MoodChartProps) {
           {/* Chart Type Toggle */}
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setChartType('line')}
+              onClick={() => handleChartTypeChange('line')}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 chartType === 'line'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
@@ -230,7 +247,7 @@ export default function MoodChart({ onDataLoad, onError }: MoodChartProps) {
               קו
             </button>
             <button
-              onClick={() => setChartType('area')}
+              onClick={() => handleChartTypeChange('area')}
               className={`px-3 py-1 text-sm rounded-md transition-colors ${
                 chartType === 'area'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
@@ -267,7 +284,9 @@ export default function MoodChart({ onDataLoad, onError }: MoodChartProps) {
             </span>
             <select
               value={timeRange}
-              onChange={(e) => handleTimeRangeChange(e.target.value)}
+              onChange={(e) =>
+                handleTimeRangeChange(e.target.value as TimeRange)
+              }
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
             >
               <option value="week">שבוע</option>

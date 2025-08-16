@@ -62,7 +62,7 @@ function SignInFormContent() {
   const handleDemoLogin = async () => {
     setIsLoading(true);
     setError('');
-    
+
     try {
       const result = await signIn('credentials', {
         email: 'demo@example.com',
@@ -108,7 +108,7 @@ function SignInFormContent() {
           </svg>
           התחברות מהירה עם Auth0
         </Button>
-        
+
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-gray-300 dark:border-gray-600" />
@@ -119,7 +119,7 @@ function SignInFormContent() {
             </span>
           </div>
         </div>
-        
+
         {/* Success message */}
         {message && (
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 flex items-center">
